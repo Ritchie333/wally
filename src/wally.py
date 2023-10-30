@@ -218,6 +218,8 @@ class WallyHtmlWriter(HtmlWriter):
 
         bg = self.make_background()
 
+        debug = ( addr == 0xd191)
+
         d = self.snapshot[ addr ]
         e = self.snapshot[ addr + 1 ]
         addr +=2
@@ -239,7 +241,7 @@ class WallyHtmlWriter(HtmlWriter):
             addr +=2
 
         
-        frame = Frame( bg )
+        frame = Frame( bg, 2 )
         return self.handle_image( frame, fName, cwd )
 
     def print_block_data( self, cwd, addr, fName ):
@@ -253,7 +255,7 @@ class WallyHtmlWriter(HtmlWriter):
 
         self.make_block_data( bg, addr, base, x, y, attr )
 
-        frame = Frame( bg )
+        frame = Frame( bg, 2 )
         return self.handle_image( frame, fName, cwd )
     
     def make_block_data( self, bg, addr, base, x, y, attr ):
@@ -270,19 +272,18 @@ class WallyHtmlWriter(HtmlWriter):
                     y += offset
                 else:
                     y -= (0x100 - offset )
-                
 
             if( next == WallyHtmlWriter.GraphicsState.CHAIN ):
                 ptr = self.snapshot[ addr ] + 0x100 * self.snapshot[ addr + 1 ]
                 addr += 2
                 self.make_block_data( bg, ptr, base, x, y, attr )
+                return
 
             if( next == WallyHtmlWriter.GraphicsState.NEW_ADDR ):
                 base = self.snapshot[ addr ] + 0x100 * self.snapshot[ addr + 1 ]
                 addr += 2
 
             if ( next == WallyHtmlWriter.GraphicsState.SPACE ):
-                addr += 1
                 x += 1
 
             if ( next == WallyHtmlWriter.GraphicsState.REPEAT_ROWS ):
@@ -342,3 +343,10 @@ class WallyHtmlWriter(HtmlWriter):
         ptr = addr + ( id * 8 )
         udgs = [ [ Udg( attr, self.snapshot[ ptr : ptr + 8 ] ) ] ]
         skoolkit.graphics.overlay_udgs( bg, udgs, x * 8, y * 8, 0, lambda bg, fg : fg, lambda bg, fg, mk : fg )
+
+    def print_block_ctl( self, cwd, addr ):
+        for i in range( 0, 118 ):
+            addr = 0xBD86 + 2 * i
+            ptr = self.snapshot[ addr ] + 0x100 * self.snapshot[ addr + 1]
+            print( 'b $' + f'{ptr:x}'.upper() + ' Room block data ' + f'{i:x}'.upper() )
+            print( 'D $' + f'{ptr:x}'.upper() + ' #CALL:print_block_data(#PC,block_data_' + f'{i:x}'.upper() + ')' )

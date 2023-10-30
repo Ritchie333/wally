@@ -319,124 +319,242 @@ b $BD6F Items in the Docks
 b $BD78 Item in the Sewer
 b $BD7D Items in the Cave
 w $BD86 Jump table for room block components
-b $BE72 Room block data 112
-b $BE8F Room block data 87
-b $BEDA Room block data 88
-b $BF03 Room block data 89
-b $BF19 Room block data 90 
-b $BF27 Room block data 85
-b $BF81 Room block data 110
-b $BFA4 Room block data 81
-b $BFB2 Room block data 82
-b $BFDA Room block data 83
-b $BFE2 Room block data 78
-b $BFFE Room block data 84
-b $C026 Room block data 91
-b $C03C Room block data 92
-b $C045 Room block data 93
-b $C050 Room block data 94
-b $C05A Room block data 95
-b $C082 Room block data 96
-b $C0A0 Room block data 97
-b $C0AA Room block data 98
-b $C0B8 Room block data 99
-b $C0D4 Room block data 100
-b $C0DC Room block data 102
-b $C0F1 Room block data 80
-b $C132 Room block data 86
-b $C19D Room block data 77
-b $C20A Room block data 46
-b $C220 Room block data 47
-b $C23C Room block data 31
-b $C254 Room block data 45
-b $C27C Room block data 59
-b $C291 Room block data 73
-b $C29A Room block data 74
-b $C2A8 Room block data 106
-b $C312 Room block data 107
-b $C334 Room block data 113
-b $C347 Room block data 114
 b $C352 Room block data 0
-b $C35D Room block data 32
-b $C369 Room block data 33
+D $C352 #CALL:print_block_data(#PC,block_data_0)
 b $C37C Room block data 1
+D $C37C #CALL:print_block_data(#PC,block_data_1)
 b $C3DB Room block data 2
-b $C437 Room block data 105
-b $C4CD Room block data 104
+D $C3DB #CALL:print_block_data(#PC,block_data_2)
 b $C56B Room block data 3
-b $C577 Room block data 108
+D $C56B #CALL:print_block_data(#PC,block_data_3)
 b $C580 Room block data 4
+D $C580 #CALL:print_block_data(#PC,block_data_4)
 b $C5C0 Room block data 5
-b $C5DA Room block data 67
-b $C5F9 Room block data 68
-b $C610 Room block data 69
-b $C61A Room block data 70 
-b $C625 Room block data 71
-b $C635 Room block data 72
+D $C5C0 #CALL:print_block_data(#PC,block_data_5)
 b $C651 Room block data 6
+D $C651 #CALL:print_block_data(#PC,block_data_6)
 b $C6E3 Room block data 7
+D $C6E3 #CALL:print_block_data(#PC,block_data_7)
 b $C703 Room block data 8
+D $C703 #CALL:print_block_data(#PC,block_data_8)
 b $C71F Room block data 9
-b $C732 Room block data 10
-b $C745 Room block data 11
-b $C762 Room block data 35
-b $C77F Room block data 12
-b $C797 Room block data 44
-b $C79F Room block data 41
-b $C7B7 Room block data 28
-b $C7BF Room block data 13
-b $C7E0 Room block data 42
-b $C801 Room block data 37
-b $C82B Room block data 38
-b $C844 Room block data 14
-b $C857 Room block data 58
-b $C860 Room block data 19
-b $C876 Room block data 25
-b $C889 Room block data 39
-b $C89F Room block data 40 
-b $C8B3 Room block data 29
-b $C8C3 Room block data 30
-b $C8E4 Room block data 26
-b $C908 Room block data 20
-b $C91A Room block data 34
-b $C92E Room block data 60
-b $C943 Room block data 36
-b $C957 Room block data 111
-b $C960 Room block data 109
-b $C986 Room block data 21
-b $C9A2 Room block data 22
-b $C9BE Room block data 15
-b $C9D4 Room block data 27
-b $C9DD Room block data 16
-b $C9FC Room block data 17
-b $CA1F Room block data 78
-b $CA57 Room block data 18
-b $CA9A Room block data 23
-b $CAAE Room block data 24
-b $CACA Room block data 75
-b $CAEC Room block data 101
-b $CB05 Room block data 43
-b $CB1A Room block data 63
-b $CB2F Room block data 48
-b $CB55 Room block data 49
-b $CB6B Room block data 50
-b $CB85 Room block data 115
-b $CBA0 Room block data 51
-b $CBE0 Room block data 52
-b $CBF0 Room block data 53
-b $CC03 Room block data 54
-b $CC25 Room block data 55
-b $CC39 Room block data 61
-b $CC5D Room block data 66
-b $CC8D Room block data 65
-b $CC97 Room block data 62
-b $CCAA Room block data 64
-b $CCB2 Room block data 76
-b $CCDA Room block data 56
-b $CCF2 Room block data 57
-b $CD14 Room block data 103
-b $CD2F Room block data 116
-b $CD43 Room block data 117
+D $C71F #CALL:print_block_data(#PC,block_data_9)
+b $C732 Room block data A
+D $C732 #CALL:print_block_data(#PC,block_data_A)
+b $C745 Room block data B
+D $C745 #CALL:print_block_data(#PC,block_data_B)
+b $C77F Room block data C
+D $C77F #CALL:print_block_data(#PC,block_data_C)
+b $C7BF Room block data D
+D $C7BF #CALL:print_block_data(#PC,block_data_D)
+b $C844 Room block data E
+D $C844 #CALL:print_block_data(#PC,block_data_E)
+b $C9BE Room block data F
+D $C9BE #CALL:print_block_data(#PC,block_data_F)
+b $C9DD Room block data 10
+D $C9DD #CALL:print_block_data(#PC,block_data_10)
+b $C9FC Room block data 11
+D $C9FC #CALL:print_block_data(#PC,block_data_11)
+b $CA57 Room block data 12
+D $CA57 #CALL:print_block_data(#PC,block_data_12)
+b $C860 Room block data 13
+D $C860 #CALL:print_block_data(#PC,block_data_13)
+b $C908 Room block data 14
+D $C908 #CALL:print_block_data(#PC,block_data_14)
+b $C986 Room block data 15
+D $C986 #CALL:print_block_data(#PC,block_data_15)
+b $C9A2 Room block data 16
+D $C9A2 #CALL:print_block_data(#PC,block_data_16)
+b $CA9A Room block data 17
+D $CA9A #CALL:print_block_data(#PC,block_data_17)
+b $CAAE Room block data 18
+D $CAAE #CALL:print_block_data(#PC,block_data_18)
+b $C876 Room block data 19
+D $C876 #CALL:print_block_data(#PC,block_data_19)
+b $C8E4 Room block data 1A
+D $C8E4 #CALL:print_block_data(#PC,block_data_1A)
+b $C9D4 Room block data 1B
+D $C9D4 #CALL:print_block_data(#PC,block_data_1B)
+b $C7B7 Room block data 1C
+D $C7B7 #CALL:print_block_data(#PC,block_data_1C)
+b $C8B3 Room block data 1D
+D $C8B3 #CALL:print_block_data(#PC,block_data_1D)
+b $C8C3 Room block data 1E
+D $C8C3 #CALL:print_block_data(#PC,block_data_1E)
+b $C23C Room block data 1F
+D $C23C #CALL:print_block_data(#PC,block_data_1F)
+b $C35D Room block data 20
+D $C35D #CALL:print_block_data(#PC,block_data_20)
+b $C369 Room block data 21
+D $C369 #CALL:print_block_data(#PC,block_data_21)
+b $C91A Room block data 22
+D $C91A #CALL:print_block_data(#PC,block_data_22)
+b $C762 Room block data 23
+D $C762 #CALL:print_block_data(#PC,block_data_23)
+b $C943 Room block data 24
+D $C943 #CALL:print_block_data(#PC,block_data_24)
+b $C801 Room block data 25
+D $C801 #CALL:print_block_data(#PC,block_data_25)
+b $C82B Room block data 26
+D $C82B #CALL:print_block_data(#PC,block_data_26)
+b $C889 Room block data 27
+D $C889 #CALL:print_block_data(#PC,block_data_27)
+b $C89F Room block data 28
+D $C89F #CALL:print_block_data(#PC,block_data_28)
+b $C79F Room block data 29
+D $C79F #CALL:print_block_data(#PC,block_data_29)
+b $C7E0 Room block data 2A
+D $C7E0 #CALL:print_block_data(#PC,block_data_2A)
+b $CB05 Room block data 2B
+D $CB05 #CALL:print_block_data(#PC,block_data_2B)
+b $C797 Room block data 2C
+D $C797 #CALL:print_block_data(#PC,block_data_2C)
+b $C254 Room block data 2D
+D $C254 #CALL:print_block_data(#PC,block_data_2D)
+b $C20A Room block data 2E
+D $C20A #CALL:print_block_data(#PC,block_data_2E)
+b $C220 Room block data 2F
+D $C220 #CALL:print_block_data(#PC,block_data_2F)
+b $CB2F Room block data 30
+D $CB2F #CALL:print_block_data(#PC,block_data_30)
+b $CB55 Room block data 31
+D $CB55 #CALL:print_block_data(#PC,block_data_31)
+b $CB6B Room block data 32
+D $CB6B #CALL:print_block_data(#PC,block_data_32)
+b $CBA0 Room block data 33
+D $CBA0 #CALL:print_block_data(#PC,block_data_33)
+b $CBE0 Room block data 34
+D $CBE0 #CALL:print_block_data(#PC,block_data_34)
+b $CBF0 Room block data 35
+D $CBF0 #CALL:print_block_data(#PC,block_data_35)
+b $CC03 Room block data 36
+D $CC03 #CALL:print_block_data(#PC,block_data_36)
+b $CC25 Room block data 37
+D $CC25 #CALL:print_block_data(#PC,block_data_37)
+b $CCDA Room block data 38
+D $CCDA #CALL:print_block_data(#PC,block_data_38)
+b $CCF2 Room block data 39
+D $CCF2 #CALL:print_block_data(#PC,block_data_39)
+b $C857 Room block data 3A
+D $C857 #CALL:print_block_data(#PC,block_data_3A)
+b $C27C Room block data 3B
+D $C27C #CALL:print_block_data(#PC,block_data_3B)
+b $C92E Room block data 3C
+D $C92E #CALL:print_block_data(#PC,block_data_3C)
+b $CC39 Room block data 3D
+D $CC39 #CALL:print_block_data(#PC,block_data_3D)
+b $CC97 Room block data 3E
+D $CC97 #CALL:print_block_data(#PC,block_data_3E)
+b $CB1A Room block data 3F
+D $CB1A #CALL:print_block_data(#PC,block_data_3F)
+b $CCAA Room block data 40
+D $CCAA #CALL:print_block_data(#PC,block_data_40)
+b $CC8D Room block data 41
+D $CC8D #CALL:print_block_data(#PC,block_data_41)
+b $CC5D Room block data 42
+D $CC5D #CALL:print_block_data(#PC,block_data_42)
+b $C5DA Room block data 43
+D $C5DA #CALL:print_block_data(#PC,block_data_43)
+b $C5F9 Room block data 44
+D $C5F9 #CALL:print_block_data(#PC,block_data_44)
+b $C610 Room block data 45
+D $C610 #CALL:print_block_data(#PC,block_data_45)
+b $C61A Room block data 46
+D $C61A #CALL:print_block_data(#PC,block_data_46)
+b $C625 Room block data 47
+D $C625 #CALL:print_block_data(#PC,block_data_47)
+b $C635 Room block data 48
+D $C635 #CALL:print_block_data(#PC,block_data_48)
+b $C291 Room block data 49
+D $C291 #CALL:print_block_data(#PC,block_data_49)
+b $C29A Room block data 4A
+D $C29A #CALL:print_block_data(#PC,block_data_4A)
+b $CACA Room block data 4B
+D $CACA #CALL:print_block_data(#PC,block_data_4B)
+b $CCB2 Room block data 4C
+D $CCB2 #CALL:print_block_data(#PC,block_data_4C)
+b $C19D Room block data 4D
+D $C19D #CALL:print_block_data(#PC,block_data_4D)
+b $CA1F Room block data 4E
+D $CA1F #CALL:print_block_data(#PC,block_data_4E)
+b $BFE2 Room block data 4F
+D $BFE2 #CALL:print_block_data(#PC,block_data_4F)
+b $C0F1 Room block data 50
+D $C0F1 #CALL:print_block_data(#PC,block_data_50)
+b $BFA4 Room block data 51
+D $BFA4 #CALL:print_block_data(#PC,block_data_51)
+b $BFB2 Room block data 52
+D $BFB2 #CALL:print_block_data(#PC,block_data_52)
+b $BFDA Room block data 53
+D $BFDA #CALL:print_block_data(#PC,block_data_53)
+b $BFFE Room block data 54
+D $BFFE #CALL:print_block_data(#PC,block_data_54)
+b $BF27 Room block data 55
+D $BF27 #CALL:print_block_data(#PC,block_data_55)
+b $C132 Room block data 56
+D $C132 #CALL:print_block_data(#PC,block_data_56)
+b $BE8F Room block data 57
+D $BE8F #CALL:print_block_data(#PC,block_data_57)
+b $BEDA Room block data 58
+D $BEDA #CALL:print_block_data(#PC,block_data_58)
+b $BF03 Room block data 59
+D $BF03 #CALL:print_block_data(#PC,block_data_59)
+b $BF19 Room block data 5A
+D $BF19 #CALL:print_block_data(#PC,block_data_5A)
+b $C026 Room block data 5B
+D $C026 #CALL:print_block_data(#PC,block_data_5B)
+b $C03C Room block data 5C
+D $C03C #CALL:print_block_data(#PC,block_data_5C)
+b $C045 Room block data 5D
+D $C045 #CALL:print_block_data(#PC,block_data_5D)
+b $C050 Room block data 5E
+D $C050 #CALL:print_block_data(#PC,block_data_5E)
+b $C05A Room block data 5F
+D $C05A #CALL:print_block_data(#PC,block_data_5F)
+b $C082 Room block data 60
+D $C082 #CALL:print_block_data(#PC,block_data_60)
+b $C0A0 Room block data 61
+D $C0A0 #CALL:print_block_data(#PC,block_data_61)
+b $C0AA Room block data 62
+D $C0AA #CALL:print_block_data(#PC,block_data_62)
+b $C0B8 Room block data 63
+D $C0B8 #CALL:print_block_data(#PC,block_data_63)
+b $C0D4 Room block data 64
+D $C0D4 #CALL:print_block_data(#PC,block_data_64)
+b $CAEC Room block data 65
+D $CAEC #CALL:print_block_data(#PC,block_data_65)
+b $C0DC Room block data 66
+D $C0DC #CALL:print_block_data(#PC,block_data_66)
+b $CD14 Room block data 67
+D $CD14 #CALL:print_block_data(#PC,block_data_67)
+b $C4CD Room block data 68
+D $C4CD #CALL:print_block_data(#PC,block_data_68)
+b $C437 Room block data 69
+D $C437 #CALL:print_block_data(#PC,block_data_69)
+b $C2A8 Room block data 6A
+D $C2A8 #CALL:print_block_data(#PC,block_data_6A)
+b $C312 Room block data 6B
+D $C312 #CALL:print_block_data(#PC,block_data_6B)
+b $C577 Room block data 6C
+D $C577 #CALL:print_block_data(#PC,block_data_6C)
+b $C960 Room block data 6D
+D $C960 #CALL:print_block_data(#PC,block_data_6D)
+b $BF81 Room block data 6E
+D $BF81 #CALL:print_block_data(#PC,block_data_6E)
+b $C957 Room block data 6F
+D $C957 #CALL:print_block_data(#PC,block_data_6F)
+b $BE72 Room block data 70
+D $BE72 #CALL:print_block_data(#PC,block_data_70)
+b $C334 Room block data 71
+D $C334 #CALL:print_block_data(#PC,block_data_71)
+b $C347 Room block data 72
+D $C347 #CALL:print_block_data(#PC,block_data_72)
+b $CB85 Room block data 73
+D $CB85 #CALL:print_block_data(#PC,block_data_73)
+b $CD2F Room block data 74
+D $CD2F #CALL:print_block_data(#PC,block_data_74)
+b $CD43 Room block data 75
+D $CD43 #CALL:print_block_data(#PC,block_data_75)
 w $CDB5 Table for room data
 b $CDF7 Room data : The Town Square
 b $CE01 Room data : Stamp Street

@@ -5897,13 +5897,17 @@ w$BD86 DEFW $C352
  $BE6E DEFW $CD2F
  $BE70 DEFW $CD43
 
-; Room block data 112
+; Room block data 70
+;
+; #CALL:print_block_data(#PC,block_data_70)
 b$BE72 DEFB $FB,$EC,$DF,$FE,$46,$09,$09,$F1
  $BE7A DEFB $F1,$0E,$C5,$FF,$FE,$42,$0C,$0D
  $BE82 DEFB $C6,$01,$0A,$0B,$C8,$01,$FE,$46
  $BE8A DEFB $FB,$6C,$E0,$04,$FF
 
-; Room block data 87
+; Room block data 57
+;
+; #CALL:print_block_data(#PC,block_data_57)
 b$BE8F DEFB $FB,$04,$D2,$FE,$44,$07,$FD,$17
  $BE97 DEFB $01,$F0,$01,$02,$03,$AF,$00,$04
  $BE9F DEFB $FB,$E4,$D9,$02,$0B,$03,$02,$0B
@@ -5915,7 +5919,9 @@ b$BE8F DEFB $FB,$04,$D2,$FE,$44,$07,$FD,$17
  $BECF DEFB $00,$01,$01,$00,$01,$01,$00,$01
  $BED7 DEFB $01,$02,$FF
 
-; Room block data 88
+; Room block data 58
+;
+; #CALL:print_block_data(#PC,block_data_58)
 b$BEDA DEFB $FB,$D4,$DD,$FE,$43,$F0,$01,$00
  $BEE2 DEFB $01,$C8,$FF,$FE,$45,$F0,$01,$00
  $BEEA DEFB $01,$C8,$FF,$FE,$42,$F0,$01,$00
@@ -5923,16 +5929,22 @@ b$BEDA DEFB $FB,$D4,$DD,$FE,$43,$F0,$01,$00
  $BEFA DEFB $01,$C4,$01,$FE,$47,$FD,$04,$02
  $BF02 DEFB $FF
 
-; Room block data 89
+; Room block data 59
+;
+; #CALL:print_block_data(#PC,block_data_59)
 b$BF03 DEFB $FB,$D4,$DD,$FE,$47,$FD,$06,$03
  $BF0B DEFB $C2,$01,$FB,$BC,$D1,$FE,$43,$00
  $BF13 DEFB $01,$02,$02,$00,$01,$FF
 
-; Room block data 90
+; Room block data 5A
+;
+; #CALL:print_block_data(#PC,block_data_5A)
 b$BF19 DEFB $FB,$D4,$DD,$FE,$46,$06,$07,$C6
  $BF21 DEFB $01,$FE,$45,$04,$05,$FF
 
-; Room block data 85
+; Room block data 55
+;
+; #CALL:print_block_data(#PC,block_data_55)
 b$BF27 DEFB $FB,$54,$DD,$FE,$45,$F0,$03,$0A
  $BF2F DEFB $CA,$FD,$F0,$03,$0A,$C9,$FF,$09
  $BF37 DEFB $FE,$42,$C3,$01,$06,$06,$02,$06
@@ -5946,93 +5958,129 @@ b$BF27 DEFB $FB,$54,$DD,$FE,$45,$F0,$03,$0A
  $BF77 DEFB $09,$00,$01,$BE,$01,$FD,$08,$00
  $BF7F DEFB $01,$FF
 
-; Room block data 110
+; Room block data 6E
+;
+; #CALL:print_block_data(#PC,block_data_6E)
 b$BF81 DEFB $FB,$0C,$DD,$FE,$42,$F0,$01,$06
  $BF89 DEFB $06,$01,$C6,$01,$05,$01,$C6,$01
  $BF91 DEFB $04,$01,$C5,$01,$07,$F1,$03,$C5
  $BF99 DEFB $01,$06,$FB,$E4,$D9,$0B,$0B,$C6
  $BFA1 DEFB $FF,$0B,$FF
 
-; Room block data 81
+; Room block data 51
+;
+; #CALL:print_block_data(#PC,block_data_51)
 b$BFA4 DEFB $FB,$EC,$DC,$C8,$03,$FE,$44,$00
  $BFAC DEFB $01,$C6,$01,$02,$03,$FF
 
-; Room block data 82
+; Room block data 52
+;
+; #CALL:print_block_data(#PC,block_data_52)
 b$BFB2 DEFB $FB,$0C,$DD,$FE,$28,$00,$08,$C6
  $BFBA DEFB $01,$00,$08,$C6,$01,$01,$08,$C6
  $BFC2 DEFB $01,$01,$07,$C6,$01,$01,$07,$C6
  $BFCA DEFB $01,$02,$06,$C6,$01,$02,$06,$C6
  $BFD2 DEFB $01,$02,$05,$C6,$01,$03,$04,$FF
 
-; Room block data 83
+; Room block data 53
+;
+; #CALL:print_block_data(#PC,block_data_53)
 b$BFDA DEFB $FB,$0C,$DD,$FE,$50,$F3,$C7,$BF
 
-; Room block data 78
+; Room block data 4F
+;
+; #CALL:print_block_data(#PC,block_data_4F)
 b$BFE2 DEFB $FB,$24,$DC,$FE,$46,$0F,$11,$12
  $BFEA DEFB $15,$C4,$01,$10,$13,$14,$16,$C5
  $BFF2 DEFB $01,$17,$18,$C5,$01,$FE,$44,$02
  $BFFA DEFB $01,$01,$02,$FF
 
-; Room block data 84
+; Room block data 54
+;
+; #CALL:print_block_data(#PC,block_data_54)
 b$BFFE DEFB $FB,$E4,$D9,$FE,$79,$FD,$10,$09
  $C006 DEFB $B8,$02,$FD,$10,$0A,$B8,$FF,$FE
  $C00E DEFB $72,$FB,$DC,$DF,$FD,$04,$20,$FB
  $C016 DEFB $E4,$D9,$10,$11,$11,$12,$13,$11
  $C01E DEFB $11,$FB,$DC,$DF,$FD,$05,$20,$FF
 
-; Room block data 91
+; Room block data 5B
+;
+; #CALL:print_block_data(#PC,block_data_5B)
 b$C026 DEFB $FB,$DC,$DF,$FE,$4E,$FD,$18,$20
  $C02E DEFB $FB,$14,$DE,$B8,$00,$08,$09,$0A
  $C036 DEFB $0B,$0C,$0D,$0E,$0F,$FF
 
-; Room block data 92
+; Room block data 5C
+;
+; #CALL:print_block_data(#PC,block_data_5C)
 b$C03C DEFB $FB,$14,$DE,$FE,$47,$00,$01,$02
  $C044 DEFB $FF
 
-; Room block data 93
+; Room block data 5D
+;
+; #CALL:print_block_data(#PC,block_data_5D)
 b$C045 DEFB $FB,$14,$DE,$FE,$46,$03,$04,$05
  $C04D DEFB $06,$07,$FF
 
-; Room block data 94
+; Room block data 5E
+;
+; #CALL:print_block_data(#PC,block_data_5E)
 b$C050 DEFB $FB,$14,$DE,$FE,$60,$10,$11,$12
  $C058 DEFB $13,$FF
 
-; Room block data 95
+; Room block data 5F
+;
+; #CALL:print_block_data(#PC,block_data_5F)
 b$C05A DEFB $FB,$14,$DE,$FE,$4F,$14,$15,$16
  $C062 DEFB $17,$18,$FB,$DC,$DE,$00,$01,$02
  $C06A DEFB $03,$04,$05,$FB,$DC,$DF,$20,$20
  $C072 DEFB $20,$B8,$00,$20,$20,$C6,$FF,$FD
  $C07A DEFB $10,$20,$B8,$02,$FD,$10,$20,$FF
 
-; Room block data 96
+; Room block data 60
+;
+; #CALL:print_block_data(#PC,block_data_60)
 b$C082 DEFB $FB,$DC,$DF,$FE,$57,$FD,$07,$20
  $C08A DEFB $C1,$01,$20,$CD,$00,$20,$C1,$01
  $C092 DEFB $FD,$07,$20,$C2,$FF,$FB,$DC,$DE
  $C09A DEFB $06,$07,$08,$09,$0A,$FF
 
-; Room block data 97
+; Room block data 61
+;
+; #CALL:print_block_data(#PC,block_data_61)
 b$C0A0 DEFB $FB,$2C,$D7,$C8,$03,$FE,$45,$10
  $C0A8 DEFB $11,$FF
 
-; Room block data 98
+; Room block data 62
+;
+; #CALL:print_block_data(#PC,block_data_62)
 b$C0AA DEFB $FB,$2C,$D7,$FE,$46,$06,$08,$C6
  $C0B2 DEFB $01,$FE,$42,$0E,$0F,$FF
 
-; Room block data 99
+; Room block data 63
+;
+; #CALL:print_block_data(#PC,block_data_63)
 b$C0B8 DEFB $FB,$5C,$D3,$FE,$44,$F2,$08,$07
  $C0C0 DEFB $08,$B8,$01,$F2,$08,$08,$07,$B8
  $C0C8 DEFB $01,$F2,$08,$07,$08,$B8,$01,$F2
  $C0D0 DEFB $08,$08,$07,$FF
 
-; Room block data 100
+; Room block data 64
+;
+; #CALL:print_block_data(#PC,block_data_64)
 b$C0D4 DEFB $FB,$14,$D5,$FE,$46,$F3,$D9,$CA
 
-; Room block data 102
+; Room block data 66
+;
+; #CALL:print_block_data(#PC,block_data_66)
 b$C0DC DEFB $FB,$AC,$DF,$C8,$03,$FE,$42,$01
  $C0E4 DEFB $03,$01,$02,$02,$C4,$FF,$00,$03
  $C0EC DEFB $01,$C6,$FF,$02,$FF
 
-; Room block data 80
+; Room block data 50
+;
+; #CALL:print_block_data(#PC,block_data_50)
 b$C0F1 DEFB $FB,$24,$DC,$FE,$45,$F0,$09,$0A
  $C0F9 DEFB $C8,$FC,$0B,$C7,$02,$0B,$FE,$47
  $C101 DEFB $C2,$FC,$05,$C5,$01,$09,$06,$04
@@ -6043,7 +6091,9 @@ b$C0F1 DEFB $FB,$24,$DC,$FE,$45,$F0,$09,$0A
  $C129 DEFB $46,$01,$02,$01,$01,$01,$02,$01
  $C131 DEFB $FF
 
-; Room block data 86
+; Room block data 56
+;
+; #CALL:print_block_data(#PC,block_data_56)
 b$C132 DEFB $FB,$AC,$DB,$FE,$45,$00,$0C,$C6
  $C13A DEFB $01,$0D,$0E,$C5,$05,$08,$09,$04
  $C142 DEFB $05,$C4,$01,$0A,$0B,$02,$03,$C5
@@ -6059,7 +6109,9 @@ b$C132 DEFB $FB,$AC,$DB,$FE,$45,$00,$0C,$C6
  $C192 DEFB $BE,$00,$FB,$E4,$D9,$FE,$43,$F0
  $C19A DEFB $07,$14,$FF
 
-; Room block data 77
+; Room block data 4D
+;
+; #CALL:print_block_data(#PC,block_data_4D)
 b$C19D DEFB $FB,$AC,$DB,$FE,$07,$00,$0C,$C6
  $C1A5 DEFB $01,$0D,$0E,$C6,$01,$0D,$0E,$C5
  $C1AD DEFB $03,$06,$0D,$0E,$07,$C4,$01,$04
@@ -6075,43 +6127,59 @@ b$C19D DEFB $FB,$AC,$DB,$FE,$07,$00,$0C,$C6
  $C1FD DEFB $08,$01,$C1,$FD,$FD,$06,$01,$C3
  $C205 DEFB $FD,$FD,$04,$01,$FF
 
-; Room block data 46
+; Room block data 2E
+;
+; #CALL:print_block_data(#PC,block_data_2E)
 b$C20A DEFB $FB,$2C,$D7,$FE,$47,$F0,$01,$00
  $C212 DEFB $FE,$46,$F0,$01,$01,$FE,$42,$02
  $C21A DEFB $C6,$01,$03,$04,$05,$FF
 
-; Room block data 47
+; Room block data 2F
+;
+; #CALL:print_block_data(#PC,block_data_2F)
 b$C220 DEFB $FB,$2C,$D7,$FE,$44,$0D,$FE,$47
  $C228 DEFB $C6,$01,$0B,$07,$0C,$C5,$01,$FE
  $C230 DEFB $44,$09,$F1,$0A,$C5,$01,$FE,$47
  $C238 DEFB $06,$07,$08,$FF
 
-; Room block data 31
+; Room block data 1F
+;
+; #CALL:print_block_data(#PC,block_data_1F)
 b$C23C DEFB $FB,$14,$D5,$FE,$43,$0D,$F0,$01
  $C244 DEFB $0E,$FE,$07,$F0,$0A,$10,$C7,$F6
  $C24C DEFB $F0,$0A,$0F,$FE,$43,$0B,$0C,$FF
 
-; Room block data 45
+; Room block data 2D
+;
+; #CALL:print_block_data(#PC,block_data_2D)
 b$C254 DEFB $FB,$BC,$D1,$FE,$47,$03,$FE,$43
  $C25C DEFB $04,$FE,$42,$05,$FE,$46,$03,$FE
  $C264 DEFB $43,$04,$FE,$47,$05,$FE,$44,$05
  $C26C DEFB $FE,$46,$03,$C0,$01,$FE,$45,$00
  $C274 DEFB $01,$02,$00,$01,$02,$00,$01,$FF
 
-; Room block data 59
+; Room block data 3B
+;
+; #CALL:print_block_data(#PC,block_data_3B)
 b$C27C DEFB $FB,$2C,$D7,$FE,$45,$09,$0A,$C6
  $C284 DEFB $01,$FB,$14,$D5,$FE,$72,$00,$00
  $C28C DEFB $C6,$01,$00,$00,$FF
 
-; Room block data 73
+; Room block data 49
+;
+; #CALL:print_block_data(#PC,block_data_49)
 b$C291 DEFB $FB,$EC,$DF,$FE,$44,$FD,$20,$07
  $C299 DEFB $FF
 
-; Room block data 74
+; Room block data 4A
+;
+; #CALL:print_block_data(#PC,block_data_4A)
 b$C29A DEFB $FB,$7C,$D2,$FE,$45,$11,$12,$13
  $C2A2 DEFB $C5,$01,$14,$15,$16,$FF
 
-; Room block data 106
+; Room block data 6A
+;
+; #CALL:print_block_data(#PC,block_data_6A)
 b$C2A8 DEFB $FB,$FC,$D5,$FE,$44,$13,$FD,$16
  $C2B0 DEFB $14,$F0,$01,$15,$F0,$05,$17,$B1
  $C2B8 DEFB $FB,$F0,$05,$16,$C9,$FB,$FE,$46
@@ -6127,36 +6195,50 @@ b$C2A8 DEFB $FB,$FC,$D5,$FE,$44,$13,$FD,$16
  $C308 DEFB $02,$F0,$02,$03,$AD,$FE,$F0,$02
  $C310 DEFB $04,$FF
 
-; Room block data 107
+; Room block data 6B
+;
+; #CALL:print_block_data(#PC,block_data_6B)
 b$C312 DEFB $FB,$E4,$D9,$C8,$03,$FE,$45,$02
  $C31A DEFB $0B,$03,$02,$0B,$0B,$0B,$03,$02
  $C322 DEFB $0B,$0B,$0B,$03,$02,$0B,$0B,$0B
  $C32A DEFB $03,$02,$0B,$0B,$0B,$03,$02,$0B
  $C332 DEFB $03,$FF
 
-; Room block data 113
+; Room block data 71
+;
+; #CALL:print_block_data(#PC,block_data_71)
 b$C334 DEFB $FB,$BC,$D6,$FE,$45,$F0,$01,$02
  $C33C DEFB $F0,$07,$09,$FE,$44,$FB,$BC,$D1
  $C344 DEFB $01,$02,$FF
 
-; Room block data 114
+; Room block data 72
+;
+; #CALL:print_block_data(#PC,block_data_72)
 b$C347 DEFB $FB,$EC,$DF,$C8,$03,$FE,$45,$FD
  $C34F DEFB $17,$0F,$FF
 
 ; Room block data 0
+;
+; #CALL:print_block_data(#PC,block_data_0)
 b$C352 DEFB $FB,$EC,$DF,$C8,$03,$FE,$05,$FD
  $C35A DEFB $20,$00,$FF
 
-; Room block data 32
+; Room block data 20
+;
+; #CALL:print_block_data(#PC,block_data_20)
 b$C35D DEFB $FB,$EC,$DF,$C8,$03,$FE,$43,$F2
  $C365 DEFB $10,$05,$06,$FF
 
-; Room block data 33
+; Room block data 21
+;
+; #CALL:print_block_data(#PC,block_data_21)
 b$C369 DEFB $FB,$04,$D2,$FE,$46,$F0,$01,$00
  $C371 DEFB $04,$F1,$05,$02,$C4,$01,$04,$F1
  $C379 DEFB $06,$03,$FF
 
 ; Room block data 1
+;
+; #CALL:print_block_data(#PC,block_data_1)
 b$C37C DEFB $FB,$6C,$E0,$FE,$46,$01,$02,$01
  $C384 DEFB $02,$01,$05,$C3,$01,$04,$F1,$04
  $C38C DEFB $F1,$06,$05,$C1,$01,$FE,$45,$FD
@@ -6171,6 +6253,8 @@ b$C37C DEFB $FB,$6C,$E0,$FE,$46,$01,$02,$01
  $C3D4 DEFB $F0,$01,$04,$FE,$45,$03,$FF
 
 ; Room block data 2
+;
+; #CALL:print_block_data(#PC,block_data_2)
 b$C3DB DEFB $FB,$6C,$E0,$FE,$46,$08,$01,$02
  $C3E3 DEFB $01,$02,$01,$C1,$01,$08,$0A,$F1
  $C3EB DEFB $04,$F1,$04,$C1,$01,$08,$0B,$04
@@ -6184,7 +6268,9 @@ b$C3DB DEFB $FB,$6C,$E0,$FE,$46,$08,$01,$02
  $C42B DEFB $C5,$01,$FE,$46,$04,$FE,$45,$09
  $C433 DEFB $C6,$01,$09,$FF
 
-; Room block data 105
+; Room block data 69
+;
+; #CALL:print_block_data(#PC,block_data_69)
 b$C437 DEFB $FB,$44,$DF,$FE,$45,$06,$FE,$47
  $C43F DEFB $FD,$08,$0A,$FE,$45,$07,$06,$07
  $C447 DEFB $06,$07,$BC,$01,$06,$FD,$06,$05
@@ -6205,7 +6291,9 @@ b$C437 DEFB $FB,$44,$DF,$FE,$45,$06,$FE,$47
  $C4BF DEFB $04,$C6,$01,$FE,$46,$02,$03,$FE
  $C4C7 DEFB $44,$C6,$01,$00,$01,$FF
 
-; Room block data 104
+; Room block data 68
+;
+; #CALL:print_block_data(#PC,block_data_68)
 b$C4CD DEFB $FB,$BC,$D1,$FE,$43,$00,$01,$02
  $C4D5 DEFB $02,$00,$01,$02,$02,$00,$01,$02
  $C4DD DEFB $02,$00,$01,$02,$02,$00,$01,$02
@@ -6233,9 +6321,9 @@ b$C4CD DEFB $FB,$BC,$D1,$FE,$43,$00,$01,$02
 b$C56B DEFB $FB,$EC,$DF,$C8,$03,$FE,$45,$01
  $C573 DEFB $02,$03,$04,$FF
 
-; Room block data 108
+; Room block data 6C
 ;
-; #CALL:print_block_data(#PC,block_data_108)
+; #CALL:print_block_data(#PC,block_data_6C)
 b$C577 DEFB $FB,$9C,$D4,$FE,$44,$F0,$0C,$04
  $C57F DEFB $FF
 
@@ -6259,36 +6347,50 @@ b$C5C0 DEFB $FB,$E4,$D3,$FE,$45,$00,$FD,$06
  $C5D0 DEFB $05,$C0,$01,$FE,$43,$06,$CE,$00
  $C5D8 DEFB $07,$FF
 
-; Room block data 67
+; Room block data 43
+;
+; #CALL:print_block_data(#PC,block_data_43)
 b$C5DA DEFB $FB,$04,$D2,$FE,$43,$0C,$FD,$06
  $C5E2 DEFB $09,$0D,$C0,$01,$FE,$42,$0A,$FD
  $C5EA DEFB $06,$08,$0B,$C0,$01,$FB,$E4,$D3
  $C5F2 DEFB $FE,$44,$06,$CE,$00,$07,$FF
 
-; Room block data 68
+; Room block data 44
+;
+; #CALL:print_block_data(#PC,block_data_44)
 b$C5F9 DEFB $FB,$04,$D2,$FE,$43,$0C,$0D,$C6
  $C601 DEFB $01,$FE,$42,$0A,$0B,$C6,$01,$FE
  $C609 DEFB $44,$FB,$E4,$D3,$06,$07,$FF
 
-; Room block data 69
+; Room block data 45
+;
+; #CALL:print_block_data(#PC,block_data_45)
 b$C610 DEFB $FB,$7C,$D2,$FE,$45,$F2,$10,$0F
  $C618 DEFB $10,$FF
 
-; Room block data 70
+; Room block data 46
+;
+; #CALL:print_block_data(#PC,block_data_46)
 b$C61A DEFB $FB,$7C,$D2,$FE,$47,$00,$FD,$08
  $C622 DEFB $01,$02,$FF
 
-; Room block data 71
+; Room block data 47
+;
+; #CALL:print_block_data(#PC,block_data_47)
 b$C625 DEFB $FB,$7C,$D2,$FE,$45,$F0,$04,$06
  $C62D DEFB $C7,$00,$FE,$43,$03,$04,$05,$FF
 
-; Room block data 72
+; Room block data 48
+;
+; #CALL:print_block_data(#PC,block_data_48)
 b$C635 DEFB $FB,$7C,$D2,$FE,$47,$0C,$FD,$06
  $C63D DEFB $0D,$0E,$FE,$46,$C0,$01,$F0,$02
  $C645 DEFB $0A,$07,$FD,$06,$08,$C8,$FE,$F0
  $C64D DEFB $02,$0B,$09,$FF
 
 ; Room block data 6
+;
+; #CALL:print_block_data(#PC,block_data_6)
 b$C651 DEFB $FB,$5C,$D3,$FE,$44,$03,$00,$01
  $C659 DEFB $00,$04,$C1,$01,$03,$02,$01,$02
  $C661 DEFB $01,$01,$02,$04,$BF,$01,$03,$00
@@ -6310,70 +6412,96 @@ b$C651 DEFB $FB,$5C,$D3,$FE,$44,$03,$00,$01
  $C6E1 DEFB $10,$FF
 
 ; Room block data 7
+;
+; #CALL:print_block_data(#PC,block_data_7)
 b$C6E3 DEFB $FB,$5C,$D3,$FE,$04,$00,$02,$01
  $C6EB DEFB $01,$00,$C3,$01,$02,$01,$02,$02
  $C6F3 DEFB $02,$C3,$01,$00,$02,$01,$02,$00
  $C6FB DEFB $C3,$01,$00,$01,$01,$02,$00,$FF
 
 ; Room block data 8
+;
+; #CALL:print_block_data(#PC,block_data_8)
 b$C703 DEFB $FB,$5C,$D3,$FE,$04,$01,$00,$02
  $C70B DEFB $01,$C4,$01,$02,$01,$00,$02,$C4
  $C713 DEFB $01,$01,$00,$01,$01,$C4,$01,$00
  $C71B DEFB $02,$02,$01,$FF
 
 ; Room block data 9
+;
+; #CALL:print_block_data(#PC,block_data_9)
 b$C71F DEFB $FB,$34,$D3,$FE,$43,$FD,$05,$00
  $C727 DEFB $C3,$01,$FD,$05,$02,$C3,$01,$FD
  $C72F DEFB $05,$01,$FF
 
-; Room block data 10
+; Room block data A
+;
+; #CALL:print_block_data(#PC,block_data_A)
 b$C732 DEFB $FB,$34,$D3,$FE,$43,$FD,$04,$00
  $C73A DEFB $C4,$01,$FD,$04,$02,$C4,$01,$FD
  $C742 DEFB $04,$01,$FF
 
-; Room block data 11
+; Room block data B
+;
+; #CALL:print_block_data(#PC,block_data_B)
 b$C745 DEFB $FB,$34,$D3,$FE,$45,$FD,$05,$04
  $C74D DEFB $C3,$01,$FD,$05,$03,$C3,$01,$FD
  $C755 DEFB $05,$03,$C3,$01,$FD,$05,$03,$C3
  $C75D DEFB $01,$FD,$05,$03,$FF
 
-; Room block data 35
+; Room block data 23
+;
+; #CALL:print_block_data(#PC,block_data_23)
 b$C762 DEFB $FB,$34,$D3,$FE,$45,$FD,$04,$04
  $C76A DEFB $C4,$01,$FD,$04,$03,$C4,$01,$FD
  $C772 DEFB $04,$03,$C4,$01,$FD,$04,$03,$C4
  $C77A DEFB $01,$FD,$04,$03,$FF
 
-; Room block data 12
+; Room block data C
+;
+; #CALL:print_block_data(#PC,block_data_C)
 b$C77F DEFB $FB,$14,$D5,$FE,$72,$FD,$10,$00
  $C787 DEFB $B8,$01,$FD,$10,$00,$B8,$01,$FD
  $C78F DEFB $10,$00,$B8,$01,$FD,$10,$00,$FF
 
-; Room block data 44
+; Room block data 2C
+;
+; #CALL:print_block_data(#PC,block_data_2C)
 b$C797 DEFB $FB,$DC,$D5,$FE,$46,$F3,$84,$C7
 
-; Room block data 41
+; Room block data 29
+;
+; #CALL:print_block_data(#PC,block_data_29)
 b$C79F DEFB $FB,$14,$D5,$FE,$72,$FD,$08,$00
  $C7A7 DEFB $C0,$01,$FD,$08,$00,$C0,$01,$FD
  $C7AF DEFB $08,$00,$C0,$01,$FD,$08,$00,$FF
 
-; Room block data 28
+; Room block data 1C
+;
+; #CALL:print_block_data(#PC,block_data_1C)
 b$C7B7 DEFB $FB,$14,$D5,$FE,$56,$F3,$84,$C7
 
-; Room block data 13
+; Room block data D
+;
+; #CALL:print_block_data(#PC,block_data_D)
 b$C7BF DEFB $FB,$14,$D5,$FE,$02,$FD,$10,$03
  $C7C7 DEFB $B8,$01,$F2,$08,$01,$02,$B8,$01
  $C7CF DEFB $F2,$08,$01,$02,$B8,$01,$F2,$08
  $C7D7 DEFB $01,$02,$B8,$01,$F2,$08,$01,$02
  $C7DF DEFB $FF
 
-; Room block data 42
+; Room block data 2A
+;
+; #CALL:print_block_data(#PC,block_data_2A)
 b$C7E0 DEFB $FB,$14,$D5,$FE,$02,$FD,$08,$03
  $C7E8 DEFB $C0,$01,$F2,$04,$01,$02,$C0,$01
  $C7F0 DEFB $F2,$04,$01,$02,$C0,$01,$F2,$04
  $C7F8 DEFB $01,$02,$C0,$01,$F2,$04,$01,$02
  $C800 DEFB $FF
 
-; Room block data 37
+; Room block data 25
+;
+; #CALL:print_block_data(#PC,block_data_25)
 b$C801 DEFB $FB,$FC,$D5,$FE,$47,$00,$FD,$04
  $C809 DEFB $01,$C3,$01,$F0,$04,$07,$10,$FD
  $C811 DEFB $04,$11,$C4,$FC,$FB,$DC,$DF,$FD
@@ -6381,125 +6509,171 @@ b$C801 DEFB $FB,$FC,$D5,$FE,$47,$00,$FD,$04
  $C821 DEFB $01,$FD,$04,$20,$C4,$01,$FD,$04
  $C829 DEFB $20,$FF
 
-; Room block data 38
+; Room block data 26
+;
+; #CALL:print_block_data(#PC,block_data_26)
 b$C82B DEFB $FB,$FC,$D5,$FE,$47,$FD,$04,$01
  $C833 DEFB $F0,$01,$02,$F0,$04,$08,$C4,$00
  $C83B DEFB $FD,$04,$11,$12,$C3,$FC,$F3,$15
  $C843 DEFB $C8
 
-; Room block data 14
+; Room block data E
+;
+; #CALL:print_block_data(#PC,block_data_E)
 b$C844 DEFB $FB,$FC,$D5,$FE,$47,$00,$01,$02
  $C84C DEFB $C5,$01,$07,$06,$08,$C5,$01,$03
  $C854 DEFB $04,$05,$FF
 
-; Room block data 58
+; Room block data 3A
+;
+; #CALL:print_block_data(#PC,block_data_3A)
 b$C857 DEFB $FB,$DC,$DF,$FE,$46,$F0,$12,$20
  $C85F DEFB $FF
 
-; Room block data 19
+; Room block data 13
+;
+; #CALL:print_block_data(#PC,block_data_13)
 b$C860 DEFB $FB,$FC,$D5,$FE,$47,$00,$01,$01
  $C868 DEFB $02,$C4,$01,$07,$06,$06,$08,$C4
  $C870 DEFB $01,$03,$04,$04,$05,$FF
 
-; Room block data 25
+; Room block data 19
+;
+; #CALL:print_block_data(#PC,block_data_19)
 b$C876 DEFB $FB,$34,$D3,$FE,$45,$03,$03,$03
  $C87E DEFB $C5,$01,$03,$03,$03,$C5,$01,$03
  $C886 DEFB $03,$03,$FF
 
-; Room block data 39
+; Room block data 27
+;
+; #CALL:print_block_data(#PC,block_data_27)
 b$C889 DEFB $FB,$FC,$D5,$FE,$47,$00,$01,$01
  $C891 DEFB $02,$C4,$01,$07,$06,$06,$08,$C4
  $C899 DEFB $01,$10,$11,$11,$12,$FF
 
-; Room block data 40
+; Room block data 28
+;
+; #CALL:print_block_data(#PC,block_data_28)
 b$C89F DEFB $FB,$14,$D5,$FE,$47,$12,$13,$C6
  $C8A7 DEFB $01,$16,$15,$C6,$01,$14,$15,$C6
  $C8AF DEFB $01,$17,$18,$FF
 
-; Room block data 29
+; Room block data 1D
+;
+; #CALL:print_block_data(#PC,block_data_1D)
 b$C8B3 DEFB $FB,$FC,$D5,$FE,$47,$0B,$0D,$C6
  $C8BB DEFB $01,$0E,$0F,$C6,$01,$0E,$0F,$FF
 
-; Room block data 30
+; Room block data 1E
+;
+; #CALL:print_block_data(#PC,block_data_1E)
 b$C8C3 DEFB $FB,$FC,$D5,$FE,$47,$0B,$0C,$0C
  $C8CB DEFB $0D,$C4,$01,$F0,$04,$0E,$CB,$FC
  $C8D3 DEFB $F0,$04,$0F,$C6,$FC,$FB,$DC,$DF
  $C8DB DEFB $F0,$04,$20,$C9,$FC,$F0,$04,$20
  $C8E3 DEFB $FF
 
-; Room block data 26
+; Room block data 1A
+;
+; #CALL:print_block_data(#PC,block_data_1A)
 b$C8E4 DEFB $FB,$34,$D3,$FE,$45,$FD,$04,$03
  $C8EC DEFB $C4,$01,$FD,$04,$03,$C4,$01,$03
  $C8F4 DEFB $FB,$FC,$D5,$0A,$FB,$34,$D3,$03
  $C8FC DEFB $03,$C4,$01,$FD,$04,$03,$C4,$01
  $C904 DEFB $FD,$04,$03,$FF
 
-; Room block data 20
+; Room block data 14
+;
+; #CALL:print_block_data(#PC,block_data_14)
 b$C908 DEFB $FB,$FC,$D5,$FE,$47,$09,$F0,$04
  $C910 DEFB $09,$C7,$FD,$F0,$01,$0A,$F0,$02
  $C918 DEFB $09,$FF
 
-; Room block data 34
+; Room block data 22
+;
+; #CALL:print_block_data(#PC,block_data_22)
 b$C91A DEFB $FB,$FC,$D5,$FE,$47,$00,$01,$01
  $C922 DEFB $02,$C4,$01,$F0,$04,$07,$CB,$FC
  $C92A DEFB $F0,$04,$08,$FF
 
-; Room block data 60
+; Room block data 3C
+;
+; #CALL:print_block_data(#PC,block_data_3C)
 b$C92E DEFB $FB,$FC,$D5,$FE,$47,$13,$FD,$12
  $C936 DEFB $14,$F0,$01,$15,$F0,$05,$17,$B5
  $C93E DEFB $FB,$F0,$05,$16,$FF
 
-; Room block data 36
+; Room block data 24
+;
+; #CALL:print_block_data(#PC,block_data_24)
 b$C943 DEFB $FB,$FC,$D5,$FE,$47,$13,$14,$14
  $C94B DEFB $15,$C4,$01,$F0,$04,$16,$CB,$FC
  $C953 DEFB $F0,$04,$17,$FF
 
-; Room block data 111
+; Room block data 6F
+;
+; #CALL:print_block_data(#PC,block_data_6F)
 b$C957 DEFB $FB,$EC,$DF,$FE,$44,$FD,$1E,$09
  $C95F DEFB $FF
 
-; Room block data 109
+; Room block data 6D
+;
+; #CALL:print_block_data(#PC,block_data_6D)
 b$C960 DEFB $FB,$14,$D5,$FE,$46,$F2,$02,$09
  $C968 DEFB $0A,$C3,$01,$F2,$02,$09,$0A,$C5
  $C970 DEFB $01,$09,$0A,$C5,$00,$FE,$44,$FB
  $C978 DEFB $EC,$DF,$08,$C8,$01,$08,$08,$C8
  $C980 DEFB $FF,$08,$C8,$FF,$08,$FF
 
-; Room block data 21
+; Room block data 15
+;
+; #CALL:print_block_data(#PC,block_data_15)
 b$C986 DEFB $FB,$14,$D5,$FE,$46,$F2,$04,$09
  $C98E DEFB $0A,$C0,$01,$F2,$04,$0A,$09,$C0
  $C996 DEFB $01,$F2,$04,$09,$0A,$C0,$01,$F2
  $C99E DEFB $04,$0A,$09,$FF
 
-; Room block data 22
+; Room block data 16
+;
+; #CALL:print_block_data(#PC,block_data_16)
 b$C9A2 DEFB $FB,$14,$D5,$FE,$46,$F2,$08,$09
  $C9AA DEFB $0A,$B8,$01,$F2,$08,$0A,$09,$B8
  $C9B2 DEFB $01,$F2,$08,$09,$0A,$B8,$01,$F2
  $C9BA DEFB $08,$0A,$09,$FF
 
-; Room block data 15
+; Room block data F
+;
+; #CALL:print_block_data(#PC,block_data_F)
 b$C9BE DEFB $FB,$14,$D5,$FE,$43,$04,$05,$05
  $C9C6 DEFB $05,$04,$05,$05,$05,$04,$05,$05
  $C9CE DEFB $05,$04,$05,$05,$05,$FF
 
-; Room block data 27
+; Room block data 1B
+;
+; #CALL:print_block_data(#PC,block_data_1B)
 b$C9D4 DEFB $FB,$14,$D5,$FE,$44,$FD,$10,$11
  $C9DC DEFB $FF
 
-; Room block data 16
+; Room block data 10
+;
+; #CALL:print_block_data(#PC,block_data_10)
 b$C9DD DEFB $FB,$14,$D5,$FE,$43,$F0,$01,$06
  $C9E5 DEFB $F0,$02,$07,$F0,$01,$08,$F0,$02
  $C9ED DEFB $07,$F0,$01,$08,$F0,$02,$07,$F0
  $C9F5 DEFB $01,$08,$F0,$02,$07,$08,$FF
 
-; Room block data 17
+; Room block data 11
+;
+; #CALL:print_block_data(#PC,block_data_11)
 b$C9FC DEFB $FB,$9C,$D4,$FE,$45,$0B,$FE,$46
  $CA04 DEFB $C6,$01,$08,$09,$0A,$C5,$01,$05
  $CA0C DEFB $06,$07,$FE,$45,$C6,$01,$04,$C6
  $CA14 DEFB $01,$01,$00,$02,$C6,$01,$F0,$08
  $CA1C DEFB $04,$03,$FF
 
-; Room block data 78
+; Room block data 4E
+;
+; #CALL:print_block_data(#PC,block_data_4E)
 b$CA1F DEFB $FB,$BC,$D6,$FE,$46,$0A,$0B,$F1
  $CA27 DEFB $0A,$0B,$C3,$01,$0C,$0D,$F1,$0C
  $CA2F DEFB $0D,$C3,$02,$0A,$0B,$F1,$0A,$0B
@@ -6508,7 +6682,9 @@ b$CA1F DEFB $FB,$BC,$D6,$FE,$46,$0A,$0B,$F1
  $CA47 DEFB $C1,$01,$F0,$02,$08,$00,$FD,$05
  $CA4F DEFB $01,$02,$C7,$FE,$F0,$02,$09,$FF
 
-; Room block data 18
+; Room block data 12
+;
+; #CALL:print_block_data(#PC,block_data_12)
 b$CA57 DEFB $FB,$BC,$D6,$FE,$43,$00,$FD,$08
  $CA5F DEFB $01,$F0,$01,$02,$F0,$07,$09,$BF
  $CA67 DEFB $F9,$F0,$07,$08,$FE,$46,$C9,$F8
@@ -6519,65 +6695,87 @@ b$CA57 DEFB $FB,$BC,$D6,$FE,$43,$00,$FD,$08
  $CA8F DEFB $FE,$47,$05,$06,$07,$F1,$F1,$05
  $CA97 DEFB $06,$07,$FF
 
-; Room block data 23
+; Room block data 17
+;
+; #CALL:print_block_data(#PC,block_data_17)
 b$CA9A DEFB $FB,$9C,$D4,$FE,$46,$F0,$01,$0B
  $CAA2 DEFB $F0,$07,$04,$03,$C6,$FA,$FE,$44
  $CAAA DEFB $0C,$0D,$0E,$FF
 
-; Room block data 24
+; Room block data 18
+;
+; #CALL:print_block_data(#PC,block_data_18)
 b$CAAE DEFB $FB,$14,$D5,$FE,$42,$F2,$08,$1B
  $CAB6 DEFB $1C,$B8,$01,$F2,$08,$1B,$1C,$B8
  $CABE DEFB $01,$F2,$08,$1B,$1C,$B8,$01,$F2
  $CAC6 DEFB $08,$1B,$1C,$FF
 
-; Room block data 75
+; Room block data 4B
+;
+; #CALL:print_block_data(#PC,block_data_4B)
 b$CACA DEFB $FB,$9C,$DA,$FE,$43,$FD,$10,$10
  $CAD2 DEFB $B8,$01,$FB,$14,$D5,$FE,$45,$FD
  $CADA DEFB $10,$1A,$B8,$01,$FD,$10,$1A,$B8
  $CAE2 DEFB $01,$FD,$10,$1A,$B8,$01,$FD,$10
  $CAEA DEFB $1A,$FF
 
-; Room block data 101
+; Room block data 65
+;
+; #CALL:print_block_data(#PC,block_data_65)
 b$CAEC DEFB $FB,$BC,$D6,$FE,$43,$00,$FE,$46
  $CAF4 DEFB $FD,$0D,$01,$FE,$43,$F0,$01,$02
  $CAFC DEFB $F0,$0A,$09,$BA,$F6,$F0,$0A,$08
  $CB04 DEFB $FF
 
-; Room block data 43
+; Room block data 2B
+;
+; #CALL:print_block_data(#PC,block_data_2B)
 b$CB05 DEFB $FB,$04,$D2,$FE,$46,$07,$FD,$06
  $CB0D DEFB $01,$F0,$01,$02,$F0,$02,$03,$C1
  $CB15 DEFB $FE,$F0,$02,$04,$FF
 
-; Room block data 63
+; Room block data 3F
+;
+; #CALL:print_block_data(#PC,block_data_3F)
 b$CB1A DEFB $FB,$04,$D2,$FE,$43,$07,$FD,$06
  $CB22 DEFB $01,$F0,$01,$02,$F0,$02,$0E,$C1
  $CB2A DEFB $FE,$F0,$02,$0E,$FF
 
-; Room block data 48
+; Room block data 30
+;
+; #CALL:print_block_data(#PC,block_data_30)
 b$CB2F DEFB $FB,$BC,$D7,$FE,$42,$08,$09,$0A
  $CB37 DEFB $C5,$01,$00,$04,$01,$C5,$01,$07
  $CB3F DEFB $FE,$45,$0B,$FE,$42,$05,$C5,$01
  $CB47 DEFB $02,$06,$03,$C5,$01,$00,$04,$01
  $CB4F DEFB $C5,$01,$02,$06,$03,$FF
 
-; Room block data 49
+; Room block data 31
+;
+; #CALL:print_block_data(#PC,block_data_31)
 b$CB55 DEFB $FB,$BC,$D7,$FE,$42,$12,$13,$C6
  $CB5D DEFB $01,$10,$11,$C6,$01,$0E,$0F,$C6
  $CB65 DEFB $01,$FE,$45,$0C,$0D,$FF
 
-; Room block data 50
+; Room block data 32
+;
+; #CALL:print_block_data(#PC,block_data_32)
 b$CB6B DEFB $FB,$74,$D8,$FE,$42,$06,$FE,$56
  $CB73 DEFB $00,$01,$02,$FE,$42,$08,$C3,$01
  $CB7B DEFB $07,$FE,$56,$03,$04,$05,$FE,$42
  $CB83 DEFB $09,$FF
 
-; Room block data 115
+; Room block data 73
+;
+; #CALL:print_block_data(#PC,block_data_73)
 b$CB85 DEFB $FB,$E4,$D9,$FE,$42,$0B,$0B,$0B
  $CB8D DEFB $C5,$01,$0B,$F1,$0B,$C5,$01,$0B
  $CB95 DEFB $0B,$0B,$C6,$FF,$FE,$56,$FB,$74
  $CB9D DEFB $D8,$0A,$FF
 
-; Room block data 51
+; Room block data 33
+;
+; #CALL:print_block_data(#PC,block_data_33)
 b$CBA0 DEFB $FB,$9C,$D4,$FE,$47,$F0,$01,$0B
  $CBA8 DEFB $F0,$0C,$04,$F0,$01,$03,$C6,$F3
  $CBB0 DEFB $FB,$FC,$D5,$FE,$46,$00,$01,$01
@@ -6587,35 +6785,47 @@ b$CBA0 DEFB $FB,$9C,$D4,$FE,$47,$F0,$01,$0B
  $CBD0 DEFB $C5,$FD,$0C,$0D,$0E,$C5,$01,$0F
  $CBD8 DEFB $10,$11,$C5,$01,$12,$13,$14,$FF
 
-; Room block data 52
+; Room block data 34
+;
+; #CALL:print_block_data(#PC,block_data_34)
 b$CBE0 DEFB $FB,$BC,$D7,$FE,$43,$14,$15,$C6
  $CBE8 DEFB $01,$10,$11,$C6,$01,$0E,$0F,$FF
 
-; Room block data 53
+; Room block data 35
+;
+; #CALL:print_block_data(#PC,block_data_35)
 b$CBF0 DEFB $FB,$1C,$D9,$FE,$45,$00,$01,$02
  $CBF8 DEFB $C5,$01,$03,$04,$05,$C5,$01,$06
  $CC00 DEFB $07,$08,$FF
 
-; Room block data 54
+; Room block data 36
+;
+; #CALL:print_block_data(#PC,block_data_36)
 b$CC03 DEFB $FB,$DC,$DF,$FE,$4F,$FD,$0F,$20
  $CC0B DEFB $B9,$02,$FD,$0F,$20,$B9,$FF,$FD
  $CC13 DEFB $0F,$20,$BC,$00,$FB,$1C,$D9,$0F
  $CC1B DEFB $10,$11,$12,$17,$18,$13,$14,$15
  $CC23 DEFB $16,$FF
 
-; Room block data 55
+; Room block data 37
+;
+; #CALL:print_block_data(#PC,block_data_37)
 b$CC25 DEFB $FB,$DC,$DF,$FE,$57,$FD,$10,$20
  $CC2D DEFB $BE,$00,$FB,$1C,$D9,$09,$0A,$0B
  $CC35 DEFB $0C,$0D,$0E,$FF
 
-; Room block data 61
+; Room block data 3D
+;
+; #CALL:print_block_data(#PC,block_data_3D)
 b$CC39 DEFB $FB,$9C,$DA,$FE,$45,$F0,$05,$15
  $CC41 DEFB $C9,$FB,$F0,$05,$16,$C9,$FB,$F0
  $CC49 DEFB $05,$17,$C9,$FB,$F0,$05,$15,$C9
  $CC51 DEFB $FB,$F0,$05,$16,$C9,$FB,$F0,$05
  $CC59 DEFB $17,$C9,$FB,$FF
 
-; Room block data 66
+; Room block data 42
+;
+; #CALL:print_block_data(#PC,block_data_42)
 b$CC5D DEFB $FB,$E4,$D9,$FE,$45,$0D,$0E,$0F
  $CC65 DEFB $C5,$01,$FE,$44,$F0,$01,$07,$FE
  $CC6D DEFB $47,$04,$0A,$05,$C5,$01,$02,$F1
@@ -6623,49 +6833,67 @@ b$CC5D DEFB $FB,$E4,$D9,$FE,$45,$0D,$0E,$0F
  $CC7D DEFB $FE,$45,$F0,$01,$06,$F0,$01,$07
  $CC85 DEFB $08,$C5,$FF,$FB,$DC,$DF,$50,$FF
 
-; Room block data 65
+; Room block data 41
+;
+; #CALL:print_block_data(#PC,block_data_41)
 b$CC8D DEFB $FB,$9C,$DA,$FE,$44,$F0,$01,$18
  $CC95 DEFB $14,$FF
 
-; Room block data 62
+; Room block data 3E
+;
+; #CALL:print_block_data(#PC,block_data_3E)
 b$CC97 DEFB $FB,$64,$DB,$FE,$46,$00,$01,$02
  $CC9F DEFB $C5,$01,$03,$04,$05,$C5,$01,$06
  $CCA7 DEFB $07,$08,$FF
 
-; Room block data 64
+; Room block data 40
+;
+; #CALL:print_block_data(#PC,block_data_40)
 b$CCAA DEFB $FB,$DC,$DF,$FE,$46,$20,$20,$FF
 
-; Room block data 76
+; Room block data 4C
+;
+; #CALL:print_block_data(#PC,block_data_4C)
 b$CCB2 DEFB $FB,$9C,$DA,$FE,$47,$0A,$0B,$0B
  $CCBA DEFB $0C,$C4,$01,$0D,$F1,$F1,$0E,$C4
  $CCC2 DEFB $01,$0D,$F1,$F1,$0E,$C4,$01,$0A
  $CCCA DEFB $0B,$0B,$0C,$C4,$01,$0D,$F1,$F1
  $CCD2 DEFB $0E,$C4,$01,$0F,$F1,$F1,$11,$FF
 
-; Room block data 56
+; Room block data 38
+;
+; #CALL:print_block_data(#PC,block_data_38)
 b$CCDA DEFB $FB,$9C,$DA,$FE,$44,$00,$01,$02
  $CCE2 DEFB $C5,$01,$03,$04,$05,$C5,$01,$03
  $CCEA DEFB $06,$05,$C5,$01,$07,$08,$09,$FF
 
-; Room block data 57
+; Room block data 39
+;
+; #CALL:print_block_data(#PC,block_data_39)
 b$CCF2 DEFB $FB,$9C,$DA,$FE,$44,$12,$0A,$0B
  $CCFA DEFB $0C,$C4,$01,$13,$0D,$F1,$0E,$C5
  $CD02 DEFB $01,$0D,$F1,$0E,$C5,$01,$0F,$10
  $CD0A DEFB $11,$FB,$DC,$DF,$C6,$FE,$F0,$02
  $CD12 DEFB $20,$FF
 
-; Room block data 103
+; Room block data 67
+;
+; #CALL:print_block_data(#PC,block_data_67)
 b$CD14 DEFB $FB,$DC,$DF,$FE,$72,$FD,$05,$20
  $CD1C DEFB $C3,$01,$FD,$05,$20,$C3,$01,$FD
  $CD24 DEFB $05,$20,$C4,$FF,$FB,$DC,$DE,$0B
  $CD2C DEFB $0C,$0C,$FF
 
-; Room block data 116
+; Room block data 74
+;
+; #CALL:print_block_data(#PC,block_data_74)
 b$CD2F DEFB $FB,$CC,$DF,$FE,$46,$FD,$06,$01
  $CD37 DEFB $C1,$01,$03,$C8,$01,$FD,$06,$00
  $CD3F DEFB $C8,$FF,$02,$FF
 
-; Room block data 117
+; Room block data 75
+;
+; #CALL:print_block_data(#PC,block_data_75)
 b$CD43 DEFB $FB,$E4,$D9,$FE,$43,$04,$FD,$1E
  $CD4B DEFB $0A,$05,$A8,$01,$02,$FD,$1E,$0B
  $CD53 DEFB $03,$A8,$01,$00,$FD,$1E,$09,$01
@@ -6724,6 +6952,8 @@ b$CDF7 DEFB $80,$07,$86,$B0,$84,$4B,$85,$AF
  $CDFF DEFB $7F,$00
 
 ; Room data : Stamp Street
+;
+; #CALL:print_room_data(#PC, room_01)
 b$CE01 DEFB $80,$07,$08,$E7,$30,$DE,$8A,$87
  $CE09 DEFB $8A,$9F,$0C,$03,$0D,$01,$8F,$03
  $CE11 DEFB $0C,$05,$0C,$07,$14,$37,$A4,$2E
@@ -6731,11 +6961,15 @@ b$CE01 DEFB $80,$07,$08,$E7,$30,$DE,$8A,$87
  $CE21 DEFB $BB,$48,$7F,$00
 
 ; Room data : The Post Office
+;
+; #CALL:print_room_data(#PC, room_02)
 b$CE25 DEFB $A0,$07,$49,$00,$EA,$04,$EB,$0E
  $CE2D DEFB $6B,$0F,$C7,$20,$C7,$D8,$C6,$60
  $CE35 DEFB $7F,$00
 
 ; Room data : Market Street
+;
+; #CALL:print_room_data(#PC, room_03)
 b$CE37 DEFB $80,$07,$0D,$20,$8F,$22,$0C,$23
  $CE3F DEFB $0C,$25,$0C,$27,$2A,$A0,$29,$A3
  $CE47 DEFB $29,$A5,$29,$A7,$28,$7F,$A4,$76
@@ -6745,15 +6979,21 @@ b$CE37 DEFB $80,$07,$0D,$20,$8F,$22,$0C,$23
  $CE67 DEFB $7F,$00
 
 ; Room data : The Super Market
+;
+; #CALL:print_room_data(#PC, room_04)
 b$CE69 DEFB $A0,$07,$48,$0F,$E8,$57,$E8,$55
  $CE71 DEFB $49,$00,$C7,$28,$C7,$80,$C7,$D0
  $CE79 DEFB $7F,$00
 
 ; Room data : The Park
+;
+; #CALL:print_room_data(#PC, room_05)
 b$CE7B DEFB $80,$07,$83,$2F,$86,$20,$12,$6D
  $CE83 DEFB $86,$C8,$85,$1F,$7F,$00
 
 ; Room data : Wobbly Walk
+;
+; #CALL:print_room_data(#PC, room_06)
 b$CE89 DEFB $80,$07,$0D,$80,$8F,$82,$0C,$83
  $CE91 DEFB $0C,$85,$0C,$87,$11,$1A,$89,$07
  $CE99 DEFB $08,$4F,$08,$67,$33,$5A,$A4,$BE
@@ -6761,38 +7001,52 @@ b$CE89 DEFB $80,$07,$0D,$80,$8F,$82,$0C,$83
  $CEA9 DEFB $B7,$85,$7F,$00
 
 ; Room data : Rubble Road
+;
+; #CALL:print_room_data(#PC, room_07)
 b$CEAD DEFB $80,$07,$18,$85,$18,$87,$4B,$82
  $CEB5 DEFB $8F,$84,$89,$07,$08,$4F,$08,$67
  $CEBD DEFB $97,$64,$31,$17,$A2,$BE,$14,$C7
  $CEC5 DEFB $0E,$96,$7F,$00
 
 ; Room data : Wall Street
+;
+; #CALL:print_room_data(#PC, room_08)
 b$CEC9 DEFB $80,$07,$D0,$3C,$15,$C5,$15,$C7
  $CED1 DEFB $66,$67,$66,$A7,$66,$87,$7E,$09
  $CED9 DEFB $0C,$67,$7E,$09,$0C,$65,$7F,$00
 
 ; Room data : Pete Street
+;
+; #CALL:print_room_data(#PC, room_09)
 b$CEE1 DEFB $80,$07,$4F,$5F,$18,$85,$18,$87
  $CEE9 DEFB $4B,$82,$8F,$84,$A2,$BE,$14,$C7
  $CEF1 DEFB $0E,$96,$0E,$E6,$86,$20,$7F,$00
 
 ; Room data : The Work Shed
+;
+; #CALL:print_room_data(#PC, room_0A)
 b$CEF9 DEFB $80,$07,$A4,$2E,$BF,$5F,$BF,$B7
  $CF01 DEFB $70,$7F,$E8,$1A,$68,$45,$7F,$00
 
 ; Room data : School Lane
+;
+; #CALL:print_room_data(#PC, room_0B)
 b$CF09 DEFB $80,$07,$64,$62,$1B,$64,$18,$64
  $CF11 DEFB $18,$65,$18,$67,$8A,$E7,$A4,$76
  $CF19 DEFB $14,$7F,$0E,$9E,$0E,$BE,$08,$07
  $CF21 DEFB $08,$27,$08,$47,$4D,$29,$7F,$00
 
 ; Room data : The School
+;
+; #CALL:print_room_data(#PC, room_0C)
 b$CF29 DEFB $A0,$07,$A1,$37,$A1,$5F,$A1,$87
  $CF31 DEFB $A1,$AF,$A1,$D7,$49,$00,$C6,$60
  $CF39 DEFB $C7,$28,$C7,$D8,$0E,$3C,$0E,$7C
  $CF41 DEFB $0E,$BC,$F2,$37,$71,$03,$7F,$00
 
 ; Room data : Baker Street
+;
+; #CALL:print_room_data(#PC, room_0D)
 b$CF49 DEFB $80,$07,$08,$07,$89,$DF,$0D,$20
  $CF51 DEFB $08,$9F,$2C,$23,$2C,$25,$2C,$27
  $CF59 DEFB $A4,$76,$28,$7F,$11,$0A,$A5,$2D
@@ -6800,6 +7054,8 @@ b$CF49 DEFB $80,$07,$08,$07,$89,$DF,$0D,$20
  $CF69 DEFB $93,$33,$93,$73,$DE,$75,$7F,$00
 
 ; Room data : The Bakers
+;
+; #CALL:print_room_data(#PC, room_0E)
 b$CF71 DEFB $A0,$07,$48,$07,$48,$47,$48,$87
  $CF79 DEFB $48,$C7,$C6,$18,$C7,$A0,$C7,$D0
  $CF81 DEFB $4A,$06,$49,$00,$2F,$35,$2F,$5D
@@ -6807,12 +7063,16 @@ b$CF71 DEFB $A0,$07,$48,$07,$48,$47,$48,$87
  $CF91 DEFB $E1,$AE,$E1,$5E,$7F,$00
 
 ; Room data : The Pub
+;
+; #CALL:print_room_data(#PC, room_10)
 b$CF97 DEFB $A0,$07,$D7,$27,$DA,$3E,$DA,$7E
  $CF9F DEFB $DA,$BE,$D8,$23,$D8,$4B,$D9,$7B
  $CFA7 DEFB $D9,$BB,$D9,$7C,$D9,$BC,$49,$00
  $CFAF DEFB $C6,$18,$C6,$A0,$7F,$00
 
 ; Room data : Motor Way
+;
+; #CALL:print_room_data(#PC, room_11)
 b$CFB5 DEFB $80,$07,$6C,$9B,$6C,$EB,$2C,$03
  $CFBD DEFB $2C,$05,$2C,$07,$8D,$00,$0F,$03
  $CFC5 DEFB $27,$0D,$27,$55,$89,$97,$89,$DF
@@ -6820,17 +7080,23 @@ b$CFB5 DEFB $80,$07,$6C,$9B,$6C,$EB,$2C,$03
  $CFD5 DEFB $E0,$23,$7F,$00
 
 ; Room data : The Laboratory
+;
+; #CALL:print_room_data(#PC, room_12)
 b$CFD9 DEFB $A0,$07,$AB,$5F,$AB,$B7,$A4,$2E
  $CFE1 DEFB $69,$6B,$49,$00,$C6,$18,$C6,$A0
  $CFE9 DEFB $AD,$13,$2D,$15,$7F,$00
 
 ; Room data : The Garage
+;
+; #CALL:print_room_data(#PC, room_13)
 b$CFEF DEFB $80,$07,$C2,$16,$C2,$5E,$6C,$03
  $CFF7 DEFB $6C,$E3,$6C,$53,$6C,$9B,$C2,$A6
  $CFFF DEFB $4E,$D6,$D1,$3E,$D4,$01,$D4,$81
  $D007 DEFB $7F,$00
 
 ; Room data : Reference Road
+;
+; #CALL:print_room_data(#PC, room_14)
 b$D009 DEFB $80,$07,$8D,$48,$AA,$B8,$1C,$4B
  $D011 DEFB $1C,$4D,$1C,$4F,$1C,$7B,$1C,$7D
  $D019 DEFB $1C,$7F,$A4,$76,$14,$7F,$08,$0F
@@ -6839,12 +7105,16 @@ b$D009 DEFB $80,$07,$8D,$48,$AA,$B8,$1C,$4B
  $D031 DEFB $9D,$9E,$9D,$BE,$9D,$DE,$7F,$00
 
 ; Room data : The Library
+;
+; #CALL:print_room_data(#PC, room_15)
 b$D039 DEFB $A0,$07,$AB,$27,$AB,$6F,$AB,$B7
  $D041 DEFB $2D,$11,$2D,$13,$2D,$15,$2D,$61
  $D049 DEFB $2D,$63,$2D,$65,$2D,$B1,$2D,$B3
  $D051 DEFB $2D,$B5,$49,$00,$7F,$00
 
 ; Room data : Penny Lane
+;
+; #CALL:print_room_data(#PC, room_16)
 b$D057 DEFB $80,$07,$16,$03,$16,$05,$16,$07
  $D05F DEFB $B6,$04,$90,$7A,$0D,$80,$0C,$83
  $D067 DEFB $0C,$85,$0C,$87,$8F,$03,$8F,$82
@@ -6854,6 +7124,8 @@ b$D057 DEFB $80,$07,$16,$03,$16,$05,$16,$07
  $D087 DEFB $BB,$20,$7F,$00
 
 ; Room data : The Bank
+;
+; #CALL:print_room_data(#PC, room_17)
 b$D08B DEFB $80,$07,$BC,$44,$3D,$4D,$3D,$7D
  $D093 DEFB $3D,$AD,$40,$5F,$40,$8F,$40,$BF
  $D09B DEFB $C1,$26,$C1,$36,$BE,$12,$BF,$17
@@ -6861,11 +7133,15 @@ b$D08B DEFB $80,$07,$BC,$44,$3D,$4D,$3D,$7D
  $D0AB DEFB $49,$00,$7F,$00
 
 ; Room data : Wally's House
+;
+; #CALL:print_room_data(#PC, room_18)
 b$D0AF DEFB $A0,$07,$C4,$07,$AB,$1F,$C4,$67
  $D0B7 DEFB $C3,$97,$C7,$38,$C7,$78,$C7,$B8
  $D0BF DEFB $49,$00,$7F,$00
 
 ; Room data : Meat Street
+;
+; #CALL:print_room_data(#PC, room_19)
 b$D0C3 DEFB $80,$07,$0D,$20,$8F,$22,$1C,$25
  $D0CB DEFB $8A,$9F,$1C,$27,$07,$DF,$08,$07
  $D0D3 DEFB $1C,$23,$28,$37,$A2,$2E,$A5,$55
@@ -6873,6 +7149,8 @@ b$D0C3 DEFB $80,$07,$0D,$20,$8F,$22,$1C,$25
  $D0E3 DEFB $5F,$34,$7F,$00
 
 ; Room data : The Butcher's
+;
+; #CALL:print_room_data(#PC, room_1A)
 b$D0E7 DEFB $A0,$07,$48,$2F,$48,$6F,$48,$AF
  $D0EF DEFB $C5,$02,$C6,$18,$C6,$A0,$2E,$23
  $D0F7 DEFB $2E,$43,$2E,$63,$2E,$83,$2E,$A3
@@ -6880,37 +7158,51 @@ b$D0E7 DEFB $A0,$07,$48,$2F,$48,$6F,$48,$AF
  $D107 DEFB $7F,$00
 
 ; Room data : Trunk Road
+;
+; #CALL:print_room_data(#PC, room_1B)
 b$D109 DEFB $80,$07,$63,$05,$07,$DF,$8B,$06
  $D111 DEFB $A3,$46,$A3,$66,$64,$03,$9E,$2E
  $D119 DEFB $A3,$86,$A3,$9E,$11,$AA,$31,$E7
  $D121 DEFB $67,$85,$7F,$00
 
 ; Room data : The Zoo
+;
+; #CALL:print_room_data(#PC, room_1C)
 b$D125 DEFB $80,$07,$64,$83,$63,$85,$63,$87
  $D12D DEFB $0E,$96,$0E,$DE,$E5,$03,$7F,$00
 
 ; Room data : Rail Road
+;
+; #CALL:print_room_data(#PC, room_1D)
 b$D135 DEFB $80,$07,$A3,$06,$A3,$26,$0C,$47
  $D13D DEFB $0C,$45,$0C,$43,$9B,$42,$0D,$40
  $D145 DEFB $08,$C7,$08,$E7,$9E,$76,$1D,$56
  $D14D DEFB $1D,$A6,$73,$2C,$7F,$00
 
 ; Room data : The Station
+;
+; #CALL:print_room_data(#PC, room_1E)
 b$D153 DEFB $80,$07,$0D,$00,$0D,$80,$9B,$02
  $D15B DEFB $9B,$82,$1F,$13,$1F,$7B,$1F,$E3
  $D163 DEFB $85,$9F,$85,$37,$73,$44,$73,$AC
  $D16B DEFB $7F,$00
 
 ; Room data : The Docks
+;
+; #CALL:print_room_data(#PC, room_1F)
 b$D16D DEFB $A0,$07,$83,$77,$D5,$0C,$07,$9F
  $D175 DEFB $08,$C7,$08,$E7,$D6,$C0,$7F,$00
 
 ; Room data : The Sewer
+;
+; #CALL:print_room_data(#PC, room_20)
 b$D17D DEFB $80,$07,$01,$04,$02,$D4,$ED,$31
  $D185 DEFB $ED,$82,$ED,$75,$6D,$B1,$ED,$16
  $D18D DEFB $6D,$DE,$7F,$00
 
 ; Room data : The Cave
+;
+; #CALL:print_room_data(#PC, room_21)
 b$D191 DEFB $80,$07,$52,$00,$52,$18,$52,$58
  $D199 DEFB $52,$88,$52,$98,$52,$C8,$53,$30
  $D1A1 DEFB $53,$48,$53,$70,$53,$B0,$53,$D8
