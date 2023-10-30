@@ -1,3 +1,6 @@
+b $4000 Loading screen
+g $5B00 Copy of main playing area
+g $6B00 Sprite buffer
 b $7B00 Lookup table for reversing graphics
 t $7C00 Character names
 ; Total max wages : Wally - 690, Wilma 520, Tom 530, Dick 610, Harry 650 overall 3000
@@ -857,4 +860,5 @@ c $F9F5 Asteroids : Check for firing missile and animate accordingly
 c $FAE7 Asteroids : Play a note of the "won" sound effect
 g $FAEF
 c $FAF0 Asteroids : Move the lightning bolts around
-
+s $FB2A Unused
+g $FE00 Copy of attributes for main playing area

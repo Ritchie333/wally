@@ -1,0 +1,171 @@
+; Main decrypter
+b$5B80 LD BC,$A299   ; Set #REGbc to the length
+ $5B83 LD HL,$5B97   ; Set #REGhl to the start
+ $5B86 XOR A         ; { Initialize the memory refresh register #REGr
+ $5B87 LD R,A        ; to 0. }
+*$5B89 LD A,R        ; Get the next value of #REGr as a hash value.
+ $5B8B XOR (HL)      ; { Use this to invert the relevant bits pointed by #REGhl.
+ $5B8C LD (HL),A     ; }
+ $5B8D DEC BC        ; Decrease the length.
+ $5B8E INC HL        ; Increase the byte pointed to by #REGhl.
+ $5B8F LD A,B        ; { Loop until all bytes are decrypted.
+ $5B90 OR C          ;
+ $5B91 JR NZ,$5B89   ;
+ $5B93 RET           ; }
+; This entry point is used by the routine in #R$FEDE.
+ $5B94 CALL $5B80    ; Decrypt the game
+ $5B97 JP $8184      ; Start the game
+
+; Main entry point
+;
+; The basic is :
+; 1 REM
+; 2 REM
+; 100: PAPER 0: INK 0: BRIGHT 0: FLASH 0: CLS :
+; PRINT #1;TAB 12; INK 7; BRIGHT 1;"LOADING:"
+; RANDOMIZE USR (PEEK 23627+256*PEEK 23628+6)
+;
+; .
+; On a freshly reset Spectrum, VARS defaults to #N$5DA2, add 6 gives #N$5DA8.
+; 
+b$5DA8 DI            ; Disable interrupts - essential for tape loading.
+ $5DA9 LD SP,$0000   ; Put the stack somewhere safe.
+ $5DAC LD HL,($5C4B) ; Put the system variable VARS in #REGhl.
+ $5DAF LD DE,$001C   ; { Add #N$1C to this, giving #N$5DBE.
+ $5DB2 ADD HL,DE     ; }
+ $5DB3 LD DE,$FE46   ; { Copy #N$C6 bytes to #R$FE46.
+ $5DB6 LD BC,$00C6   ;
+ $5DB9 LDIR          ; }
+ $5DDB JP $FE46      ; Jump to the main loader.
+
+; Main loader (1)
+c$FE46 LD IX,$4000   ; Set the start to #R$4000.
+ $FE4A LD DE,$BF25   ; Set the length.
+ $FE4D LD A,$16      ;
+ $FE4F LD ($FEAA),A  ;
+ $FE52 LD A,$FF      ;
+ $FE54 SCF           ;
+ $FE55 INC D         ;
+ $FE56 EX AF,AF'     ;
+ $FE57 DEC D         ;
+ $FE58 LD A,$0F      ;
+ $FE5A OUT ($FE),A   ;
+ $FE5C IN A,($FE)    ;
+ $FE5E RRA           ;
+ $FE5F AND $20       ;
+ $FE61 OR $02        ;
+ $FE63 LD C,A        ;
+ $FE64 CP A          ;
+*$FE65 CALL $FEA9    ;
+ $FE68 JR NC,$FE65   ;
+ $FE6A LD HL,$0415   ;
+*$FE6D DJNZ $FE6D    ;
+ $FE6F DEC HL        ;
+ $FE70 LD A,H        ;
+ $FE71 OR L          ;
+ $FE72 JR NZ,$FE6D   ;
+ $FE74 CALL $FEA5    ;
+ $FE77 JR NC,$FE65   ;
+*$FE79 LD B,$9C      ;
+ $FE7B CALL $FEA5    ;
+ $FE7E JR NC,$FE65   ;
+ $FE80 LD A,$C6      ;
+ $FE82 CP B          ;
+ $FE83 JR NC,$FE65   ;
+ $FE85 INC H         ;
+ $FE86 JR NZ,$FE79   ;
+*$FE88 LD B,$C9      ;
+ $FE8A CALL $FEA9    ;
+ $FE8D JR NC,$FE65   ;
+ $FE8F LD A,B        ;
+ $FE90 CP $D4        ;
+ $FE92 JR NC,$FE88   ;
+ $FE94 CALL $FEA9    ;
+ $FE97 JP NC,$0000   ;
+ $FE9A LD A,$08      ;
+ $FE9C LD ($FEAA),A  ;
+ $FE9F LD H,$00      ;
+ $FEA1 LD B,$B0      ;
+ $FEA3 JR $FEDE      ;
+; Load an edge off tape
+c$FEA5 CALL $FEA9    ;
+ $FEA8 RET NC        ;
+*$FEA9 LD A,$08      ;
+*$FEAB DEC A         ;
+ $FEAC JR NZ,$FEAB   ;
+ $FEAE AND A         ;
+*$FEAF INC B         ;
+ $FEB0 RET Z         ;
+ $FEB1 LD A,$7F      ;
+ $FEB3 IN A,($FE)    ;
+ $FEB5 RRA           ;
+ $FEB6 XOR C         ;
+ $FEB7 AND $20       ;
+ $FEB9 JR Z,$FEAF    ;
+ $FEBB LD A,C        ;
+ $FEBC XOR $FD       ;
+ $FEBE LD C,A        ;
+ $FEBF AND $07       ;
+ $FEC1 OR $08        ;
+ $FEC3 OUT ($FE),A   ;
+ $FEC5 SCF           ;
+ $FEC6 RET           ;
+*$FEC7 EX AF,AF'     ;
+ $FEC8 JR NZ,$FECF   ;
+ $FECA LD (IX+$00),L ;
+ $FECD JR $FED8      ;
+*$FECF RL C          ;
+ $FED1 XOR L         ;
+ $FED2 LD A,C        ;
+ $FED3 RRA           ;
+ $FED4 LD C,A        ;
+ $FED5 INC DE        ;
+ $FED6 JR $FEDA      ;
+*$FED8 INC IX        ;
+*$FEDA DEC DE        ;
+ $FEDB EX AF,AF'     ;
+ $FEDC LD B,$B2      ;
+; Main loader (2)
+c$FEDE LD L,$01      ;
+*$FEE0 CALL $FEA5    ;
+ $FEE3 JP NC,$0000   ;
+ $FEE6 LD A,$C6      ;
+ $FEE8 CP B          ;
+ $FEE9 RL L          ;
+ $FEEB LD B,$B0      ;
+ $FEED JP NC,$FEE0   ;
+ $FEF0 LD A,H        ;
+ $FEF1 XOR L         ;
+ $FEF2 LD H,A        ;
+ $FEF3 LD A,D        ;
+ $FEF4 OR E          ;
+ $FEF5 JR NZ,$FEC7   ;
+ $FEF7 LD HL,$4000   ;
+ $FEFA LD BC,$BF24   ;
+ $FEFD LD A,$00      ;
+*$FEFF ADD A,(HL)    ;
+ $FF00 LD E,A        ;
+ $FF01 INC HL        ;
+ $FF02 DEC BC        ;
+ $FF03 LD A,B        ;
+ $FF04 OR C          ;
+ $FF05 LD A,E        ;
+ $FF06 JR NZ,$FEFF   ;
+ $FF08 CP (HL)       ;
+ $FF09 JP NZ,$0000   ;
+; The rest of the code is not present in the BASIC loader and only loaded
+; after the end of the main tape block.
+ $FF0C LD DE,$5B80   ; Point #REGde at the start of the block to decrypt. (#R$5B80)
+ $FF0F LD HL,$53FE   ; Set the intial key in #REGhl to #N$53FE.
+*$FF12 LD A,(DE)     ; Get the next byte to decrypt.
+ $FF13 XOR (HL)      ; Invert the bits against the key.
+ $FF14 RES 4,H       ; Reset bit 4 in the key.
+ $FF16 XOR (HL)      ; Invert the bits again.
+ $FF17 SET 4,H       ; Set it back again ready for the next pass.
+ $FF19 LD (DE),A     ; Store the decrypted byte.
+ $FF1A DEC HL        ; Decrease the key value.
+ $FF1B INC DE        ; Increase the address to look at.
+ $FF1C LD A,E        ; { Has the last address (#N$5B9A) been reached yet?
+ $FF1D CP $9A        ; }
+ $FF1F JR NZ,$FF12   ; Jump back if not.
+ $FF21 JP $5B94      ; Otherwise run the main decrypter.

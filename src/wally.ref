@@ -2,4 +2,51 @@
 Game=Everyone's A Wally
 TitleSuffix=Everyone's A Wally RAM disassembly
 [Info]
-Copyright=(c) 1985 Mikro-Gen (code and graphics), 2013 Ritchie Swann (this disassembly)
+Copyright=(c) 1985 Mikro-Gen (code and graphics), 2013-2023 Ritchie Swann (this disassembly)
+
+[Page:DataStructures]
+SectionPrefix=DataStructures
+
+[Index:DataTables:Data tables and buffers]
+GameStatusBuffer
+DataStructures
+
+[DataStructures:Room data]
+The room data is defined as a series of entries in #R$CDB5.
+
+Each entry contains the block ID to draw plus bit 7 used as the column's least significant bit.
+The next byte contains the bit previously mentioned, plus the rest of the row in bits 0 - 2 and the column in bits 3 - 7
+
+Each entry can contain the following.
+#TABLE( default, center )
+{ =h Value | =h Description }
+{ $7E, n | Block should only be drawn if flag 'n' is set }
+{ $7F | End of data }
+TABLE#
+
+Example : 
+
+80 07 = 14,00 - 0
+86 B0 = 06,16 - 6
+84 4B = 0C,09 - 4
+85 AF = 14,15 - 5
+
+[DataStructures:Block data]
+The block data is defined as a series of entries in #R$BD86. Each entry can contain the following.
+
+#TABLE( default, center )
+{ =h Value | =h Description }
+{ $A8 - $E7, y | Move forward the value - #N$C8 columns, and by the number of rows in the next byte. }
+{ $E0 - $EF | }
+{ $F0, y, n | Draw the graphic 'n' and repeat for 'y' rows. }
+{ $F1 | Move forward one column. }
+{ $F2, x, n | Draw the graphic 'n' and repeat for 'x' pairs of columns. }
+{ $F3, lo, hi | Jump to block data at the address specified. }
+{ $FB, lo, hi | Change the address pointed to by the next two bytes. }
+{ $FD x, n | Draw the graphic 'n' and repeat for 'x' pairs of columns. }
+{ $FE, x | Change to attribute 'x'. }
+{ $FF | End of table }
+TABLE#
+
+[OtherCode:Loading system]
+Source=wally_loader.skool
