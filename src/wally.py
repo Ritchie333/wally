@@ -214,35 +214,56 @@ class WallyHtmlWriter(HtmlWriter):
 
         return self.expand( text, cwd )
 
+    def print_room_stats( self, cwd, addr ):
+
+        text = ''
+        for id, x, y in self.enum_room_data( addr, True ):
+            ptr = self.get_block_ptr_from_id( id )
+            text += '<br/>{' + f'#R${ptr:x}|{id}' + '}' + ' ' + str(x) + ',' + str(y)
+        return self.expand( text, cwd )
+
+
     def print_room_data( self, cwd, addr, fName ):
 
         bg = self.make_background()
 
-        debug = ( addr == 0xd191)
+        for id, x, y in self.enum_room_data( addr, False ):
+            self.make_block_data( bg, self.get_block_ptr_from_id( id ), 0, x, y, 0 )
+        
+        bgf = self.make_background()
+        for id, x, y in self.enum_room_data( addr, True ):
+            self.make_block_data( bgf, self.get_block_ptr_from_id( id ), 0, x, y, 0 )
 
+        frames = [ Frame( bg, scale=2, delay=100 ), Frame( bgf, scale=2, delay=100 ) ]
+        return self.handle_image( frames, fName, cwd )
+
+    def get_block_ptr_from_id( self, id ):
+        offset = 0xBD86 + 2 * id
+        ptr = self.snapshot[ offset ] + 0x100 * self.snapshot[ offset + 1 ]
+        return ptr
+
+    def enum_room_data( self, addr, flags ):
         d = self.snapshot[ addr ]
         e = self.snapshot[ addr + 1 ]
         addr +=2
 
         while( d != 0x7F ):
-
             id = d & 0x7F
 
-            x = ( e & 0xF8 ) >> 3
-            y = ( ( e << 1 ) + ( d >> 7 ) & 0xF ) + 5
+            if id == 0x7E:
+                if not flags:
+                    # Skip over flag-dependent graphics on this run
+                    addr += 2
+            else:
 
-            offset = 0xBD86 + 2 * id
-            ptr = self.snapshot[ offset ] + 0x100 * self.snapshot[ offset + 1 ]
+                x = ( e & 0xF8 ) >> 3
+                y = ( ( e << 1 ) + ( d >> 7 ) & 0xF ) + 5
 
-            self.make_block_data( bg, ptr, 0, x, y, 0 )
+                yield id, x, y
 
             d = self.snapshot[ addr ]
             e = self.snapshot[ addr + 1 ]
             addr +=2
-
-        
-        frame = Frame( bg, 2 )
-        return self.handle_image( frame, fName, cwd )
 
     def print_block_data( self, cwd, addr, fName ):
         
@@ -276,8 +297,7 @@ class WallyHtmlWriter(HtmlWriter):
             if( next == WallyHtmlWriter.GraphicsState.CHAIN ):
                 ptr = self.snapshot[ addr ] + 0x100 * self.snapshot[ addr + 1 ]
                 addr += 2
-                self.make_block_data( bg, ptr, base, x, y, attr )
-                return
+                return self.make_block_data( bg, ptr, base, x, y, attr )
 
             if( next == WallyHtmlWriter.GraphicsState.NEW_ADDR ):
                 base = self.snapshot[ addr ] + 0x100 * self.snapshot[ addr + 1 ]
@@ -343,6 +363,75 @@ class WallyHtmlWriter(HtmlWriter):
         ptr = addr + ( id * 8 )
         udgs = [ [ Udg( attr, self.snapshot[ ptr : ptr + 8 ] ) ] ]
         skoolkit.graphics.overlay_udgs( bg, udgs, x * 8, y * 8, 0, lambda bg, fg : fg, lambda bg, fg, mk : fg )
+
+    def print_next_rooms( self, cwd, addr ):
+
+        text = ''
+
+        id = self.snapshot[ addr ]
+        while (id != 0xff ):
+            fRoom = self.snapshot[ addr ]
+            fFrom = self.snapshot[ addr + 1 ]
+            fTo = self.snapshot[ addr + 2 ]
+            
+            fx, fy = self.get_coords( fFrom )
+            tx, ty = self.get_coords( fTo )
+
+            nRoom = self.get_room_name( fRoom )
+
+            if( fFrom == 0 ):
+                text += 'LEFT'
+            elif( fFrom == 1 ):
+                text += 'RIGHT'
+            else:
+                text += 'IN at ' + str( fx ) + ',' + str( fy )
+            text += ' to ' + nRoom + ' at ' + str( tx ) + ',' + str( ty ) + '<br/>'
+            addr += 3
+            id = self.snapshot[ addr ]
+
+        return self.expand( text, cwd )
+    
+    def get_room_name( self, i ):
+        room_names = [ 0x7F1F, 0x7F2F, 0x7F3C, 0x7F4C, 0x7F5A, 0x7F6B, 0x7F74, 0x7F80,
+                0x7F8C, 0x7F98, 0x7FA4, 0x7FB2, 0x7FBE, 0x7FC9, 0x7FD6, 0x7FE1,
+                0x7FE9, 0x7FF3, 0x8002, 0x800D, 0x801C, 0x8028, 0x8033, 0x803C,	
+                0x804A, 0x8056, 0x8063, 0x806E, 0x8076, 0x8080, 0x808C, 0x8096, 0x80A0 ]
+        text = ''
+        addr = room_names[ i ]
+        ch = self.snapshot[ addr ]
+        while( ch != 0xff ):
+            text += chr(ch)
+            addr += 1
+            ch = self.snapshot[ addr ]
+        return text
+
+    def get_coords( self, i ):
+        addr = 0xaf10 + ( 2 * i )
+        x = self.snapshot[ addr ]
+        y = self.snapshot[ addr + 1]
+        return x, y
+
+    def print_platforms( self, cwd, addr, rAddr, fName ):
+
+        bg = self.make_background()
+        
+        for id, x, y in self.enum_room_data( rAddr, True ):
+            self.make_block_data( bg, self.get_block_ptr_from_id( id ), 0, x, y, 0 )
+
+        ch = self.snapshot[ addr ]
+        while ch != 0xFF:
+            self.print_platform( bg, ch, self.snapshot[ addr + 1 ], self.snapshot[ addr + 2 ])
+            addr += 3
+            ch = self.snapshot[ addr ]
+        frame = Frame( bg, 2 )
+        return self.handle_image( frame, fName, cwd )
+
+    def print_platform( self, bg, y, x1, x2 ):
+            udg = Udg( 0, [ 0, 0, 0, 0, 0, 0, 0, 0 ])
+            udgs = []
+            for i in range( x1, x2 ):
+                udgs.append( udg )
+            skoolkit.graphics.overlay_udgs( bg, [ udgs ], x1 * 8, y, 0, lambda bg, fg : bg + 0x80 )
 
     def print_block_ctl( self, cwd, addr ):
         for i in range( 0, 118 ):

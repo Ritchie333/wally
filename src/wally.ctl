@@ -979,4 +979,5 @@ c $FAE7 Asteroids : Play a note of the "won" sound effect
 g $FAEF
 c $FAF0 Asteroids : Move the lightning bolts around
 s $FB2A Unused
+s $FD00
 g $FE00 Copy of attributes for main playing area

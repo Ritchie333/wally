@@ -7,46 +7,197 @@ Copyright=(c) 1985 Mikro-Gen (code and graphics), 2013-2023 Ritchie Swann (this 
 [Page:DataStructures]
 SectionPrefix=DataStructures
 
+[Page:Logic]
+SectionPrefix=Logic
+
 [Index:DataTables:Data tables and buffers]
 GameStatusBuffer
 DataStructures
+Logic
+
+[Links]
+DataStructures=Data structures
 
 [DataStructures:Room data]
 The room data is defined as a series of entries in #R$CDB5.
 
-Each entry contains the block ID to draw plus bit 7 used as the column's least significant bit.
-The next byte contains the bit previously mentioned, plus the rest of the row in bits 0 - 2 and the column in bits 3 - 7
+Each entry contains the block ID to draw plus bit 7 used as the row's least significant bit.
+The next byte contains the remainder of the row in bits 0 - 2 and the column in bits 3 - 7.
+This allows to pack an ID plus two co-ordinates into two bytes, saving memory.
 
-Each entry can contain the following.
+Each entry can also contain the following special values:
 #TABLE( default, center )
 { =h Value | =h Description }
-{ $7E, n | Block should only be drawn if flag 'n' is set }
-{ $7F | End of data }
+{ #N$7E , n | Block should only be drawn if flag 'n' is set. This is only used to
+draw the wall in Wall Street if it has been built, otherwise show a pile of bricks. (#R$CEC9) }
+{ #N$7F | End of data }
 TABLE#
-
-Example : 
-
-80 07 = 14,00 - 0
-86 B0 = 06,16 - 6
-84 4B = 0C,09 - 4
-85 AF = 14,15 - 5
 
 [DataStructures:Block data]
 The block data is defined as a series of entries in #R$BD86. Each entry can contain the following.
 
 #TABLE( default, center )
 { =h Value | =h Description }
-{ $A8 - $E7, y | Move forward the value - #N$C8 columns, and by the number of rows in the next byte. }
-{ $E0 - $EF | }
-{ $F0, y, n | Draw the graphic 'n' and repeat for 'y' rows. }
-{ $F1 | Move forward one column. }
-{ $F2, x, n | Draw the graphic 'n' and repeat for 'x' pairs of columns. }
-{ $F3, lo, hi | Jump to block data at the address specified. }
-{ $FB, lo, hi | Change the address pointed to by the next two bytes. }
-{ $FD x, n | Draw the graphic 'n' and repeat for 'x' pairs of columns. }
-{ $FE, x | Change to attribute 'x'. }
-{ $FF | End of table }
+{ #N$A8 - #N$EF , y | Move forward the value - #N$C8 columns, and by the number of rows in the next byte. }
+{ #N$F0 , y, n | Draw the graphic 'n' and repeat for 'y' rows. }
+{ #N$F1 | Move forward one column. }
+{ #N$F2 , x, n | Draw the graphic 'n' and repeat for 'x' pairs of columns. }
+{ #N$F3 , lo, hi | Jump to block data at the address specified. }
+{ #N$FB , lo, hi | Use the address pointed to by the next two bytes for the UDG graphic data. }
+{ #N$FD , x, n | Draw the graphic 'n' and repeat for 'x' pairs of columns. }
+{ #N$FE , x | Change to attribute 'x'. }
+{ #N$FF | End of data. }
 TABLE#
+
+[DataStructures:Object data]
+Each room can have a number of objects that can be picked up. These are defined in a series of
+buffers starting at #R$BCE9 and accessed via the routine at #R$AA8C.
+
+Each object takes four bytes and has the following structure:
+
+#TABLE( default, center )
+{ =h Byte | =h Description }
+{ 0 | Object ID }
+{ 1 | X co-ordinate }
+{ 2 | Y co-ordinate }
+{ 3 | Flags for the item }
+TABLE#
+
+The flags in byte 3 determine if the item can be picked up.
+Bits 0 - 5 are set if a character can pick it up (from bit 0 - Wally to bit 5 - Harry). So, #N$1F means "all characters".
+It bit 7 is set, only the current character can pick it up.
+
+The end of the table is denoted by the byte #N$FF. If the room has no objects in it, that is the only byte in the buffer.
+
+[DataStructures:Next rooms]
+Each room has links to others in a table starting at #R$AC7F. The lookup is done at the routine in #R$AC69.
+
+Each entry contains the following structure:
+
+#TABLE( default, center )
+{ =h Byte | =h Description }
+{ 0 | ID of the next room. }
+{ 1 | ID of co-ordinates that trigger this room. }
+{ 2 | ID of co-ordinates to start in the new room. }
+TABLE#
+
+The co-ordinates are an index into a table starting at #R$AF10. Each entry contains an x and y co-ordinate.
+The most common entries are 0 (x = 0, y = #N$98) and 1 (x = #N$F0, y = #N$98) which are the far left and
+far right parts of the screen. So common entries are a,$01,$00,b,$00,$01.
+
+A new room is automatically triggered when the player moves to the far-left or far-right of the screen,
+or when the player presses the "in" key. However, if the current co-ordinate does match any valid tables,
+nothing will happen.
+
+The end of the table is denoted by the byte #N$FF.
+
+[DataStructures:Above-floor platforms]
+Some rooms allow players to walk elsewhere than the ground, to climb onto things.
+
+These are defined in a table with offsets defined at #R$AF8F. Each entry contains three bytes
+with the y co-ordinate, the leftmost co-ordinate and the rightmost. As you might expect, the
+stairs in the sewer are the most complex definition.
+
+The specific table used by each room is defined as a table in #R$AFA3. Most rooms use ID 0,
+which has no additional platforms.
+
+[Logic:Introduction]
+The game includes a simple compiled programming language, conceptually similar to
+#HTML(<a href="https://en.wikipedia.org/wiki/AWK">AWK</a> ). Each entry includes a number of
+patterns or clauses, that if all are true, invokes one or more actions.
+
+The logic for each room is stored in various buffers starting at #R$E80F (for the Town Square).
+These are accessed by the routine at #R$EABF. The routine starts by checking for patterns,
+but switches to checking for actions taken if those patterns are all true with byte #N$F7.
+A new pattern is then identified with byte #N$F6. Byte #N$FF signals the end of the logic.
+
+Each room also contains a set of custom code that can be executed on entry. These are
+stored in a table at #R$EEF3. If there is no custom action for the room, the table'S
+entry is #R$F2F6, which is a simple RET instruction.
+
+[Logic:Patterns]
+A pattern is identified by the byte sequence opcode,[operands]. The number of bytes used as
+operands is dependent on the specific opcode.
+
+The routines to handle each pattern is stored in a lookup table at #R$E7E9.
+
+#TABLE( default, center )
+{ =h Value | =h Instruction | =h Description }
+{ 0 | AT_OBJ(n) | True if the player is standing next to the 'n'th object in the room. }
+{ 1 | HAS(n) | True if the player is holding object 'n'. }
+{ 2 | IS_SET(f) | True if the flag 'f' is set. }
+{ 3 | IS_OBJ(n,i) | True if the 'n'th object in the room is 'i'. }
+{ 4 | AT(x,y) | True if the player is standing at co-ordinates x,y. }
+{ 5 | AM(n) | True if the player is using the character with this ID. }
+{ 6 | NOT_HAS(n) | True if the player isn't holding object 'n'. }
+{ 7 | NOT_OBJ(n,i) | True if the 'n'th object in the room isn't 'i'. }
+TABLE#
+
+The character IDs used in opcode 5 (AM(n)) are:
+#TABLE( default, center )
+{ =h Value | =h Character }
+{ 01 | Wally }
+{ 02 | Wilma }
+{ 04 | Tom }
+{ 08 | Dick }
+{ #N$10 | Harry }
+TABLE#
+
+[Logic:Actions]
+An action is identified by the byte sequence opcode,[operands]. The number of bytes used as
+operands is dependent on the specific opcode.
+
+The routines to handle each action is stored in a lookup table at #R$E7F9.
+
+#TABLE( default, center )
+{ =h Value | =h Instruction | =h Description }
+{ 0 | SWAP| Swap the least-recently picked up item for the nearest one in the room. }
+{ 1 | SWAPFOR( n ) | Swap the least-recently picked up item for the 'nth' object in the room. }
+{ 2 | SET( f ) | Set flag 'f'. }
+{ 3 | RESET( f ) | Reset flag 'f'. }
+{ 4 | SET(f, i) | Set the value 'x' to 'i'. }
+{ 5 | EARN(i) | Earn the amount of money indexed. }
+{ 6 | WALL | Build the wall. Only relevant in Wall Street. }
+{ 7 | SPACE | Enter the asteroids game. Only relevant when standing near a phone booth. }
+{ 8 | SAFE | Blow the safe, get the money and complete the game! Only used in the bank. }
+{ 9 | CHASE | Open up the floor and drop the player down to the "chase the shark" room. 
+Most often use when some task needs to be completed at a location, but the player has the
+wrong character and items. }
+{ A | OUT | Enter the "out of town" room. }
+TABLE#
+
+[Logic:Money]
+The money earned by various tasks is defined in a table at #$REC5C.
+Each entry in the table contains three bytes:
+#TABLE( default, center )
+{ =h Byte | =h Character }
+{ 0 | ID of the money value }
+{ 1 | Money low byte }
+{ 2 | Money high byte }
+TABLE#
+
+Money is always given in multiples of £10.
+
+The high byte is the hundreds part of the money.
+
+The low byte is the tens part of the money, but only the top nybble is used (as a
+decimal digit can be represented as four bytes).
+
+Example : $00, $50, $01 = Entry 1, £150.
+
+The maximum amount of money that can be earned is defined at #R$ECFC as £4,000.
+
+Morning, lunch and tea breaks and the end of the game are reached when a certain amount
+of money has been earned, defined in entries at #R$ECF6. These are:
+#TABLE( default, center )
+{ =h Byte | =h Character }
+{ £600 | Morning tea break }
+{ £1,700 | Lunch time }
+{ £3,300 | Tea time }
+{ £4,000 | End of game }
+TABLE#
+
+The index of the next index into the buffer is stored in #R$ECF5.
 
 [OtherCode:Loading system]
 Source=wally_loader.skool
