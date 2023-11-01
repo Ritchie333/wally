@@ -199,5 +199,19 @@ TABLE#
 
 The index of the next index into the buffer is stored in #R$ECF5.
 
+[Fact:Miles out of town]
+The "out of town" screen at #R$F177 uses a simple 16-bit word at #R$F15B to store the number of miles walked.
+Therefore if you've walked 65,535 miles and walk one more, the counter will reset to 0 and you'll be able
+to get back into town in a single move.
+
+(Note that 65,535 miles is approximately twice round the circumerence of the Earth.)
+
+[Page:Pokes]
+SectionType=ListItems
+
+[Poke:Pokes]
+Immunity
+ E343,C9
+
 [OtherCode:Loading system]
 Source=wally_loader.skool

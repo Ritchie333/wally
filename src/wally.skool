@@ -4485,7 +4485,7 @@ c$B09F LD IY,($B09D)   ; Point #REGiy at the current player buffer.
  $B0DA RET Z           ; Return if it wasn't, no input made.
  $B0DB LD (IY+$3C),$FF ; { Set the direction to "left".
  $B0DF LD (IY+$41),$FF ; }
- $B0E3 JP $B288        ;
+ $B0E3 JP $B288        ; Move the character.
 
 ; Put a character into the sprite buffer
 ;
@@ -10507,115 +10507,129 @@ c$F10E LD A,$04        ; { Touching the jumping jack drops endurance by 4.
  $F154 CALL $E329      ;
  $F157 RET             ;
 
-; The extremeties of the screen for the "out of town" sequence
-b$F158 DEFB $00,$00
+; Initial co-ordinate moving to a room with more miles.
+b$F158 DEFB $00
+
+; Initial co-ordinate moving to a room with less miles.
+b$F159 DEFB $00
 
 ; The direction to face movable objects in the "out of town" screen
+;
+; 1 = right, 2 = left
 b$F15A DEFB $00
 
 ; The number of miles walked out of town
 w$F15B DEFW $0000
 
 ; Room data : Out of town
+;
+; #CALL:print_room_data(#PC,outoftown)
 b$F15D DEFB $80,$07,$86,$20,$86,$70,$86,$C8
  $F165 DEFB $89,$07,$89,$2F,$89,$57,$89,$7F
  $F16D DEFB $8A,$A7,$8A,$C7,$8A,$E7,$74,$46
  $F175 DEFB $7F,$00
 
 ; Action A OUT. Go to the "out of town" screen
-c$F177 LD A,(IY+$05)   ;
- $F17A LD HL,$06EA     ;
- $F17D CP $80          ;
- $F17F LD A,$FE        ;
- $F181 JR C,$F188      ;
- $F183 LD HL,$EA06     ;
- $F186 LD A,$02        ;
-*$F188 LD ($F158),HL   ;
- $F18B LD ($F15A),A    ;
- $F18E LD HL,$0000     ;
- $F191 LD ($F15B),HL   ;
- $F194 LD (IY+$0A),$98 ;
+c$F177 LD A,(IY+$05)   ; Put the X co-ordinate in #REGa.
+ $F17A LD HL,$06EA     ; Set the extremities in #REGhl.
+ $F17D CP $80          ; Is the character position greater than 80?
+ $F17F LD A,$FE        ; Set starting position as the far right.
+ $F181 JR C,$F188      ; If not, the character's moved left to here, so jump forward.
+ $F183 LD HL,$EA06     ; Set the extremities in #REGhl.
+ $F186 LD A,$02        ; Set position at the far left.
+*$F188 LD ($F158),HL   ; Store the extremeties.
+ $F18B LD ($F15A),A    ; Store the current position.
+ $F18E LD HL,$0000     ; { Set the number of miles walked to 0. (#R$F15B)
+ $F191 LD ($F15B),HL   ; }
+ $F194 LD (IY+$0A),$98 ; Ensure the player is on the ground.
  $F198 CALL $B902      ; Clear the playing area.
- $F19B LD HL,$F15D     ;
- $F19E CALL $B969      ;
- $F1A1 JR $F1D2        ;
-*$F1A3 CALL $EEA2      ;
- $F1A6 CALL $F202      ;
+ $F19B LD HL,$F15D     ; Point #REGhl to the graphics data.
+ $F19E CALL $B969      ; Draw it.
+ $F1A1 JR $F1D2        ; Enter the room.
+*$F1A3 CALL $EEA2      ; Update the sprite buffers.
+ $F1A6 CALL $F202      ; Print the number of miles out of town
  $F1A9 LD A,$04        ; { Touching an arrow drops the endurance by 4.
  $F1AB LD ($F26E),A    ; }
- $F1AE LD A,($F15A)    ;
- $F1B1 CP $02          ;
- $F1B3 LD A,$82        ;
- $F1B5 JR Z,$F1B9      ;
- $F1B7 LD A,$84        ;
-*$F1B9 CALL $ED8A      ;
- $F1BC CALL $B09F      ;
- $F1BF CALL $B0E6      ;
- $F1C2 CALL $B9FB      ;
- $F1C5 LD BC,($F158)   ;
- $F1C9 LD HL,($F15B)   ;
- $F1CC LD A,(IY+$05)   ;
- $F1CF CP B            ;
- $F1D0 JR NZ,$F1E6     ;
-*$F1D2 LD BC,($F158)   ;
- $F1D6 LD HL,($F15B)   ;
- $F1D9 LD A,($F15A)    ;
- $F1DC ADD A,C         ;
- $F1DD LD (IY+$05),A   ;
- $F1E0 INC HL          ;
- $F1E1 LD ($F15B),HL   ;
- $F1E4 JR $F1A3        ;
-*$F1E6 CP C            ;
- $F1E7 JR NZ,$F1A3     ;
- $F1E9 DEC HL          ;
- $F1EA LD ($F15B),HL   ;
- $F1ED LD A,H          ;
- $F1EE OR L            ;
- $F1EF JR Z,$F1FC      ;
- $F1F1 LD A,($F15A)    ;
- $F1F4 LD C,A          ;
+ $F1AE LD A,($F15A)    ; Get the direction of arrows.
+ $F1B1 CP $02          ; Is the direction left?
+ $F1B3 LD A,$82        ; Set #REGa to "left arrow".
+ $F1B5 JR Z,$F1B9      ; Jump if the direction is left.
+ $F1B7 LD A,$84        ; Set #REGa to "right arrow".
+*$F1B9 CALL $ED8A      ; Set up moving objects (the movement is the same as the Laboratory).
+ $F1BC CALL $B09F      ; Get user input.
+ $F1BF CALL $B0E6      ; Put characters in the sprite buffer.
+ $F1C2 CALL $B9FB      ; Put the sprites on scren.
+ $F1C5 LD BC,($F158)   ; Get the co-ordinate limits in #REGbc.
+ $F1C9 LD HL,($F15B)   ; Put the number of miles walked in #REGhl.
+ $F1CC LD A,(IY+$05)   ; Put the X co-ordinate in #REGb.
+ $F1CF CP B            ; Has it reached the edge?
+ $F1D0 JR NZ,$F1E6     ; Jump forward if it hasn't.
+; Move to a room with more miles.
+*$F1D2 LD BC,($F158)   ; Put the extremities in #REGbc.
+ $F1D6 LD HL,($F15B)   ; Put the number of miles in #REGhl.
+ $F1D9 LD A,($F15A)    ; Put the direction in #REGc.
+ $F1DC ADD A,C         ; { Set the X co-ordinate to the initial position.
+ $F1DD LD (IY+$05),A   ; }
+ $F1E0 INC HL          ; { Increment the number of miles.
+ $F1E1 LD ($F15B),HL   ; }
+ $F1E4 JR $F1A3        ; Jump back to run the room.
+; Move to a room with less miles.
+*$F1E6 CP C            ; Is the Y co-ordinate at the edge?
+ $F1E7 JR NZ,$F1A3     ; Jump back if it isn't.
+ $F1E9 DEC HL          ; { Decrement the number of miles.
+ $F1EA LD ($F15B),HL   ; }
+ $F1ED LD A,H          ; { Is this zero?
+ $F1EE OR L            ; }
+ $F1EF JR Z,$F1FC      ; If so, jump forward as we're back in town.
+ $F1F1 LD A,($F15A)    ; Put the direction in #REGa.
+ $F1F4 LD C,A          ; { Set the X co-ordinate to the initial position.
  $F1F5 LD A,B          ;
- $F1F6 SUB C           ;
- $F1F7 LD (IY+$05),A   ;
- $F1FA JR $F1A3        ;
-*$F1FC LD (IY+$05),B   ;
+ $F1F6 SUB C           ; }
+ $F1F7 LD (IY+$05),A   ; Set the new X co-ordinate.
+ $F1FA JR $F1A3        ; Jump back to run the room.
+; Finally found our way back to town.
+*$F1FC LD (IY+$05),B   ; Set the X co-ordinate as the starting point for a room with less miles.
  $F1FF JP $EE8D        ;
 
 ; Print the current miles "out of town"
 ;
 ; Used by the routine at #R$F177.
-c$F202 LD HL,($F15B) ;
- $F205 LD BC,$DFDC   ;
- $F208 LD ($B7E9),BC ;
- $F20C LD DE,$1208   ;
- $F20F LD A,$2F      ;
- $F211 LD BC,$2710   ;
- $F214 CALL $F233    ;
- $F217 LD BC,$03E8   ;
- $F21A CALL $F233    ;
- $F21D LD BC,$0064   ;
- $F220 CALL $F233    ;
- $F223 LD BC,$000A   ;
- $F226 CALL $F233    ;
- $F229 LD BC,$0001   ;
- $F22C CALL $F233    ;
- $F22F LD A,$4D      ;
- $F231 JR $F23A      ;
+c$F202 LD HL,($F15B) ; Put the number of miles in #REGhl.
+ $F205 LD BC,$DFDC   ; { Set the drawing routine at #R$B7BA to use #R$DFDC as a base address.
+ $F208 LD ($B7E9),BC ; }
+ $F20C LD DE,$1208   ; Set the position.
+ $F20F LD A,$2F      ; Set #REGa just before ASCII '0' so the correct digits are printed.
+ $F211 LD BC,$2710   ; { Print tens of thousands.
+ $F214 CALL $F233    ; }
+ $F217 LD BC,$03E8   ; { Print thousands.
+ $F21A CALL $F233    ; }
+ $F21D LD BC,$0064   ; { Print hundreds.
+ $F220 CALL $F233    ; }
+ $F223 LD BC,$000A   ; { Print tens.
+ $F226 CALL $F233    ; }
+ $F229 LD BC,$0001   ; { Print units.
+ $F22C CALL $F233    ; }
+ $F22F LD A,$4D      ; { Print 'M'.
+ $F231 JR $F23A      ; }
 
 ; Print a digit for the miles "out of town"
 ;
 ; Used by the routine at #R$F202.
-c$F233 INC A         ;
- $F234 AND A         ;
- $F235 SBC HL,BC     ;
- $F237 JR NC,$F233   ;
- $F239 ADD HL,BC     ;
+; A Base character to use for drawing.
+; HL Number of miles to print
+; BC Value to divide by (to select the correct digit)
+c$F233 INC A         ; Increment the current character.
+ $F234 AND A         ; Reset the carry flag.
+ $F235 SBC HL,BC     ; Decrement by the divisor.
+ $F237 JR NC,$F233   ; Repeat while there is no carry,
+                     ; which will leave the result of the division in #REGa.
+ $F239 ADD HL,BC     ; Restore the last decrement so the number of miles is correct.
 ; This entry point is used by the routine at #R$F202.
-*$F23A LD C,$70      ;
- $F23C CALL $B7F9    ;
- $F23F INC E         ;
- $F240 LD A,$2F      ;
- $F242 RET           ;
+*$F23A LD C,$70      ; Use bright black on yellow.
+ $F23C CALL $B7F9    ; Print the graphic.
+ $F23F INC E         ; Move to the next row.
+ $F240 LD A,$2F      ; Set #REGa back to just before ASCII '0' for the next run.
+ $F242 RET           ; Return.
 
 ; Movement table : The Post Office
 b$F243 DEFB $20,$44,$04,$02,$98,$A0,$FC,$02
