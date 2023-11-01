@@ -442,13 +442,19 @@ class WallyHtmlWriter(HtmlWriter):
             print( 'D $' + f'{ptr:x}'.upper() + ' #CALL:print_block_data(#PC,block_data_' + f'{i:x}'.upper() + ')' )
 
     def print_player( self, cwd, addr, attr, fName ):
+        return self.print_player_or_mask( cwd, addr, attr, fName, 2 )
+    
+    def print_mask( self, cwd, addr, attr, fName ):
+        return self.print_player_or_mask( cwd, addr, attr, fName, 0 )
+
+    def print_player_or_mask( self, cwd, addr, attr, fName, offset ):
         frames = []
         for f in range( 0, 8 ):
             ptr = addr + ( 0x80 * f )
             udgs = []
             for y in range( 0, 4 ):
                 udgline = []
-                for x in range( 0, 4 ):
+                for x in range( offset, offset + 2 ):
                     data = []
                     sptr = ptr +  y * 32  + x
                     for i in range( 0, 8 ):

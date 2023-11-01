@@ -883,6 +883,12 @@ g$6B00 DEFS $1000
 ; Lookup table for reversing graphics
 ;
 ; Used by the routine at #R$81E3.
+;
+; .
+;
+; The table gives a fast way of reversing all the bits in a byte.
+; On lookup, the index to the table gives the inverse bit pattern.
+; This saves time calculating it by hand.
 b$7B00 DEFB $00,$80,$40,$C0,$20,$A0,$60,$E0
  $7B08 DEFB $10,$90,$50,$D0,$30,$B0,$70,$F0
  $7B10 DEFB $08,$88,$48,$C8,$28,$A8,$68,$E8
@@ -1180,13 +1186,17 @@ b$80A9 DEFB $FF,$00,$00,$00,$00,$FF,$00,$00
 ; Show title screen
 ;
 ; Used by the routines at #R$8155 and #R$8184.
+;
+; .
+;
+; The routine returns when the user starts a game.
 c$80E5 CALL $B8ED    ; Clear the screen.
  $80E8 CALL $B471    ; Initialize the theme tune data.
 *$80EB LD HL,$7DC6   ; { Print the title page text. (#R$7DC6)
  $80EE LD DE,$0003   ;
  $80F1 CALL $B8C4    ; }
  $80F4 LD HL,$7E37   ; Point #REGhl at the "key" text. (#R$7E37)
- $80F7 LD A,($B2DB)  ; { Put the current control mechanism (#$RB2DB) in #REGb.
+ $80F7 LD A,($B2DB)  ; { Put the current control mechanism (#R$B2DB) in #REGb.
  $80FA LD B,A        ; }
  $80FB LD A,$02      ; { Convert this to a location on screen
  $80FD SUB B         ; and put it in #REGde.
@@ -1200,26 +1210,26 @@ c$80E5 CALL $B8ED    ; Clear the screen.
  $8106 CALL $B8C4    ; Print a marker against the selected option.
 *$8109 LD A,$FF      ; { Set to no key pressed.
  $810B LD ($B4E9),A  ; }
- $810E CALL $B482    ;
- $8111 LD A,($B55F)  ;
- $8114 OR A          ;
- $8115 JR NZ,$8155   ;
- $8117 LD A,($B4E9)  ;
- $811A BIT 0,A       ;
- $811C JR NZ,$8123   ;
- $811E CALL $B2DC    ;
- $8121 JR $80EB      ;
-*$8123 BIT 1,A       ;
- $8125 JR NZ,$812C   ;
- $8127 CALL $B2E2    ;
- $812A JR $80EB      ;
-*$812C BIT 2,A       ;
- $812E JR NZ,$8135   ;
- $8130 CALL $B2E8    ;
- $8133 JR $80EB      ;
-*$8135 BIT 3,A       ;
- $8137 JR NZ,$8109   ;
- $8139 RET           ;
+ $810E CALL $B482    ; Play the next note of the theme tune.
+ $8111 LD A,($B55F)  ; { Is the tune still playing?
+ $8114 OR A          ; }
+ $8115 JR NZ,$8155   ; If not, start demo mode.
+ $8117 LD A,($B4E9)  ; Get the last key pressed.
+ $811A BIT 0,A       ; Was '1' pressed?
+ $811C JR NZ,$8123   ; Jump forward if not.
+ $811E CALL $B2DC    ; { Select Sinclair control and continue playing the tune.
+ $8121 JR $80EB      ; }
+*$8123 BIT 1,A       ; Was '2' pressed?
+ $8125 JR NZ,$812C   ; Jump forward if not.
+ $8127 CALL $B2E2    ; { Select Kempston control and continue playing the tune.
+ $812A JR $80EB      ; }
+*$812C BIT 2,A       ; Was '3' pressed?
+ $812E JR NZ,$8135   ; Jump forward if not.
+ $8130 CALL $B2E8    ; { Select Keyboard control and continue playing the tune.
+ $8133 JR $80EB      ; }
+*$8135 BIT 3,A       ; Was '4' pressed?
+ $8137 JR NZ,$8109   ; Jump back if not to continue playing the tune.
+ $8139 RET           ; Otherwise return to start the game.
 
 ; The current room showing in demo mode.
 g$813A DEFB $00
@@ -1270,6 +1280,7 @@ c$8155 CALL $BAD8    ; Initialize character data.
 c$8184 DI            ; Disable interrupts.
  $8185 LD SP,$FC00   ; Put the stack somewhere safe.
  $8188 CALL $80E5    ; Show the title screen.
+; The game is now ready to start.
  $818B CALL $BAD8    ; Initialize character data
  $818E CALL $E3FD    ; Refresh the status bar.
  $8191 CALL $813B    ; Set up initial game data.
@@ -1309,37 +1320,43 @@ c$81C4 LD A,$FE      ; { Read CAPS - V on the keyboard.
  $81D0 RET NZ        ; Return if not.
  $81D1 JP $81C4      ; Otherwise loop back and wait until the keys are released.
 
-; Update a sprite's animation tiles (flipping if required)
+; Change direction
 ;
 ; Used by the routines at #R$B1A6, #R$B288 and #R$EFC7.
-c$81D4 EXX           ;
- $81D5 XOR $01       ;
- $81D7 LD (IY-$3C),A ;
- $81DA LD E,(IY+$23) ;
- $81DD LD D,(IY+$28) ;
- $81E0 LD BC,$0400   ;
+;
+; IY Current character pointer (#R$BC67 - #N$BC6B)
+c$81D4 EXX           ; Exchange all registers.
+ $81D5 XOR $01       ; Invert bit 1.
+ $81D7 LD (IY-$3C),A ; Set this for this character
+ $81DA LD E,(IY+$23) ; { Put the graphic ID in #REGde.
+ $81DD LD D,(IY+$28) ; }
+ $81E0 LD BC,$0400   ; Copy #N$400 bytes (size of all frames).
+                     ; Control passes to #R$81E3.
 
-; Reverse a sprite according to the criteria in the buffer at $7B00
+; Change a sprite to the reverse direction
 ;
 ; Used by the routine at #R$F047.
 ;
 ; DE The address of the graphic
 ; BC The size of the data to copy
-c$81E3 LD A,(DE)     ;
- $81E4 EX AF,AF'     ;
- $81E5 INC DE        ;
- $81E6 LD A,(DE)     ;
- $81E7 DEC DE        ;
- $81E8 LD L,A        ;
- $81E9 LD H,$7B      ;
- $81EB LDI           ;
- $81ED EX AF,AF'     ;
- $81EE LD H,$7B      ;
- $81F0 LD L,A        ;
- $81F1 LDI           ;
- $81F3 JP PE,$81E3   ;
- $81F6 EXX           ;
- $81F7 RET           ;
+;
+; The buffer at #R$7B00 has lookup entries that allow fast reversal
+; of graphic data without having to recalculate it by hand.
+c$81E3 LD A,(DE)     ; Get the first byte.
+ $81E4 EX AF,AF'     ; Swap #REGa for the shadow copy.
+ $81E5 INC DE        ; { Put the second byte in #REGa.
+ $81E6 LD A,(DE)     ; 
+ $81E7 DEC DE        ; }
+ $81E8 LD L,A        ; { Set the index to copy from the buffer.
+ $81E9 LD H,$7B      ; }
+ $81EB LDI           ; Do the copy.
+ $81ED EX AF,AF'     ; Swap #REGa for the other instance.
+ $81EE LD H,$7B      ; { Set the index to copy from the buffer.
+ $81F0 LD L,A        ; }
+ $81F1 LDI           ; Do the copy.
+ $81F3 JP PE,$81E3   ; Loop while there is more to do.
+ $81F6 EXX           ; { Swap all main registers and return.
+ $81F7 RET           ; }
 
 ; Screen offsets for status bar
 ;
@@ -2434,9 +2451,10 @@ b$93F8 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
  $9428 DEFB $FF,$87,$00,$20,$FF,$8F,$00,$00
  $9430 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
 
-; Wally L
+; Wally
 ;
-; #CALL:print_player(#PC,$46,wallyL)
+; #CALL:print_player(#PC,$46,wally)
+; #CALL:print_mask(#PC,$46,wallyM)
 b$9438 DEFB $F0,$00,$00,$00,$E0,$00,$07,$3E
  $9440 DEFB $E0,$00,$0F,$FF,$80,$00,$07,$FE
  $9448 DEFB $80,$00,$3C,$3C,$80,$01,$01,$80
@@ -2566,9 +2584,10 @@ b$9438 DEFB $F0,$00,$00,$00,$E0,$00,$07,$3E
  $9828 DEFB $03,$F0,$50,$07,$07,$F0,$C0,$03
  $9830 DEFB $1F,$F8,$00,$00,$FF,$FF,$00,$00
 
-; Wilma L
+; Wilma
 ;
-; #CALL:print_player(#PC,$45,wilmaL)
+; #CALL:print_player(#PC,$45,wilma)
+; #CALL:print_mask(#PC,$45,wilmaM)
 b$9838 DEFB $E0,$0F,$07,$C0,$C0,$07,$0D,$60
  $9840 DEFB $C0,$07,$1F,$B0,$C0,$03,$19,$D0
  $9848 DEFB $C0,$03,$16,$F8,$C0,$03,$06,$D0
@@ -2698,9 +2717,10 @@ b$9838 DEFB $E0,$0F,$07,$C0,$C0,$07,$0D,$60
  $9C28 DEFB $F0,$FF,$06,$00,$F0,$FF,$04,$00
  $9C30 DEFB $F1,$FF,$00,$00,$FF,$FF,$00,$00
 
-; Tom L
+; Tom
 ;
-; #CALL:print_player(#PC,$44,tomL)
+; #CALL:print_player(#PC,$44,tom)
+; #CALL:print_mask(#PC,$44,tomM)
 b$9C38 DEFB $01,$FF,$00,$00,$00,$FF,$54,$00
  $9C40 DEFB $00,$7F,$7E,$00,$00,$7F,$C3,$00
  $9C48 DEFB $00,$3F,$3D,$00,$00,$3F,$7E,$80
@@ -2830,9 +2850,10 @@ b$9C38 DEFB $01,$FF,$00,$00,$00,$FF,$54,$00
  $A028 DEFB $FF,$F8,$00,$03,$FF,$F8,$00,$00
  $A030 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
 
-; Dick L
+; Dick
 ;
-; #CALL:print_player(#PC,$43,dickL)
+; #CALL:print_player(#PC,$43,dick)
+; #CALL:print_mask(#PC,$43,dickM)
 b$A038 DEFB $FC,$3F,$00,$00,$FC,$3F,$01,$80
  $A040 DEFB $F8,$0F,$00,$00,$F0,$07,$03,$E0
  $A048 DEFB $E0,$07,$04,$10,$E0,$07,$0F,$F0
@@ -2962,9 +2983,10 @@ b$A038 DEFB $FC,$3F,$00,$00,$FC,$3F,$01,$80
  $A428 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
  $A430 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
 
-; Harry L
+; Harry
 ;
-; #CALL:print_player(#PC,$47,harryL)
+; #CALL:print_player(#PC,$47,harry)
+; #CALL:print_mask(#PC,$47,harryM)
 b$A438 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
  $A440 DEFB $FF,$FF,$00,$00,$E0,$FF,$00,$00
  $A448 DEFB $C0,$7F,$0A,$00,$80,$3F,$15,$00
@@ -3095,10 +3117,15 @@ b$A438 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
  $A830 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
 
 ; Temporary co-ordinates for putting static objects on screen
-b$A838 DEFB $00,$00,$00
+;
+; Used by the routine at #R$A83D.
+g$A838 DEFB $00,$00
+
+; Unused
+s$A83A DEFS $01
 
 ; Temporary store for the stack pointer for putting static objects on screen
-w$A83B DEFW $0000
+g$A83B DEFW $0000
 
 ; Put a static object on screen
 ;
@@ -3273,18 +3300,17 @@ c$A8A0 EXX           ;
  $A91F POP AF        ;
  $A920 RET           ;
 
-; Get the next player number to process
+; Set the zero flag if the player is the current one.
 ;
 ; Used by the routines at #R$A92C, #R$AA30, #R$B288 and #R$E79B.
 ;
 ; IY Pointer to player buffer.
-; L On exit, holds the character number
 c$A921 PUSH IY       ; { Copy the pointer to #REGhl.
  $A923 POP HL        ; }
- $A924 LD DE,($B09D) ; { Subtract the current base pointer to the buffer,
- $A928 AND A         ; which will give a player number from 0 (Wally)
- $A929 SBC HL,DE     ; to 4 (Harry).
- $A92B RET           ; }
+ $A924 LD DE,($B09D) ; { Subtract the current base pointer to the buffer.
+ $A928 AND A         ; 
+ $A929 SBC HL,DE     ; }
+ $A92B RET           ; Return, with the zero flag set if the pointers match.
 
 ; Move a computer controlled character
 ;
@@ -3461,11 +3487,11 @@ c$AA30 PUSH HL       ; Remember #REGhl.
 ; Generate an "item swapped" sound effect
 ;
 ; Used by the routines at #R$AA30 and #R$EB0F.
-c$AA7F LD BC,$FF0A   ;
- $AA82 LD DE,$0114   ;
- $AA85 LD HL,$1401   ;
- $AA88 CALL $E3D3    ;
- $AA8B RET           ;
+c$AA7F LD BC,$FF0A   ; Set the pitch and "descending" times.
+ $AA82 LD DE,$0114   ; Set the "static" and "ascending" times.
+ $AA85 LD HL,$1401   ; Set the "descending" and "ascending" level.
+ $AA88 CALL $E3D3    ; { Play the sound and return.
+ $AA8B RET           ; }
 
 ; Get address of the item object buffer given its ID
 ;
@@ -3957,7 +3983,7 @@ b$AD78 DEFB $0C,$10,$0E,$10,$0E,$11,$10,$10
  $ADB0 DEFB $08,$11,$08,$12,$06,$12,$04,$13
  $ADB8 DEFB $05,$14
 
-; A character can perform an action here. Do it if necessary
+; Update a computer-controlled character
 ;
 ; Used by the routines at #R$A92C and #R$AE5D.
 c$ADBA LD A,(IY+$0F)   ; Get the current room.
@@ -4131,17 +4157,17 @@ w$AED5 DEFW $AEEA
 ; Used by the routine at #R$A92C.
 ;
 ; A On return, holds the room number
-c$AED7 PUSH HL       ;
- $AED8 LD HL,($AED5) ;
- $AEDB LD A,(HL)     ;
- $AEDC CP $FF        ;
- $AEDE JR NZ,$AEE4   ;
- $AEE0 LD HL,$AEEA   ;
- $AEE3 LD A,(HL)     ;
-*$AEE4 INC HL        ;
- $AEE5 LD ($AED5),HL ;
- $AEE8 POP HL        ;
- $AEE9 RET           ;
+c$AED7 PUSH HL       ; Remember #REGhl.
+ $AED8 LD HL,($AED5) ; Get the current pointer to the swap list.
+ $AEDB LD A,(HL)     ; Get the next room.
+ $AEDC CP $FF        ; Is it an end marker?
+ $AEDE JR NZ,$AEE4   ; Jump forward if it isn't.
+ $AEE0 LD HL,$AEEA   ; { Otherwise move back to the start of the list.
+ $AEE3 LD A,(HL)     ; and get that item. }
+*$AEE4 INC HL        ; { Move to the next position in the table
+ $AEE5 LD ($AED5),HL ; and store it. }
+ $AEE8 POP HL        ; { Restore #REGhl and return.
+ $AEE9 RET           ; }
 
 ; List of rooms a computer player can swap items in. Terminated by FF.
 b$AEEA DEFB $02,$04,$05,$08,$09,$0A,$0B,$0C
@@ -4314,7 +4340,7 @@ c$AFC4 LD (IY+$37),$01 ; Set that the character is mid-air.
 *$B006 LD (IY+$37),$00 ; { Reset the "mid-air" flag and return.
  $B00A RET             ; }
 
-; Check that 'left' has been pressed, and set A to 1 if it has
+; Check that 'right' has been pressed, and set A to 1 if it has
 ;
 ; Used by the routines at #R$B09F, #R$F0C0 and #R$F93A.
 c$B00B LD A,($B2DB)  ; Get the input mechanism. (#R$B2DB)
@@ -4324,7 +4350,7 @@ c$B00B LD A,($B2DB)  ; Get the input mechanism. (#R$B2DB)
  $B013 JR NZ,$B01D   ; Jump forward if it is.
 ; Use Kempston input
  $B015 IN A,($1F)    ; Read the Kempston interface.
- $B017 BIT 0,A       ; Was 'left' pressed?
+ $B017 BIT 0,A       ; Was 'right' pressed?
  $B019 JR NZ,$B025   ; If so, jump forward to signal success.
  $B01B JR $B03A      ; Otherwise, jump forward to indicate nothing read.
 ; Use Sinclair input
@@ -4350,7 +4376,7 @@ c$B00B LD A,($B2DB)  ; Get the input mechanism. (#R$B2DB)
 *$B03A XOR A         ; { Return #REGa with 0.
  $B03B RET           ; }
 
-; Check that 'right' has been pressed, and set A to 1 if it has
+; Check that 'left' has been pressed, and set A to 1 if it has
 ;
 ; Used by the routines at #R$B09F, #R$F0C0 and #R$F93A.
 c$B03C LD A,($B2DB)  ; Get the input mechanism. (#R$B2DB)
@@ -4360,7 +4386,7 @@ c$B03C LD A,($B2DB)  ; Get the input mechanism. (#R$B2DB)
  $B044 JR NZ,$B04E   ; Jump forward if it is.
 ; Use Kempston input
  $B046 IN A,($1F)    ; Read the Kempston interface.
- $B048 BIT 1,A       ; Was 'right' pressed?
+ $B048 BIT 1,A       ; Was 'left' pressed?
  $B04A JR NZ,$B056   ; If so, jump forward to signal success.
  $B04C JR $B06B      ; Otherwise, jump forward to indicate nothing read.
 ; Use Sinclair input
@@ -4435,30 +4461,30 @@ g$B09D DEFW $0000
 ;
 ; Used by the routines at #R$8184 and #R$F177.
 c$B09F LD IY,($B09D)   ; Point #REGiy at the current player buffer.
- $B0A3 LD A,(IY+$0F)   ;
- $B0A6 LD ($B951),A    ;
- $B0A9 CALL $AFC4      ;
- $B0AC LD A,(IY+$46)   ;
+ $B0A3 LD A,(IY+$0F)   ; { Mark the current player's room as the current one. (#R$B951).
+ $B0A6 LD ($B951),A    ; }
+ $B0A9 CALL $AFC4      ; Drop the player to ground if they are in mid-air.
+ $B0AC LD A,(IY+$46)   ; Set flag (?) to 0. (#R$BCAD)
  $B0AF OR A            ;
- $B0B0 JP NZ,$B1B9     ;
- $B0B3 LD A,(IY+$37)   ;
- $B0B6 OR A            ;
- $B0B7 JP NZ,$B197     ;
- $B0BA CALL $B06D      ;
- $B0BD OR A            ;
- $B0BE JP NZ,$B1A6     ;
+ $B0B0 JP NZ,$B1B9     ; If not zero, make the character jump.
+ $B0B3 LD A,(IY+$37)   ; { Is the character on the ground? (???)
+ $B0B6 OR A            ; }
+ $B0B7 JP NZ,$B197     ; If not, make them fall one level.
+ $B0BA CALL $B06D      ; { Was 'jump' pressed?
+ $B0BD OR A            ; }
+ $B0BE JP NZ,$B1A6     ; If it was, make the character jump.
  $B0C1 LD (IY+$3C),$00 ;
- $B0C5 CALL $B00B      ;
- $B0C8 OR A            ;
- $B0C9 JR Z,$B0D6      ;
- $B0CB LD (IY+$3C),$01 ;
- $B0CF LD (IY+$41),$01 ;
- $B0D3 JP $B288        ;
-*$B0D6 CALL $B03C      ;
- $B0D9 OR A            ;
- $B0DA RET Z           ;
- $B0DB LD (IY+$3C),$FF ;
- $B0DF LD (IY+$41),$FF ;
+ $B0C5 CALL $B00B      ; { Was 'right' pressed?
+ $B0C8 OR A            ; }
+ $B0C9 JR Z,$B0D6      ; Jump forward if it wasn't.
+ $B0CB LD (IY+$3C),$01 ; { Set the direction to "right".
+ $B0CF LD (IY+$41),$01 ; }
+ $B0D3 JP $B288        ; Move the character.
+*$B0D6 CALL $B03C      ; { Was 'left' pressed?
+ $B0D9 OR A            ; }
+ $B0DA RET Z           ; Return if it wasn't, no input made.
+ $B0DB LD (IY+$3C),$FF ; { Set the direction to "left".
+ $B0DF LD (IY+$41),$FF ; }
  $B0E3 JP $B288        ;
 
 ; Put a character into the sprite buffer
@@ -4466,51 +4492,56 @@ c$B09F LD IY,($B09D)   ; Point #REGiy at the current player buffer.
 ; Used by the routines at #R$B9D6, #R$EFC7 and #R$F177.
 ;
 ; IY The base address of the character buffer (BC67 - BC6B)
-c$B0E6 EXX           ;
- $B0E7 LD E,(IY+$23) ;
- $B0EA LD D,(IY+$28) ;
- $B0ED LD ($A83B),SP ;
- $B0F1 LD H,(IY+$00) ;
- $B0F4 LD L,$00      ;
- $B0F6 SRL H         ;
- $B0F8 RR L          ;
- $B0FA ADD HL,DE     ;
- $B0FB LD SP,HL      ;
+;
+; . 
+; This routine was copied from a similar one in Pyjamarama.
+c$B0E6 EXX           ; Exchange main registers.
+ $B0E7 LD E,(IY+$23) ; { Put the graphic address in #REGde. (#R$BC8A / #R$BC8F)
+ $B0EA LD D,(IY+$28) ; }
+ $B0ED LD ($A83B),SP ; Store a copy of the stack pointer. (#R$A83B)
+ $B0F1 LD H,(IY+$00) ; { Put the frame number in #REGhl.
+ $B0F4 LD L,$00      ; }
+ $B0F6 SRL H         ; { Halve it to get the correct offset.
+ $B0F8 RR L          ; }
+ $B0FA ADD HL,DE     ; Add the base address.
+ $B0FB LD SP,HL      ; Point the stack at the graphic to draw.
  $B0FC LD A,(IY+$05) ; Get the X co-ordinate.
- $B0FF LD B,A        ;
- $B100 AND $07       ;
- $B102 LD ($B189),A  ;
+ $B0FF LD B,A        ; Store this in #REGb.
+ $B100 AND $07       ; { Put the bottom 3 bits in #N$B189, 
+ $B102 LD ($B189),A  ; which modifies later code. }
  $B105 INC A         ;
  $B106 LD ($B129),A  ;
  $B109 LD ($B145),A  ;
- $B10C LD A,B        ;
- $B10D AND $F8       ;
+ $B10C LD A,B        ; { Put the top 5 bits as a value
+ $B10D AND $F8       ; in #N$B17B, which modifies later code.
  $B10F RRCA          ;
  $B110 RRCA          ;
  $B111 RRCA          ;
- $B112 LD ($B17B),A  ;
- $B115 ADD A,$02     ;
- $B117 LD E,A        ;
- $B118 LD C,$20      ;
- $B11A LD L,(IY+$0A) ;
- $B11D LD H,$00      ;
- $B11F ADD HL,HL     ;
+ $B112 LD ($B17B),A  ; }
+ $B115 ADD A,$02     ; { Add 2 and put this in #REGe. 
+ $B117 LD E,A        ; }
+ $B118 LD C,$20      ; #N20 columns to draw.
+ $B11A LD L,(IY+$0A) ; { Put the Y co-ordinate in #REGhl.
+ $B11D LD H,$00      ; }
+ $B11F ADD HL,HL     ; { Multiply by 16 to get a suitable offset.
  $B120 ADD HL,HL     ;
  $B121 ADD HL,HL     ;
  $B122 ADD HL,HL     ;
- $B123 ADD HL,HL     ;
- $B124 LD D,$63      ;
- $B126 ADD HL,DE     ;
-*$B127 POP DE        ;
- $B128 LD B,$00      ;
- $B12A DEC B         ;
- $B12B JR Z,$B139    ;
- $B12D SCF           ;
+ $B123 ADD HL,HL     ; }
+ $B124 LD D,$63      ; Set the high byte of #REGde to the sprite buffer.
+ $B126 ADD HL,DE     ; Add the offset.
+*$B127 POP DE        ; Move forward a column.
+ $B128 LD B,$00      ; Set #REGb to the number of times to rotate bits.
+                     ; (was modified earlier in the code)
+ $B12A DEC B         ; { Loop while there is more to draw.
+ $B12B JR Z,$B139    ; }
+ $B12D SCF           ; Set the carry flag.
  $B12E LD A,$FF      ;
 *$B130 RR E          ;
  $B132 RR D          ;
  $B134 RRA           ;
- $B135 DJNZ $B130    ;
+ $B135 DJNZ $B130    ; Loop while there is more to do.
+; At this point, #REGhl points to the address in the sprite buffer to update.
  $B137 AND (HL)      ;
  $B138 LD (HL),A     ;
 *$B139 DEC HL        ;
@@ -4572,48 +4603,49 @@ c$B0E6 EXX           ;
  $B18D LD (HL),C     ;
 *$B18E ADD HL,DE     ;
  $B18F DJNZ $B184    ;
- $B191 EXX           ;
- $B192 LD SP,($A83B) ;
- $B196 RET           ;
+ $B191 EXX           ; Exchange main registers.
+ $B192 LD SP,($A83B) ; { Restore the stack and return.
+ $B196 RET           ; }
 
 ; Drop the current character's height down one notch up to floor level
 ;
 ; Used by the routines at #R$A92C and #R$B09F.
-c$B197 LD A,(IY+$0A) ;
- $B19A ADD A,$04     ;
- $B19C CP $98        ;
- $B19E JR C,$B1A2    ;
- $B1A0 LD A,$98      ;
-*$B1A2 LD (IY+$0A),A ;
- $B1A5 RET           ;
+c$B197 LD A,(IY+$0A) ; Get the Y co-ordinate.
+ $B19A ADD A,$04     ; Add 4 to it to drop down one level.
+ $B19C CP $98        ; { Set the maximum Y co-ordinate to #N$98
+ $B19E JR C,$B1A2    ; so they can't drop below floor level.
+ $B1A0 LD A,$98      ; }
+*$B1A2 LD (IY+$0A),A ; { Store the new Y co-ordinate and return.
+ $B1A5 RET           ; }
 
 ; Make the current character jump
 ;
 ; Used by the routines at #R$AB60, #R$AB9B and #R$B09F.
-c$B1A6 LD A,(IY+$3C)   ;
- $B1A9 OR A            ;
- $B1AA JR NZ,$B1B2     ;
- $B1AC LD A,(IY+$41)   ;
- $B1AF LD (IY+$3C),A   ;
-*$B1B2 LD (IY+$46),A   ;
- $B1B5 LD (IY+$4B),$00 ;
+c$B1A6 LD A,(IY+$3C)   ; { Is the character jumping? (#R$BCA3)
+ $B1A9 OR A            ; }
+ $B1AA JR NZ,$B1B2     ; Move forward if they are.
+ $B1AC LD A,(IY+$41)   ; { Copy the current direction (#R$BCA8)
+ $B1AF LD (IY+$3C),A   ; to the jump flag. }
+*$B1B2 LD (IY+$46),A   ; Copy this to (?) #R$BCAD
+ $B1B5 LD (IY+$4B),$00 ; Set the jump table index to 0. #R$BCB2
 ; This entry point is used by the routines at #R$A92C and #R$B09F.
-*$B1B9 LD A,(IY+$3C)   ;
- $B1BC CP $01          ;
- $B1BE JR Z,$B21C      ;
- $B1C0 LD A,(IY+$4B)   ;
- $B1C3 LD E,A          ;
+*$B1B9 LD A,(IY+$3C)   ; Get the jump flag.
+ $B1BC CP $01          ; Is the character jumping right?
+ $B1BE JR Z,$B21C      ; Move to handle that if so.
+; Character is jumping left.
+ $B1C0 LD A,(IY+$4B)   ; Get the jump table index.
+ $B1C3 LD E,A          ; { Multiply by 3 and store in #REGde.
  $B1C4 ADD A,A         ;
  $B1C5 ADD A,E         ;
- $B1C6 LD E,A          ;
- $B1C7 LD D,$00        ;
- $B1C9 LD HL,$B264     ;
- $B1CC ADD HL,DE       ;
- $B1CD LD E,(HL)       ;
- $B1CE INC HL          ;
- $B1CF LD D,(HL)       ;
- $B1D0 INC HL          ;
- $B1D1 LD B,(HL)       ;
+ $B1C6 LD E,A          ; 
+ $B1C7 LD D,$00        ; }
+ $B1C9 LD HL,$B264     ; { Add the base address of the jump table (#R$B264)
+ $B1CC ADD HL,DE       ; to get an offset. }
+ $B1CD LD E,(HL)       ; Put the X offset in #REGe.
+ $B1CE INC HL          ; { Put the Y offset in #REGd.
+ $B1CF LD D,(HL)       ; }
+ $B1D0 INC HL          ; { Put the graphic frame number in #REGb.
+ $B1D1 LD B,(HL)       ; }
  $B1D2 LD A,D          ;
  $B1D3 DEC A           ;
  $B1D4 BIT 7,A         ;
@@ -4629,7 +4661,7 @@ c$B1A6 LD A,(IY+$3C)   ;
  $B1EB JR $B205        ;
 *$B1ED LD A,(IY-$3C)   ;
  $B1F0 OR A            ;
- $B1F1 CALL NZ,$81D4   ;
+ $B1F1 CALL NZ,$81D4   ; If not, need to change direction.
  $B1F4 LD A,(IY+$0A)   ;
  $B1F7 ADD A,D         ;
  $B1F8 LD (IY+$0A),A   ;
@@ -4637,28 +4669,30 @@ c$B1A6 LD A,(IY+$3C)   ;
  $B1FE SUB E           ;
  $B1FF JR NC,$B202     ;
  $B201 XOR A           ;
-*$B202 LD (IY+$05),A   ;
-*$B205 LD (IY+$00),B   ;
- $B208 INC (IY+$4B)    ;
- $B20B LD A,(IY+$4B)   ;
- $B20E CP $0C          ;
- $B210 RET NZ          ;
- $B211 LD (IY+$3C),$00 ;
- $B215 LD (IY+$46),$00 ;
- $B219 JP $E315        ;
-*$B21C LD A,(IY+$4B)   ;
- $B21F LD E,A          ;
+; Common exit point for jumping left and right.
+*$B202 LD (IY+$05),A   ; Set the current X co-ordinate (#R$BC6C) to #REGa.
+*$B205 LD (IY+$00),B   ; Set the current frame number (#R$BC67) to #REGb.
+ $B208 INC (IY+$4B)    ; Increment the jump table index.
+ $B20B LD A,(IY+$4B)   ; { Have we reached the end of the table?
+ $B20E CP $0C          ; }
+ $B210 RET NZ          ; Return if not.
+ $B211 LD (IY+$3C),$00 ; { Set flags as "not jumping"
+ $B215 LD (IY+$46),$00 ; }
+ $B219 JP $E315        ; Play a landing footstep sound and return.
+; Character is jumping right.
+*$B21C LD A,(IY+$4B)   ; Get the jump frame number.
+ $B21F LD E,A          ; { Multiply by 3 and store in #REGde.
  $B220 ADD A,A         ;
  $B221 ADD A,E         ;
  $B222 LD E,A          ;
- $B223 LD D,$00        ;
- $B225 LD HL,$B264     ;
- $B228 ADD HL,DE       ;
- $B229 LD E,(HL)       ;
- $B22A INC HL          ;
- $B22B LD D,(HL)       ;
- $B22C INC HL          ;
- $B22D LD B,(HL)       ;
+ $B223 LD D,$00        ; }
+ $B225 LD HL,$B264     ; { Add the base address of the jump table (#R$B264)
+ $B228 ADD HL,DE       ; to get an offset. }
+ $B229 LD E,(HL)       ; Put the X offset in #REGe.
+ $B22A INC HL          ; { Put the Y offset in #REGd.
+ $B22B LD D,(HL)       ; }
+ $B22C INC HL          ; { Put the graphic frame number in #REGb.
+ $B22D LD B,(HL)       ; }
  $B22E LD A,D          ;
  $B22F DEC A           ;
  $B230 BIT 7,A         ;
@@ -4670,11 +4704,11 @@ c$B1A6 LD A,(IY+$3C)   ;
  $B23D AND $07         ;
  $B23F JR NZ,$B249     ;
  $B241 LD (IY+$4B),$0B ;
- $B245 LD B,$00        ;
- $B247 JR $B205        ;
+ $B245 LD B,$00        ; Set the frame number to 0.
+ $B247 JR $B205        ; Jump back to update the sequence.
 *$B249 LD A,(IY-$3C)   ;
  $B24C OR A            ;
- $B24D CALL Z,$81D4    ;
+ $B24D CALL Z,$81D4    ; If so, need to change direction.
  $B250 LD A,(IY+$0A)   ;
  $B253 ADD A,D         ;
  $B254 LD (IY+$0A),A   ;
@@ -4683,28 +4717,46 @@ c$B1A6 LD A,(IY+$3C)   ;
  $B25B CP $F0          ;
  $B25D JR C,$B202      ;
  $B25F LD A,$F0        ;
- $B261 JP $B202        ;
+ $B261 JP $B202        ; Jump back and continue.
 
-; Jump table for computer controlled characters
-b$B264 DEFB $02,$FC,$06,$02,$FC,$06,$02,$FC
- $B26C DEFB $06,$02,$FC,$06,$02,$FC,$07,$02
- $B274 DEFB $FC,$07,$02,$04,$07,$02,$04,$07
- $B27C DEFB $02,$04,$06,$02,$04,$06,$02,$04
- $B284 DEFB $06,$02,$04,$00
+; Jump movement table
+;
+; Each entry in the table is executed during a jump, and holds three bytes.
+; The format for each entry is :
+; #TABLE(map)
+; { 0 | X position to increment by }
+; { 1 | Y position to increment by (can be negative) }
+; { 2 | Frame number to use during the jump (6 or 7) }
+; TABLE#
+b$B264 DEFB $02,$FC,$06
+ $B267 DEFB $02,$FC,$06
+ $B26A DEFB $02,$FC,$06
+ $B26D DEFB $02,$FC,$06
+ $B270 DEFB $02,$FC,$07
+ $B273 DEFB $02,$FC,$07
+ $B276 DEFB $02,$04,$07
+ $B279 DEFB $02,$04,$07
+ $B27C DEFB $02,$04,$06
+ $B27F DEFB $02,$04,$06
+ $B282 DEFB $02,$04,$06
+ $B285 DEFB $02,$04,$00
 
 ; Move a character left or right
 ;
 ; Used by the routines at #R$A92C, #R$AAB2, #R$AADD, #R$AB09, #R$AB26, #R$AB43,
 ; #R$AB60, #R$AB9B, #R$B09F, #R$B3C3 and #R$F0C0.
-c$B288 CALL $A921    ;
- $B28B JR Z,$B29E    ;
- $B28D LD A,($B951)  ;
- $B290 CP (IY+$0F)   ;
- $B293 JR Z,$B29E    ;
- $B295 LD A,(IY+$5F) ;
+;
+; IY Current character buffer (#R$B067 - #N$B0CB)
+c$B288 CALL $A921    ; Is this character the active one?
+ $B28B JR Z,$B29E    ; Jump forward if it is.
+ $B28D LD A,($B951)  ; Get the current room number.
+ $B290 CP (IY+$0F)   ; Is the player in this room?
+ $B293 JR Z,$B29E    ; Jump forward if they are.
+ $B295 LD A,(IY+$5F) ; { Flip the movement flag. (#R$BCC6)
  $B298 XOR $01       ;
- $B29A LD (IY+$5F),A ;
- $B29D RET Z         ;
+ $B29A LD (IY+$5F),A ; }
+ $B29D RET Z         ; Return if this is zero.
+; Do the update.
 *$B29E LD A,(IY+$00) ;
  $B2A1 INC A         ;
  $B2A2 CP $06        ;
@@ -4716,7 +4768,7 @@ c$B288 CALL $A921    ;
  $B2AF JR NZ,$B2C6   ;
  $B2B1 LD A,(IY-$3C) ;
  $B2B4 OR A          ;
- $B2B5 CALL Z,$81D4  ;
+ $B2B5 CALL Z,$81D4  ; If so, need to change direction.
  $B2B8 LD A,(IY+$05) ; Get the X co-ordinate.
  $B2BB ADD A,$02     ;
  $B2BD CP $F0        ;
@@ -4733,17 +4785,17 @@ c$B288 CALL $A921    ;
 *$B2D5 LD (IY+$05),A ;
  $B2D8 JP $E2FC      ;
 
-; The current control mechanism (0 - Keyboard, 1 - Sinclair, 2 - Kempston)
+; The current control mechanism (0 - Keyboard, 1 - Kempston, 2 - Sinclair)
 b$B2DB DEFB $00
 
-; Select Kempston control
+; Select Sinclair control
 ;
 ; Used by the routine at #R$80E5.
 c$B2DC LD A,$02      ; { Set 2 to the control mechanism byte.
  $B2DE LD ($B2DB),A  ;
  $B2E1 RET           ; }
 
-; Select Sinclair control
+; Select Kempston control
 ;
 ; Used by the routine at #R$80E5.
 c$B2E2 LD A,$01      ; { Set 1 to the control mechanism byte.
@@ -5021,9 +5073,9 @@ c$B482 LD HL,($B4E7) ; Point #REGhl towards the next note in the tune.
  $B4C7 JR NZ,$B4C5   ;
  $B4C9 EX DE,HL      ;
  $B4CA CALL $B505    ;
- $B4CD LD A,($B4E9)  ;
- $B4D0 CP $FF        ;
- $B4D2 RET NZ        ;
+ $B4CD LD A,($B4E9)  ; { Was a key pressed?
+ $B4D0 CP $FF        ; }
+ $B4D2 RET NZ        ; Return if it was.
 *$B4D3 LD BC,$0320   ;
  $B4D6 CALL $B4EB    ;
  $B4D9 JR $B482      ;
@@ -6025,8 +6077,10 @@ b$BB7C DEFB $1F,$1F,$1F,$1F,$1F     ; All players can pick any object up. (#R$BC
  $BC21 DEFB $01,$01,$01,$18,$18     ;  (#R$BCD5)
  $BC26 DEFB $01,$01,$01,$00,$00     ;  (#R$BCDA)
 
-; Unused
-s$BC2B DEFS $05
+; The current direction of each sprite (0 - left, 1 - right)
+;
+; Used by the routines in #R$B1A6, #R$B288 and #R$EFC7
+g$BC2B DEFB $00,$00,$00,$00,$00
 
 ; Flags for objects (?)
 g$BC30 DEFB $1F,$1F,$1F,$1F,$1F
@@ -6049,7 +6103,7 @@ g$BC49 DEFB $00,$00,$00,$00,$00
 ; Set to 1 to trigger a footstep sound for each character
 g$BC4E DEFB $00,$00,$00,$00,$00
 
-; Game status buffer at BC53
+; Set to 1 if a computer controlled character needs updating
 g$BC53 DEFB $00,$00,$00,$00,$00
 
 ; Game status buffer at BC58
@@ -6061,7 +6115,7 @@ g$BC5D DEFB $00,$00,$00,$00,$00
 ; Game status buffer at BC62
 g$BC62 DEFB $00,$00,$00,$00,$00
 
-; The animation phase for each character
+; The frame ID for each character
 ;
 ; Runs from #N$BC67 (Wally) to #N$BC6B (Harry).
 ;
@@ -6096,10 +6150,10 @@ g$BC80 DEFB $5B,$5C,$5D,$5E,$5F
 ; Mask offset for a character
 g$BC85 DEFB $46,$45,$44,$43,$07
 
-; Graphic offset for a character
+; Low byte of the character's graphic
 g$BC8A DEFB $38,$38,$38,$38,$38
 
-; Base address for a character's graphic
+; High byte of the character's graphic
 g$BC8F DEFB $94,$98,$9C,$A0,$A4
 
 ; Lives left for each player
@@ -6111,13 +6165,15 @@ g$BC99 DEFB $00,$00,$00,$00,$00
 ; Game status buffer at BC9E
 g$BC9E DEFB $00,$00,$00,$00,$00
 
-; Character jumping (0 = yes)
+; Character jump flag
+;
+; 0 = no, 1 = jumping right, FF = jumping left
 g$BCA3 DEFB $00,$00,$00,$00,$00
 
-; Character direction (0 = left, FF = right)
+; Character direction (01 = right, FF = left)
 g$BCA8 DEFB $01,$01,$01,$01,$01
 
-; Game status buffer at BCAD
+; If jumping, holds the frame number in the animation sequence
 g$BCAD DEFB $00,$00,$00,$00,$00
 
 ; Game status buffer at BCB2
@@ -6132,7 +6188,8 @@ g$BCBC DEFB $20,$22,$24,$26,$28
 ; Target room for a computer character (?)
 g$BCC1 DEFB $14,$05,$17,$12,$08
 
-; Game status buffer at BCC6
+; Flag that toggles between 0 and 1 when a character
+; not in the current room needs updating.
 g$BCC6 DEFB $00,$00,$00,$00,$00
 
 ; Next movement for a computer character
@@ -8514,29 +8571,31 @@ b$E0DC DEFB $00,$00,$00,$00,$00,$00,$00,$00
 ; Play a footstep sound effect
 ;
 ; Used by the routine at #R$B288.
-c$E2FC LD A,(IY+$00) ;
- $E2FF OR A          ;
- $E300 JR Z,$E30B    ;
- $E302 CP $03        ;
- $E304 JR Z,$E30B    ;
- $E306 XOR A         ;
+;
+; IY Pointer to character data (#R$BC67 - #N$BC6B)
+c$E2FC LD A,(IY+$00) ; Get the character's frame count.
+ $E2FF OR A          ; Is it zero?
+ $E300 JR Z,$E30B    ; Jump forward if so.
+ $E302 CP $03        ; Is it 3?
+ $E304 JR Z,$E30B    ; Jump forward if so.
+ $E306 XOR A         ; { Reset the "footstep triggered" flag and return.
  $E307 LD (IY-$19),A ;
- $E30A RET           ;
-*$E30B LD A,(IY-$19) ;
- $E30E OR A          ;
- $E30F RET NZ        ;
- $E310 LD A,$01      ;
+ $E30A RET           ; }
+*$E30B LD A,(IY-$19) ; Get the "footstep triggered" flag.
+ $E30E OR A          ; Is it zero?
+ $E30F RET NZ        ; Return if it isn't.
+ $E310 LD A,$01      ; Otherwise set the "foostep triggered" flag.
  $E312 LD (IY-$19),A ;
 ; This entry point is used by the routine at #R$B1A6.
 *$E315 LD A,($B951)  ; Get the current room. (#R$B951)
  $E318 CP (IY+$0F)   ; Is the character in this room? (#R$BC76)
  $E31B RET NZ        ; Return if not.
 ; The character is in the room, so make the footstep noise.
- $E31C LD BC,$0701   ;
- $E31F LD DE,$0F01   ;
- $E322 LD HL,$0404   ;
- $E325 CALL $E3D3    ;
- $E328 RET           ;
+ $E31C LD BC,$0701   ; Set the pitch and "descending" length.
+ $E31F LD DE,$0F01   ; Set the "static" and "ascending" lengths.
+ $E322 LD HL,$0404   ; Set the "descending" and "ascending" values.
+ $E325 CALL $E3D3    ; { Play the sound and return.
+ $E328 RET           ; }
 
 ; Check for collision detection
 ;
@@ -8652,30 +8711,38 @@ c$E36D EXX           ; Swap main registers.
 ; Used by the routines at #R$AA7F, #R$E2FC, #R$E33F, #R$F814, #R$F9F5 and
 ; #R$FAE7.
 ;
-; B - pitch
-; DE - duration
-c$E3D3 LD A,B        ;
- $E3D4 SUB H         ;
- $E3D5 LD B,A        ;
- $E3D6 CALL $E3EC    ; Play one wave of sound.
- $E3D9 DEC C         ;
- $E3DA JR NZ,$E3D3   ;
+; B pitch
+; C first segment time (descending)
+; D second segment time (static)
+; E third segment time (ascending)
+; H pitch to drop on first segment
+; L pitch to raise on third segment
+;
+; The sound effect routine uses a basic pitch in #REGb, plus three pitch segments - descending, static and ascending
+; for each component of sound. For the first segment, the pitch is incrementally lowered by #REGh,
+; for the second it is unchanged, while for the third, it is incrementally raised by #REGl.
+c$E3D3 LD A,B        ; Get the default pitch
+ $E3D4 SUB H         ; Subtract the pitch to drop for the first part
+ $E3D5 LD B,A        ; { Play one wave of sound at that pitch.
+ $E3D6 CALL $E3EC    ; }
+ $E3D9 DEC C         ; { Loop while there is more to play for
+ $E3DA JR NZ,$E3D3   ; the first duration. }
 *$E3DC CALL $E3EC    ; Play one wave of sound.
- $E3DF DEC D         ;
- $E3E0 JR NZ,$E3DC   ;
-*$E3E2 LD A,B        ;
- $E3E3 ADD A,L       ;
- $E3E4 LD B,A        ;
+ $E3DF DEC D         ; { Loop while there is more to play for
+ $E3E0 JR NZ,$E3DC   ; the second duration. }
+*$E3E2 LD A,B        ; { Raise the pitch by the required amount
+ $E3E3 ADD A,L       ; for the third part.
+ $E3E4 LD B,A        ; }
  $E3E5 CALL $E3EC    ; Play one wave of sound.
- $E3E8 DEC E         ;
- $E3E9 JR NZ,$E3E2   ;
- $E3EB RET           ;
+ $E3E8 DEC E         ; { Loop while there is more to play
+ $E3E9 JR NZ,$E3E2   ; for the third duration. }
+ $E3EB RET           ; Return.
 
 ; Generate one wave cycle in a sound effect
 ;
 ; Used by the routine at #R$E3D3.
 ;
-; B - pitch
+; B pitch
 c$E3EC LD A,$10      ; { Switch the speaker on.
  $E3EE OUT ($FE),A   ; }
  $E3F0 PUSH BC       ; Remember the pitch value.

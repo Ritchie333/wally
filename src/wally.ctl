@@ -169,6 +169,7 @@ R $B0E6 IY The base address of the character buffer (BC67 - BC6B)
 c $B197 Drop the current character's height down one notch up to floor level
 c $B1A6 Make the current character jump
 b $B264 Jump table for computer controlled characters
+B $B264,$24,3
 c $B288 Move a character left or right
 b $B2DB The current control mechanism (0 - Keyboard, 1 - Sinclair, 2 - Kempston)
 c $B2DC Select Kempston control
