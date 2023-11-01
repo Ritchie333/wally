@@ -3340,54 +3340,57 @@ c$A92C PUSH IY         ; Store #REGiy
  $A957 OR A            ;
  $A958 JP NZ,$A991     ;
 *$A95B CALL $AFC4      ; If the character is in mid-air, drop them to the ground or a platform.
- $A95E LD A,(IY+$46)   ;
- $A961 OR A            ;
- $A962 JR Z,$A96A      ;
- $A964 CALL $B1B9      ;
- $A967 JP $A989        ;
-*$A96A LD A,(IY+$37)   ;
- $A96D OR A            ;
- $A96E JR Z,$A975      ;
- $A970 CALL $B197      ;
- $A973 JR $A989        ;
-*$A975 LD A,(IY+$64)   ;
- $A978 ADD A,A         ;
- $A979 LD E,A          ;
- $A97A LD D,$00        ;
- $A97C LD HL,$AAA0     ;
- $A97F ADD HL,DE       ;
- $A980 LD E,(HL)       ;
- $A981 INC HL          ;
- $A982 LD D,(HL)       ;
- $A983 EX DE,HL        ;
- $A984 LD DE,$A989     ;
- $A987 PUSH DE         ;
- $A988 JP (HL)         ;
+ $A95E LD A,(IY+$46)   ; { Is the character in mid-jump?
+ $A961 OR A            ; }
+ $A962 JR Z,$A96A      ; If not, move forward to handle movement.
+ $A964 CALL $B1B9      ; { Otherwise finish off the jump.
+ $A967 JP $A989        ; }
+*$A96A LD A,(IY+$37)   ; { Is the character falling?
+ $A96D OR A            ; }
+ $A96E JR Z,$A975      ; If not, move forward to handle movement.
+ $A970 CALL $B197      ; { Otherwise, finish off the fall.
+ $A973 JR $A989        ; }
+; The computer character can move, so do so.
+*$A975 LD A,(IY+$64)   ; Get the computer character's next movement table. (#R$BCCB)
+ $A978 ADD A,A         ; Double it to get a word offset.
+ $A979 LD E,A          ; { Put the value in #REGde.
+ $A97A LD D,$00        ; }
+ $A97C LD HL,$AAA0     ; { Add the base address for the movement tables. (#R$AAA0)
+ $A97F ADD HL,DE       ; }
+ $A980 LD E,(HL)       ; { Put the address found in #REGde.
+ $A981 INC HL          ; 
+ $A982 LD D,(HL)       ; }
+ $A983 EX DE,HL        ; Swap #REGde and #REGhl.
+ $A984 LD DE,$A989     ; { Set #R$A989 as a return address.
+ $A987 PUSH DE         ; }
+ $A988 JP (HL)         ; Execute the routine.
+; Control returns from the routine to this point.
 *$A989 POP BC          ; Restore the character count.
  $A98A INC IY          ; Move to the next character.
  $A98C DJNZ $A93E      ; Loop until all the characters have moved.
  $A98E POP IY          ; { Restore #REGiy and return.
  $A990 RET             ; }
 *$A991 CALL $AFC4      ; If the character is in mid-air, drop them to the ground or a platform.
- $A994 LD A,(IY+$46)   ;
- $A997 OR A            ;
- $A998 JR Z,$A9A0      ;
- $A99A CALL $B1B9      ;
- $A99D JP $A989        ;
-*$A9A0 LD A,(IY+$37)   ;
- $A9A3 OR A            ;
- $A9A4 JR Z,$A9AC      ;
- $A9A6 CALL $B197      ;
- $A9A9 JP $A989        ;
-*$A9AC LD A,(IY+$0A)   ;
- $A9AF CP $98          ;
- $A9B1 JR Z,$A9CA      ;
- $A9B3 LD A,(IY+$05)   ;
+ $A994 LD A,(IY+$46)   ; { Is the character in mid-jump?
+ $A997 OR A            ; }
+ $A998 JR Z,$A9A0      ; If not, move forward to handle movement.
+ $A99A CALL $B1B9      ; { Otherwise finish off the jump.
+ $A99D JP $A989        ; }
+*$A9A0 LD A,(IY+$37)   ; { Is the character falling?
+ $A9A3 OR A            ; }
+ $A9A4 JR Z,$A9AC      ; If not, move forward to handle movement.
+ $A9A6 CALL $B197      ; { Otherwise, finish off the fall.
+ $A9A9 JP $A989        ; }
+; The computer character can move, so do so.
+*$A9AC LD A,(IY+$0A)   ; Get the Y position.
+ $A9AF CP $98          ; Is it on the ground?
+ $A9B1 JR Z,$A9CA      ; Jump forward if it is.
+ $A9B3 LD A,(IY+$05)   ; Get the X position.
  $A9B6 CP $78          ;
  $A9B8 JR NC,$A9C4     ;
  $A9BA LD (IY+$3C),$01 ;
-*$A9BE CALL $B288      ;
- $A9C1 JP $A989        ;
+*$A9BE CALL $B288      ; Move a character.
+ $A9C1 JP $A989        ; Jump back to finish off the routine.
 *$A9C4 LD (IY+$3C),$FF ;
  $A9C8 JR $A9BE        ;
 *$A9CA LD B,(IY-$0F)   ;
@@ -3406,7 +3409,7 @@ c$A92C PUSH IY         ; Store #REGiy
  $A9E7 CP (IY+$05)     ;
  $A9EA JP NZ,$A989     ;
  $A9ED LD B,(IY-$0F)   ;
- $A9F0 CALL $AA30      ;
+ $A9F0 CALL $AA30      ; Swap an item.
  $A9F3 LD (IY-$14),$00 ;
  $A9F7 LD E,(IY+$78)   ;
  $A9FA LD D,(IY+$7D)   ;
@@ -3433,7 +3436,7 @@ c$A92C PUSH IY         ; Store #REGiy
 *$AA24 LD (IY+$5A),D   ;
  $AA27 LD (IY-$0F),C   ;
  $AA2A CALL $ADBA      ;
- $AA2D JP $A989        ;
+ $AA2D JP $A989        ; Jump back to finish off the routine.
 
 ; Swap an item when a character moves over it.
 ;
@@ -3527,43 +3530,45 @@ w$AAA0 DEFW $AAB2
 
 ; Movement routine 0. Check a character can be moved left, and do so if
 ; possible
-c$AAB2 LD A,(IY+$0A)   ;
- $AAB5 CP $98          ;
- $AAB7 JR Z,$AACE      ;
- $AAB9 LD A,(IY+$0F)   ;
- $AABC CP $1F          ;
- $AABE JR NZ,$AACE     ;
- $AAC0 LD A,(IY+$05)   ;
- $AAC3 CP $78          ;
- $AAC5 JR NC,$AACE     ;
- $AAC7 LD (IY+$3C),$01 ;
- $AACB JP $B288        ;
-*$AACE LD (IY+$3C),$FF ;
- $AAD2 CALL $B288      ;
- $AAD5 LD A,(IY+$05)   ;
- $AAD8 OR A            ;
- $AAD9 JP Z,$AE5D      ;
- $AADC RET             ;
+c$AAB2 LD A,(IY+$0A)   ; Get the Y co-ordinate.
+ $AAB5 CP $98          ; Is it the floor?
+ $AAB7 JR Z,$AACE      ; Jump forward if so.
+ $AAB9 LD A,(IY+$0F)   ; Get the room number.
+ $AABC CP $1F          ; Is it the sewer?
+ $AABE JR NZ,$AACE     ; Jump forward if not.
+; The sewer requires computer characters to jump to get out of it.
+ $AAC0 LD A,(IY+$05)   ; Get the X co-ordinate.
+ $AAC3 CP $78          ; Is it greater than #N$78?
+ $AAC5 JR NC,$AACE     ; Jump forward if so.
+ $AAC7 LD (IY+$3C),$01 ; Set to jump right.
+ $AACB JP $B288        ; Move the character.
+*$AACE LD (IY+$3C),$FF ; Set to jump left.
+ $AAD2 CALL $B288      ; Move the character.
+ $AAD5 LD A,(IY+$05)   ; Get the X co-ordinate.
+ $AAD8 OR A            ; Is it zero?
+ $AAD9 JP Z,$AE5D      ; If so, signal this is the end of the room.
+ $AADC RET             ; Otherwise return.
 
 ; Movement routine 1. Check a character can be moved right, and do so if
 ; possible
-c$AADD LD A,(IY+$0A)   ;
- $AAE0 CP $98          ;
- $AAE2 JR Z,$AAF9      ;
- $AAE4 LD A,(IY+$0F)   ;
- $AAE7 CP $1F          ;
- $AAE9 JR NZ,$AAF9     ;
- $AAEB LD A,(IY+$05)   ;
- $AAEE CP $78          ;
- $AAF0 JR C,$AAF9      ;
- $AAF2 LD (IY+$3C),$FF ;
- $AAF6 JP $B288        ;
-*$AAF9 LD (IY+$3C),$01 ;
- $AAFD CALL $B288      ;
- $AB00 LD A,(IY+$05)   ;
- $AB03 CP $F0          ;
- $AB05 JP Z,$AE5D      ;
- $AB08 RET             ;
+c$AADD LD A,(IY+$0A)   ; Get the Y co-ordinate.
+ $AAE0 CP $98          ; Is it the floor?
+ $AAE2 JR Z,$AAF9      ; Jump forward if so.
+ $AAE4 LD A,(IY+$0F)   ; Get the room number.
+ $AAE7 CP $1F          ; Is it the sewer?
+ $AAE9 JR NZ,$AAF9     ; Jump forward if not.
+ ; The sewer requires computer characters to jump to get out of it.
+ $AAEB LD A,(IY+$05)   ; Get the X co-ordinate.
+ $AAEE CP $78          ; Is it greater than #N$78?
+ $AAF0 JR C,$AAF9      ; Jump forward if not.
+ $AAF2 LD (IY+$3C),$FF ; Set to jump left.
+ $AAF6 JP $B288        ; Move the character
+*$AAF9 LD (IY+$3C),$01 ; Set to jump right.
+ $AAFD CALL $B288      ; Move the character
+ $AB00 LD A,(IY+$05)   ; Get the X co-ordinate.
+ $AB03 CP $F0          ; Is it at the right edge?
+ $AB05 JP Z,$AE5D      ; If so,signal this is the end of the room.
+ $AB08 RET             ; Otherwise return.
 
 ; Movement routine 2.
 c$AB09 LD A,(IY+$05)   ;
@@ -3987,10 +3992,11 @@ b$AD78 DEFB $0C,$10,$0E,$10,$0E,$11,$10,$10
 ;
 ; Used by the routines at #R$A92C and #R$AE5D.
 c$ADBA LD A,(IY+$0F)   ; Get the current room.
- $ADBD CP (IY+$5A)     ;
- $ADC0 JR NZ,$ADC7     ;
- $ADC2 LD (IY-$14),$01 ;
- $ADC6 RET             ;
+ $ADBD CP (IY+$5A)     ; Is it the target room? (?)
+ $ADC0 JR NZ,$ADC7     ; Jump forward if not.
+ $ADC2 LD (IY-$14),$01 ; { Otherwise signal an update needed and return.
+ $ADC6 RET             ; }
+; Move the character towards the target room.
 *$ADC7 LD D,$FF        ;
  $ADC9 CALL $AC69      ; Get the "next rooms" table for this room.
  $ADCC LD A,(IY+$0F)   ;

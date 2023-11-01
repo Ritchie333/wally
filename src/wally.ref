@@ -151,7 +151,7 @@ The routines to handle each action is stored in a lookup table at #R$E7F9.
 
 #TABLE( default, center )
 { =h Value | =h Instruction | =h Description }
-{ 0 | SWAP| Swap the least-recently picked up item for the nearest one in the room. }
+{ 0 | SWAP | Swap the least-recently picked up item for the nearest one in the room. }
 { 1 | SWAPFOR( n ) | Swap the least-recently picked up item for the 'nth' object in the room. }
 { 2 | SET( f ) | Set flag 'f'. }
 { 3 | RESET( f ) | Reset flag 'f'. }
