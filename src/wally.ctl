@@ -243,11 +243,13 @@ R $BACE HL The address of the current string
 R $BACE B The offset of the current string
 c $BAD8 Initialize character data
 b $BB3E Initial states for collectable objects
+B $BB3E,$3E,2
 D $B33E This table contains a pair of bytes, the first with the object ID,
 D $B33E the second with bit 8 set if a computer player can pick it up,
-D $B33E and a bitfield showing which players can (always F)
+D $B33E and a bitfield showing which players can (always 1F)
 b $BB7C Template for initial game data
-u $BC2B
+B $BB7C,$AF,5
+s $BC2B
 b $BC30
 b $BC35
 b $BC3A

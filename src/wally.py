@@ -379,12 +379,13 @@ class WallyHtmlWriter(HtmlWriter):
 
             nRoom = self.get_room_name( fRoom )
 
-            if( fFrom == 0 ):
+            if( fx == 0 ):
                 text += 'LEFT'
-            elif( fFrom == 1 ):
+            elif( fx == 0xF0 ):
                 text += 'RIGHT'
             else:
-                text += 'IN at ' + str( fx ) + ',' + str( fy )
+                text += 'IN'
+            text += ' at ' + str( fx ) + ',' + str( fy )
             text += ' to ' + nRoom + ' at ' + str( tx ) + ',' + str( ty ) + '<br/>'
             addr += 3
             id = self.snapshot[ addr ]
@@ -439,3 +440,23 @@ class WallyHtmlWriter(HtmlWriter):
             ptr = self.snapshot[ addr ] + 0x100 * self.snapshot[ addr + 1]
             print( 'b $' + f'{ptr:x}'.upper() + ' Room block data ' + f'{i:x}'.upper() )
             print( 'D $' + f'{ptr:x}'.upper() + ' #CALL:print_block_data(#PC,block_data_' + f'{i:x}'.upper() + ')' )
+
+    def print_player( self, cwd, addr, attr, fName ):
+        frames = []
+        for f in range( 0, 8 ):
+            ptr = addr + ( 0x80 * f )
+            udgs = []
+            for y in range( 0, 4 ):
+                udgline = []
+                for x in range( 0, 4 ):
+                    data = []
+                    sptr = ptr +  y * 32  + x
+                    for i in range( 0, 8 ):
+                        cptr = sptr + 4 * i
+                        data.append( self.snapshot[ cptr ] )
+                    udg = Udg( attr, data )
+                    udgline.append( udg )
+                udgs.append( udgline )
+            frame = Frame( udgs, 2 )
+            frames.append( frame )
+        return self.handle_image( frames, fName, cwd )

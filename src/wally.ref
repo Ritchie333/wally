@@ -65,7 +65,7 @@ TABLE#
 
 The flags in byte 3 determine if the item can be picked up.
 Bits 0 - 5 are set if a character can pick it up (from bit 0 - Wally to bit 5 - Harry). So, #N$1F means "all characters".
-It bit 7 is set, only the current character can pick it up.
+It bit 7 is reset, a computer character can pick the item up.
 
 The end of the table is denoted by the byte #N$FF. If the room has no objects in it, that is the only byte in the buffer.
 

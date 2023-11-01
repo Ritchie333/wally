@@ -2,6 +2,7 @@
 @org=$4000
 
 @expand=#DEF(#OBJECTGFX(a) #UDGARRAY2,6,2,2(($a);($a+1);($a+$10);($a+$11)))
+@expand=#DEF(#OBJECTGFXM(a) #UDGARRAY4,6,2,4(($a);($a+1);($a+2);($a+3);($a+$20);($a+$21);($a+$22);($a+$23)))
 
 ; Loading screen
 ;
@@ -1088,7 +1089,9 @@ t$7ECC DEFB $FE
  $7EEE DEFM "AFTERNOON TEA BREAK"
  $7F01 DEFB $FF
 
-; Room data : Asteroids
+; Room block data : Asteroids
+;
+; #CALL:print_block_data(#PC, asteroids)
 b$7F02 DEFB $FE,$42,$FB,$BC,$D7,$00,$01,$C6
  $7F0A DEFB $01,$02,$03,$DC,$FF,$00,$01,$C6
  $7F12 DEFB $01,$02,$03,$FF,$FB,$DC,$DF,$FE
@@ -1218,92 +1221,93 @@ c$80E5 CALL $B8ED    ; Clear the screen.
  $8137 JR NZ,$8109   ;
  $8139 RET           ;
 
-; Unused
-z$813A DEFS 1
+; The current room showing in demo mode.
+g$813A DEFB $00
 
 ; Set up initial game data
 ;
 ; Used by the routines at #R$8155 and #R$8184.
 c$813B CALL $B952    ; Draw the room.
- $813E LD BC,$0014   ;
-*$8141 PUSH BC       ;
- $8142 CALL $EEA2    ;
- $8145 CALL $F578    ;
- $8148 CALL $B9D6    ;
- $814B CALL $B9FB    ;
- $814E POP BC        ;
- $814F DEC BC        ;
+ $813E LD BC,$0014   ; Number of entries to update.
+*$8141 PUSH BC       ; Store #REGbc.
+ $8142 CALL $EEA2    ; Update the sprite buffers
+ $8145 CALL $F578    ; Draw the fountain.
+ $8148 CALL $B9D6    ; Update character positions.
+ $814B CALL $B9FB    ; Put sprites on screen.
+ $814E POP BC        ; Restore #REGbc.
+ $814F DEC BC        ; { Loop until all entries are refreshed.
  $8150 LD A,B        ;
  $8151 OR C          ;
- $8152 JR NZ,$8141   ;
- $8154 RET           ;
+ $8152 JR NZ,$8141   ; 
+ $8154 RET           ; }
 
 ; Demo mode
 ;
 ; Used by the routine at #R$80E5.
-c$8155 CALL $BAD8    ;
+c$8155 CALL $BAD8    ; Initialize character data.
  $8158 CALL $B8ED    ; Clear the screen.
- $815B CALL $E3FD    ;
- $815E CALL $813B    ;
- $8161 LD ($813A),A  ;
-*$8164 LD A,($813A)  ;
- $8167 CP (IY+$0F)   ;
- $816A JR Z,$8175    ;
- $816C LD A,(IY+$0F) ;
- $816F LD ($813A),A  ;
+ $815B CALL $E3FD    ; Refresh the status bar.
+ $815E CALL $813B    ; Set up initial data.
+ $8161 LD ($813A),A  ; Set the current room (#R$813A) to 0 (set up by the previous routine)
+; The main loop of the demo mode begins here.
+*$8164 LD A,($813A)  ; Get the current room in demo mode.
+ $8167 CP (IY+$0F)   ; Is is the current room for the current character?
+ $816A JR Z,$8175    ; Jump forward if it is.
+ $816C LD A,(IY+$0F) ; { Otherwise copy the current room to the demo mode room flag.
+ $816F LD ($813A),A  ; }
  $8172 CALL $B952    ; Draw the room.
-*$8175 CALL $81AE    ;
- $8178 XOR A         ;
- $8179 IN A,($FE)    ;
- $817B OR $E0        ;
- $817D CP $FF        ;
- $817F JP NZ,$80E5   ;
- $8182 JR $8164      ;
+*$8175 CALL $81AE    ; Move everything on screen.
+ $8178 XOR A         ; { Read all keys.
+ $8179 IN A,($FE)    ; }
+ $817B OR $E0        ; Set bits 5-7 as the hardware doesn't read those.
+ $817D CP $FF        ; Was any key pressed?
+ $817F JP NZ,$80E5   ; No, so carry on in demo mode.
+ $8182 JR $8164      ; Otherwise loop back round and continue.
 
 ; Main entry point
 ;
 ; Used by the routines at #R$B3C3 and #R$B451.
 c$8184 DI            ; Disable interrupts.
  $8185 LD SP,$FC00   ; Put the stack somewhere safe.
- $8188 CALL $80E5    ;
- $818B CALL $BAD8    ;
- $818E CALL $E3FD    ;
- $8191 CALL $813B    ;
+ $8188 CALL $80E5    ; Show the title screen.
+ $818B CALL $BAD8    ; Initialize character data
+ $818E CALL $E3FD    ; Refresh the status bar.
+ $8191 CALL $813B    ; Set up initial game data.
 ; This entry point is used by the routine at #R$EDF7.
 *$8194 CALL $EB55    ; See if any collectable items are being touched.
  $8197 CALL $EABF    ; Process logic for this room.
  $819A CALL $AC06    ; Check to see if a new room is entered.
- $819D CALL $E79B    ;
- $81A0 CALL $B09F    ;
- $81A3 CALL $81AE    ;
- $81A6 CALL $81C4    ;
- $81A9 CALL $ED2A    ;
- $81AC JR $8194      ;
+ $819D CALL $E79B    ; Check for changing a character.
+ $81A0 CALL $B09F    ; Check for user input.
+ $81A3 CALL $81AE    ; Update the screen.
+ $81A6 CALL $81C4    ; Check for pause.
+ $81A9 CALL $ED2A    ; Display a break screen if necessary.
+ $81AC JR $8194      ; Loop back and do it again.
 
 ; Move everything on screen
 ;
 ; Used by the routines at #R$8155, #R$8184 and #R$EFC7.
-c$81AE CALL $BAB4    ;
- $81B1 CALL $A92C    ;
- $81B4 CALL $EEC1    ;
- $81B7 CALL $F10E    ;
- $81BA CALL $F814    ;
- $81BD CALL $F277    ;
- $81C0 CALL $B9D6    ;
- $81C3 RET           ;
+c$81AE CALL $BAB4    ; Move to a new room if necessary.
+ $81B1 CALL $A92C    ; Move a computer controlled character.
+ $81B4 CALL $EEC1    ; Refresh the current room.
+ $81B7 CALL $F10E    ; Move the jumping jack.
+ $81BA CALL $F814    ; Display any food.
+ $81BD CALL $F277    ; Move Herbert.
+ $81C0 CALL $B9D6    ; Update and draw characters.
+ $81C3 RET           ; Return.
 
 ; Check for the pause key
 ;
-; If CAPS + SPACE is held down, loop until it is released
-c$81C4 LD A,$FE      ;
- $81C6 IN A,($FE)    ;
- $81C8 LD B,A        ;
- $81C9 LD A,$7F      ;
- $81CB IN A,($FE)    ;
- $81CD OR B          ;
- $81CE BIT 0,A       ;
- $81D0 RET NZ        ;
- $81D1 JP $81C4      ;
+; If CAPS + SPACE is held down, loop until it is released.
+c$81C4 LD A,$FE      ; { Read CAPS - V on the keyboard.
+ $81C6 IN A,($FE)    ; }
+ $81C8 LD B,A        ; Put this in B.
+ $81C9 LD A,$7F      ; { Read SPACE - B on the keyboard.
+ $81CB IN A,($FE)    ; }
+ $81CD OR B          ; Merge the two key presses together.
+ $81CE BIT 0,A       ; Did both have the first key pressed? (ie: CAPS + SPACE )
+ $81D0 RET NZ        ; Return if not.
+ $81D1 JP $81C4      ; Otherwise loop back and wait until the keys are released.
 
 ; Update a sprite's animation tiles (flipping if required)
 ;
@@ -1867,16 +1871,9 @@ b$8878 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $8888 DEFB $7F,$FC,$00,$5E,$00,$BE,$01,$7F
  $8890 DEFB $01,$7E,$00,$BE,$00,$7C,$00,$10
 
-; Moving objects (masked)
+; Object 29 - 2A - Beer mug
 ;
-; #UDGTABLE
-; { #UDGARRAY4,$46,,4;$8898-$88D7-1-32{32}(graph04) |
-; #UDGARRAY2,$46,,2;$88D8-$88F7-1-16(graph05)  }
-; TABLE#
-; .
-; #UDGTABLE
-; { #UDGARRAY4,$46,,4;$88F8-$8CF7-1-32{32}(graph1) }
-; TABLE#
+; #OBJECTGFXM(#PC)(object29)
 b$8898 DEFB $80,$03,$00,$00,$80,$03,$3F,$F8
  $88A0 DEFB $80,$03,$15,$50,$C0,$03,$17,$80
  $88A8 DEFB $C0,$01,$0B,$78,$E0,$01,$0B,$7C
@@ -1885,11 +1882,19 @@ b$8898 DEFB $80,$03,$00,$00,$80,$03,$3F,$F8
  $88C0 DEFB $C0,$01,$17,$9C,$C0,$01,$17,$78
  $88C8 DEFB $80,$03,$17,$60,$80,$03,$35,$90
  $88D0 DEFB $80,$03,$3F,$F8,$80,$03,$00,$00
- $88D8 DEFB $00,$00,$00,$00,$C0,$00,$C0,$00
+
+; Object 2B - Fork lift
+;
+; #OBJECTGFX(#PC)(object2b)
+b$88D8 DEFB $00,$00,$00,$00,$C0,$00,$C0,$00
  $88E0 DEFB $40,$00,$40,$00,$C0,$00,$C0,$00
  $88E8 DEFB $C0,$00,$40,$00,$40,$00,$C0,$00
  $88F0 DEFB $C0,$00,$E0,$00,$E7,$F8,$7B,$FF
- $88F8 DEFB $E0,$00,$0F,$FE,$E0,$00,$0F,$E6
+
+; Object 2C - 2D / 2E - 2F / 30 - 31 - Shark
+;
+; #OBJECTGFXM(#PC)(object2c)
+b$88F8 DEFB $E0,$00,$0F,$FE,$E0,$00,$0F,$E6
  $8900 DEFB $E0,$00,$07,$E2,$F0,$08,$07,$C0
  $8908 DEFB $F0,$1F,$07,$C0,$F0,$1F,$03,$C0
  $8910 DEFB $F8,$1F,$03,$C0,$F8,$1F,$03,$C0
@@ -1897,7 +1902,8 @@ b$8898 DEFB $80,$03,$00,$00,$80,$03,$3F,$F8
  $8920 DEFB $F0,$0F,$07,$E0,$E0,$0F,$07,$60
  $8928 DEFB $C0,$07,$0E,$E0,$80,$07,$1E,$70
  $8930 DEFB $00,$03,$38,$30,$03,$83,$60,$18
- $8938 DEFB $E0,$00,$0F,$FE,$E0,$00,$0F,$EE
+; #OBJECTGFXM(#PC)(object2e)
+*$8938 DEFB $E0,$00,$0F,$FE,$E0,$00,$0F,$EE
  $8940 DEFB $E0,$00,$07,$C6,$F0,$10,$07,$C2
  $8948 DEFB $F0,$18,$07,$C0,$F0,$1F,$07,$C0
  $8950 DEFB $F0,$1F,$03,$C0,$F8,$0F,$03,$C0
@@ -1905,7 +1911,8 @@ b$8898 DEFB $80,$03,$00,$00,$80,$03,$3F,$F8
  $8960 DEFB $F0,$0F,$02,$E0,$F0,$07,$06,$E0
  $8968 DEFB $E0,$03,$07,$70,$E0,$01,$0E,$38
  $8970 DEFB $C0,$80,$0C,$1C,$C1,$C0,$10,$06
- $8978 DEFB $F1,$FF,$00,$00,$E0,$FF,$04,$00
+; #OBJECTGFXM(#PC)(object30)
+*$8978 DEFB $F1,$FF,$00,$00,$E0,$FF,$04,$00
  $8980 DEFB $E0,$3F,$0E,$00,$C0,$3F,$0F,$80
  $8988 DEFB $C0,$1F,$1F,$80,$80,$1F,$1F,$C0
  $8990 DEFB $80,$0F,$3F,$C0,$80,$0F,$3E,$60
@@ -1913,7 +1920,11 @@ b$8898 DEFB $80,$03,$00,$00,$80,$03,$3F,$F8
  $89A0 DEFB $00,$0F,$07,$E0,$00,$07,$43,$E0
  $89A8 DEFB $00,$03,$70,$F0,$00,$01,$3F,$F8
  $89B0 DEFB $80,$00,$1F,$FC,$C0,$00,$0F,$FE
- $89B8 DEFB $F0,$1F,$00,$00,$E0,$03,$07,$C0
+
+; Object 32 - Toast
+;
+; #OBJECTGFXM(#PC)(object32)
+b$89B8 DEFB $F0,$1F,$00,$00,$E0,$03,$07,$C0
  $89C0 DEFB $C0,$01,$0D,$78,$80,$01,$1A,$AC
  $89C8 DEFB $80,$01,$35,$54,$80,$01,$3A,$AC
  $89D0 DEFB $80,$01,$15,$58,$C0,$03,$1A,$A8
@@ -1921,7 +1932,11 @@ b$8898 DEFB $80,$03,$00,$00,$80,$03,$3F,$F8
  $89E0 DEFB $C0,$03,$15,$58,$C0,$03,$1A,$A8
  $89E8 DEFB $C0,$03,$15,$58,$C0,$03,$1A,$A8
  $89F0 DEFB $C0,$03,$1F,$F8,$C0,$03,$00,$00
- $89F8 DEFB $FE,$3F,$00,$00,$FC,$1F,$00,$80
+
+; Object 34 - Hammer
+;
+; #OBJECTGFXM(#PC)(object34)
+b$89F8 DEFB $FE,$3F,$00,$00,$FC,$1F,$00,$80
  $8A00 DEFB $F8,$0F,$01,$40,$F0,$0F,$03,$A0
  $8A08 DEFB $E0,$0F,$07,$C0,$C0,$1F,$0E,$80
  $8A10 DEFB $80,$3F,$1D,$00,$00,$1F,$3B,$80
@@ -1929,7 +1944,11 @@ b$8898 DEFB $80,$03,$00,$00,$80,$03,$3F,$F8
  $8A20 DEFB $82,$03,$10,$70,$C7,$01,$00,$38
  $8A28 DEFB $FF,$80,$00,$1C,$FF,$C0,$00,$0E
  $8A30 DEFB $FF,$E0,$00,$06,$FF,$F0,$00,$00
- $8A38 DEFB $00,$00,$00,$00,$00,$00,$FF,$FB
+
+; Object 36 - Shopping trolley
+;
+; #OBJECTGFXM(#PC)(object36)
+b$8A38 DEFB $00,$00,$00,$00,$00,$00,$FF,$FB
  $8A40 DEFB $00,$00,$AA,$AB,$00,$00,$55,$5A
  $8A48 DEFB $00,$00,$6A,$AC,$00,$01,$35,$54
  $8A50 DEFB $80,$01,$2A,$AC,$80,$01,$15,$54
@@ -1937,7 +1956,11 @@ b$8898 DEFB $80,$03,$00,$00,$80,$03,$3F,$F8
  $8A60 DEFB $C7,$81,$00,$1C,$C0,$01,$10,$38
  $8A68 DEFB $C0,$03,$0F,$F0,$80,$01,$10,$08
  $8A70 DEFB $83,$C1,$38,$1C,$83,$C1,$10,$08
- $8A78 DEFB $FE,$03,$00,$00,$FE,$03,$00,$F8
+
+; Object 38 - 3A - Lightning bolt
+;
+; #OBJECTGFXM(#PC)(object38)
+b$8A78 DEFB $FE,$03,$00,$00,$FE,$03,$00,$F8
  $8A80 DEFB $FC,$03,$00,$F0,$FC,$07,$01,$F0
  $8A88 DEFB $F8,$07,$01,$E0,$F8,$01,$03,$E0
  $8A90 DEFB $F0,$01,$03,$CC,$F0,$01,$07,$F8
@@ -1945,7 +1968,8 @@ b$8898 DEFB $80,$03,$00,$00,$80,$03,$3F,$F8
  $8AA0 DEFB $E0,$07,$00,$60,$FE,$0F,$00,$E0
  $8AA8 DEFB $FC,$0F,$00,$C0,$FC,$1F,$01,$80
  $8AB0 DEFB $FC,$3F,$01,$00,$FC,$7F,$00,$00
- $8AB8 DEFB $FE,$03,$00,$00,$FE,$03,$00,$F8
+; #OBJECTGFXM(#PC)(object3a)
+*$8AB8 DEFB $FE,$03,$00,$00,$FE,$03,$00,$F8
  $8AC0 DEFB $FC,$03,$00,$90,$FC,$07,$01,$10
  $8AC8 DEFB $F8,$07,$01,$20,$F8,$01,$02,$20
  $8AD0 DEFB $F0,$01,$02,$4C,$F0,$01,$04,$78
@@ -1953,7 +1977,11 @@ b$8898 DEFB $80,$03,$00,$00,$80,$03,$3F,$F8
  $8AE0 DEFB $E0,$07,$00,$90,$FC,$07,$00,$A0
  $8AE8 DEFB $FC,$0F,$01,$40,$FC,$1F,$01,$80
  $8AF0 DEFB $FC,$3F,$01,$00,$FC,$7F,$00,$00
- $8AF8 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
+
+; Object 3C - 3E - Bat
+;
+; #OBJECTGFXM(#PC)(object3c)
+b$8AF8 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
  $8B00 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
  $8B08 DEFB $FF,$FF,$00,$00,$00,$00,$00,$00
  $8B10 DEFB $00,$00,$72,$4E,$00,$00,$1B,$D8
@@ -1961,7 +1989,8 @@ b$8898 DEFB $80,$03,$00,$00,$80,$03,$3F,$F8
  $8B20 DEFB $F0,$0F,$03,$C0,$F8,$1F,$01,$80
  $8B28 DEFB $FC,$3F,$00,$00,$FF,$FF,$00,$00
  $8B30 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
- $8B38 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
+; #OBJECTGFXM(#PC)(object3e)
+*$8B38 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
  $8B40 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
  $8B48 DEFB $F8,$1F,$00,$00,$F8,$1F,$02,$40
  $8B50 DEFB $F0,$0F,$03,$C0,$C0,$03,$07,$E0
@@ -1969,7 +1998,11 @@ b$8898 DEFB $80,$03,$00,$00,$80,$03,$3F,$F8
  $8B60 DEFB $00,$00,$41,$82,$1C,$38,$00,$00
  $8B68 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
  $8B70 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
- $8B78 DEFB $FF,$F8,$00,$00,$FF,$80,$00,$02
+
+; Object 40 - 42 - Herbert R
+;
+; #OBJECTGFXM(#PC)(object40)
+b$8B78 DEFB $FF,$F8,$00,$00,$FF,$80,$00,$02
  $8B80 DEFB $FF,$00,$00,$3D,$FE,$00,$00,$7A
  $8B88 DEFB $FE,$00,$00,$EE,$FE,$00,$00,$8C
  $8B90 DEFB $06,$00,$00,$DE,$00,$00,$70,$6F
@@ -1977,6 +2010,7 @@ b$8898 DEFB $80,$03,$00,$00,$80,$03,$3F,$F8
  $8BA0 DEFB $00,$01,$FB,$E0,$00,$07,$F3,$E0
  $8BA8 DEFB $00,$07,$4B,$70,$00,$07,$38,$70
  $8BB0 DEFB $01,$01,$5C,$30,$01,$81,$7C,$3C
+; #OBJECTGFXM(#PC)(object42)
  $8BB8 DEFB $FF,$FF,$00,$00,$FF,$F8,$00,$00
  $8BC0 DEFB $FF,$80,$00,$02,$FF,$00,$00,$3D
  $8BC8 DEFB $FE,$00,$00,$7A,$06,$00,$00,$EE
@@ -1985,7 +2019,11 @@ b$8898 DEFB $80,$03,$00,$00,$80,$03,$3F,$F8
  $8BE0 DEFB $00,$00,$FB,$EC,$00,$01,$73,$60
  $8BE8 DEFB $00,$0F,$4B,$60,$00,$0F,$38,$60
  $8BF0 DEFB $03,$07,$B8,$60,$03,$07,$F8,$30
- $8BF8 DEFB $1F,$FF,$00,$00,$01,$FF,$40,$00
+
+; Object 44 - 46 - Herbert L
+;
+; #OBJECTGFXM(#PC)(object44)
+b$8BF8 DEFB $1F,$FF,$00,$00,$01,$FF,$40,$00
  $8C00 DEFB $00,$FF,$BC,$00,$00,$7F,$5E,$00
  $8C08 DEFB $00,$7F,$77,$00,$00,$7F,$31,$00
  $8C10 DEFB $00,$60,$7B,$00,$00,$00,$F6,$0E
@@ -1993,6 +2031,7 @@ b$8898 DEFB $80,$03,$00,$00,$80,$03,$3F,$F8
  $8C20 DEFB $80,$00,$07,$DF,$E0,$00,$07,$CF
  $8C28 DEFB $E0,$00,$0E,$D2,$E0,$00,$0E,$1C
  $8C30 DEFB $80,$80,$0C,$3A,$81,$80,$3C,$3E
+; #OBJECTGFXM(#PC)(object46)
  $8C38 DEFB $FF,$FF,$00,$00,$1F,$FF,$00,$00
  $8C40 DEFB $01,$FF,$40,$00,$00,$FF,$BC,$00
  $8C48 DEFB $00,$7F,$5E,$00,$00,$60,$77,$00
@@ -2001,7 +2040,11 @@ b$8898 DEFB $80,$03,$00,$00,$80,$03,$3F,$F8
  $8C60 DEFB $00,$00,$37,$DF,$80,$00,$06,$CE
  $8C68 DEFB $F0,$00,$06,$D2,$F0,$00,$06,$1C
  $8C70 DEFB $E0,$C0,$06,$1D,$E0,$C0,$0C,$1F
- $8C78 DEFB $F0,$0F,$00,$00,$F0,$0F,$07,$E0
+
+; Object 48 - 4A - Jumping jack
+;
+; #OBJECTGFXM(#PC)(object48)
+b$8C78 DEFB $F0,$0F,$00,$00,$F0,$0F,$07,$E0
  $8C80 DEFB $F0,$0F,$01,$80,$FC,$3F,$01,$80
  $8C88 DEFB $F0,$0F,$01,$80,$E0,$07,$06,$E0
  $8C90 DEFB $E0,$07,$0B,$30,$E0,$07,$0A,$90
@@ -2009,6 +2052,7 @@ b$8898 DEFB $80,$03,$00,$00,$80,$03,$3F,$F8
  $8CA0 DEFB $E0,$07,$07,$E0,$F0,$0F,$00,$00
  $8CA8 DEFB $FC,$3F,$01,$80,$F8,$1F,$01,$80
  $8CB0 DEFB $E0,$07,$02,$C0,$E0,$07,$0D,$F0
+; #OBJECTGFXM(#PC)(object4a)
  $8CB8 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
  $8CC0 DEFB $F0,$0F,$00,$00,$F0,$0F,$07,$E0
  $8CC8 DEFB $F0,$0F,$01,$80,$F0,$0F,$01,$80
@@ -2018,117 +2062,170 @@ b$8898 DEFB $80,$03,$00,$00,$80,$03,$3F,$F8
  $8CE8 DEFB $F0,$0F,$00,$00,$F8,$1F,$01,$80
  $8CF0 DEFB $E0,$07,$02,$C0,$E0,$07,$0D,$F0
 
-; Moving objects (unmasked)
+; Object 4C - 4F - Flame
 ;
-; #UDGTABLE
-; { #UDGARRAY2,$46,,2;$8CF8-$9017-1-16(graph2) }
-; TABLE#
+; #OBJECTGFX(#PC)(object4c)
 b$8CF8 DEFB $00,$00,$00,$00,$00,$00,$00,$80
  $8D00 DEFB $00,$80,$00,$80,$01,$C0,$01,$C0
  $8D08 DEFB $03,$E0,$03,$60,$07,$70,$06,$B0
  $8D10 DEFB $06,$B0,$03,$60,$01,$40,$01,$40
+; #OBJECTGFX(#PC)(object4d)
  $8D18 DEFB $00,$00,$00,$00,$02,$00,$00,$00
  $8D20 DEFB $02,$00,$03,$00,$07,$80,$07,$C0
  $8D28 DEFB $07,$C0,$0E,$E0,$0E,$E0,$0D,$70
  $8D30 DEFB $0D,$B0,$06,$70,$03,$60,$01,$40
+; #OBJECTGFX(#PC)(object4e)
  $8D38 DEFB $00,$80,$00,$00,$00,$80,$00,$80
  $8D40 DEFB $01,$C0,$01,$C0,$03,$E0,$03,$E0
  $8D48 DEFB $07,$F0,$07,$70,$0F,$78,$0E,$B8
  $8D50 DEFB $0E,$B8,$07,$70,$03,$60,$01,$40
+; #OBJECTGFX(#PC)(object4f)
  $8D58 DEFB $00,$00,$00,$00,$00,$20,$00,$20
  $8D60 DEFB $00,$60,$00,$F0,$01,$F0,$03,$F0
  $8D68 DEFB $03,$F0,$07,$B8,$07,$78,$06,$B8
  $8D70 DEFB $06,$B0,$03,$70,$01,$40,$01,$40
- $8D78 DEFB $C0,$00,$40,$00,$60,$00,$60,$00
+
+; Object 50 - 52 - Fountain L
+;
+; #OBJECTGFX(#PC)(object50)
+b$8D78 DEFB $C0,$00,$40,$00,$60,$00,$60,$00
  $8D80 DEFB $60,$00,$50,$00,$70,$00,$70,$00
  $8D88 DEFB $70,$00,$50,$00,$70,$00,$70,$00
  $8D90 DEFB $78,$00,$E8,$00,$B8,$00,$FC,$00
+; #OBJECTGFX(#PC)(object51)
  $8D98 DEFB $C0,$00,$40,$00,$60,$00,$60,$00
  $8DA0 DEFB $60,$00,$70,$00,$70,$00,$70,$00
  $8DA8 DEFB $50,$00,$70,$00,$70,$00,$70,$00
  $8DB0 DEFB $7E,$00,$D9,$80,$FB,$80,$FE,$00
+; #OBJECTGFX(#PC)(object52)
  $8DB8 DEFB $C0,$00,$40,$00,$60,$00,$40,$00
  $8DC0 DEFB $60,$00,$70,$00,$70,$00,$70,$00
  $8DC8 DEFB $70,$00,$70,$00,$70,$00,$70,$00
  $8DD0 DEFB $58,$00,$F8,$00,$F8,$C0,$B4,$20
- $8DD8 DEFB $00,$03,$00,$02,$00,$06,$00,$06
+
+; Object 53 - 55 - Fountain R
+;
+; #OBJECTGFX(#PC)(object53)
+b$8DD8 DEFB $00,$03,$00,$02,$00,$06,$00,$06
  $8DE0 DEFB $00,$06,$00,$0A,$00,$0E,$00,$0E
  $8DE8 DEFB $00,$0E,$00,$0A,$00,$0E,$00,$0E
  $8DF0 DEFB $00,$1E,$00,$17,$00,$1D,$00,$3F
+; #OBJECTGFX(#PC)(object54)
  $8DF8 DEFB $00,$03,$00,$02,$00,$06,$00,$06
  $8E00 DEFB $00,$06,$00,$0E,$00,$0E,$00,$0E
  $8E08 DEFB $00,$0A,$00,$0E,$00,$0E,$00,$0E
  $8E10 DEFB $00,$7E,$01,$9B,$01,$DF,$00,$7F
+; #OBJECTGFX(#PC)(object55)
  $8E18 DEFB $00,$03,$00,$02,$00,$06,$00,$02
  $8E20 DEFB $00,$06,$00,$0E,$00,$0E,$00,$0E
  $8E28 DEFB $00,$0E,$00,$0E,$00,$0E,$00,$0E
  $8E30 DEFB $00,$1A,$00,$1F,$03,$1F,$04,$2D
- $8E38 DEFB $00,$80,$00,$00,$01,$C0,$00,$00
+
+; Object 56 - Light bulb
+;
+; #OBJECTGFX(#PC)(object56)
+b$8E38 DEFB $00,$80,$00,$00,$01,$C0,$00,$00
  $8E40 DEFB $01,$C0,$00,$00,$01,$C0,$03,$E0
  $8E48 DEFB $02,$E0,$05,$F0,$05,$D0,$0B,$E8
  $8E50 DEFB $0B,$E8,$09,$E8,$04,$D0,$03,$E0
- $8E58 DEFB $00,$00,$00,$00,$00,$00,$00,$00
+
+; Object 57 - 5A - School desk
+;
+; #OBJECTGFX(#PC)(object57)
+b$8E58 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $8E60 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $8E68 DEFB $FF,$FF,$FF,$FF,$00,$00,$FF,$F4
  $8E70 DEFB $FF,$F4,$FF,$EC,$00,$0C,$00,$0C
+; #OBJECTGFX(#PC)(object58)
  $8E78 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $8E80 DEFB $00,$00,$00,$0E,$00,$FE,$1F,$F8
  $8E88 DEFB $FF,$80,$F0,$00,$00,$00,$FF,$F4
  $8E90 DEFB $FF,$F4,$FF,$EC,$00,$0C,$00,$0C
+; #OBJECTGFX(#PC)(object59)
  $8E98 DEFB $00,$00,$00,$00,$00,$1C,$00,$7C
  $8EA0 DEFB $01,$F0,$07,$C0,$1F,$00,$7C,$00
  $8EA8 DEFB $F0,$00,$C0,$00,$00,$00,$FF,$F4
  $8EB0 DEFB $FF,$F4,$FF,$EC,$00,$0C,$00,$0C
+; #OBJECTGFX(#PC)(object5a)
  $8EB8 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $8EC0 DEFB $00,$00,$00,$0E,$00,$FE,$1F,$F8
  $8EC8 DEFB $FF,$80,$F0,$00,$00,$00,$FF,$F4
  $8ED0 DEFB $FF,$F4,$FF,$EC,$00,$0C,$00,$0C
- $8ED8 DEFB $00,$00,$00,$00,$00,$00,$00,$00
+
+; Object 5B - Burger
+;
+; #OBJECTGFX(#PC)(object5b)
+b$8ED8 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $8EE0 DEFB $00,$00,$00,$00,$00,$00,$0B,$70
  $8EE8 DEFB $3F,$DC,$6E,$F6,$00,$00,$AA,$AA
  $8EF0 DEFB $55,$55,$00,$00,$7F,$FE,$3F,$FC
- $8EF8 DEFB $00,$00,$00,$00,$00,$00,$00,$00
+
+; Object 5C - Iced bun
+;
+; #OBJECTGFX(#PC)(object5c)
+b$8EF8 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $8F00 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $8F08 DEFB $00,$00,$7F,$FE,$FF,$FF,$79,$FE
  $8F10 DEFB $86,$3D,$EF,$43,$BD,$EF,$77,$7A
- $8F18 DEFB $5F,$F0,$00,$00,$7F,$F0,$43,$30
+
+; Object 5D - Fiz
+;
+; #OBJECTGFX(#PC)(object5d)
+b$8F18 DEFB $5F,$F0,$00,$00,$7F,$F0,$43,$30
  $8F20 DEFB $4F,$D0,$45,$D0,$4F,$F0,$49,$10
  $8F28 DEFB $49,$90,$79,$30,$79,$90,$5F,$90
  $8F30 DEFB $5E,$90,$5E,$30,$67,$F0,$3F,$E0
- $8F38 DEFB $00,$00,$30,$00,$48,$00,$58,$00
+
+; Object 5E - Bottle
+;
+; #OBJECTGFX(#PC)(object5e)
+b$8F38 DEFB $00,$00,$30,$00,$48,$00,$58,$00
  $8F40 DEFB $3C,$00,$0F,$00,$07,$E0,$03,$98
  $8F48 DEFB $03,$E6,$01,$FA,$01,$FD,$00,$FD
  $8F50 DEFB $00,$FD,$00,$7A,$00,$3E,$00,$00
- $8F58 DEFB $1C,$60,$16,$C0,$1A,$80,$0D,$80
+
+; Object 5F - Pear
+;
+; #OBJECTGFX(#PC)(object5f)
+b$8F58 DEFB $1C,$60,$16,$C0,$1A,$80,$0D,$80
  $8F60 DEFB $02,$00,$01,$C0,$01,$C0,$02,$E0
  $8F68 DEFB $02,$E0,$05,$F0,$05,$F0,$0B,$E8
  $8F70 DEFB $0B,$E8,$0B,$E8,$0D,$D8,$07,$70
- $8F78 DEFB $01,$C0,$03,$60,$06,$30,$06,$00
+
+; Object 60 - 63 - Monkey
+;
+; #OBJECTGFX(#PC)(object60)
+b$8F78 DEFB $01,$C0,$03,$60,$06,$30,$06,$00
  $8F80 DEFB $06,$00,$E6,$00,$6F,$00,$6F,$80
  $8F88 DEFB $3F,$C0,$3D,$F0,$03,$F8,$03,$78
  $8F90 DEFB $06,$E8,$0C,$78,$06,$30,$03,$00
+; #OBJECTGFX(#PC)(object61)
  $8F98 DEFB $01,$C0,$03,$60,$06,$30,$06,$00
  $8FA0 DEFB $06,$00,$07,$00,$EF,$80,$6F,$E0
  $8FA8 DEFB $3D,$F0,$1C,$FE,$00,$FE,$01,$9F
  $8FB0 DEFB $03,$1B,$01,$8E,$00,$C6,$00,$00
+; #OBJECTGFX(#PC)(object62)
  $8FB8 DEFB $01,$F0,$03,$38,$06,$00,$06,$00
  $8FC0 DEFB $06,$00,$06,$00,$0F,$C0,$0F,$F8
  $8FC8 DEFB $7E,$FE,$DC,$FA,$80,$DE,$00,$CF
  $8FD0 DEFB $00,$62,$00,$30,$00,$18,$00,$00
+; #OBJECTGFX(#PC)(object63)
  $8FD8 DEFB $01,$C0,$03,$60,$06,$20,$06,$00
  $8FE0 DEFB $06,$00,$07,$00,$6F,$80,$2F,$E0
  $8FE8 DEFB $3D,$F0,$1C,$FE,$08,$FE,$01,$9F
  $8FF0 DEFB $03,$1B,$01,$8E,$00,$C6,$00,$00
- $8FF8 DEFB $00,$00,$00,$08,$00,$1C,$00,$1C
+
+; Object 64 - Banana
+;
+; #OBJECTGFX(#PC)(object64)
+b$8FF8 DEFB $00,$00,$00,$08,$00,$1C,$00,$1C
  $9000 DEFB $00,$3C,$0E,$38,$09,$78,$10,$F0
  $9008 DEFB $1E,$F0,$21,$64,$03,$9C,$0C,$C4
  $9010 DEFB $33,$84,$CE,$08,$78,$10,$00,$00
 
-; Morning / afternoon / tea break graphics
+; Object 65 - Morning tea
 ;
-; #UDGTABLE
-; { #UDGARRAY4,$46,,4;$9018-$90D7-1-32{32}(graph3) }
-; TABLE#
+; #OBJECTGFXM(#PC)(object65)
 b$9018 DEFB $FF,$FF,$00,$00,$FC,$3F,$00,$00
  $9020 DEFB $FC,$3F,$01,$80,$E0,$07,$00,$00
  $9028 DEFB $20,$00,$0F,$F0,$00,$00,$80,$06
@@ -2137,7 +2234,11 @@ b$9018 DEFB $FF,$FF,$00,$00,$FC,$3F,$00,$00
  $9040 DEFB $80,$00,$37,$FE,$80,$00,$1B,$F8
  $9048 DEFB $C0,$03,$1C,$F8,$C0,$03,$0F,$F0
  $9050 DEFB $E0,$07,$03,$C0,$F8,$1F,$00,$00
- $9058 DEFB $FF,$8F,$00,$00,$C0,$81,$00,$20
+
+; Object 67 - Lunch
+;
+; #OBJECTGFXM(#PC)(object67)
+b$9058 DEFB $FF,$8F,$00,$00,$C0,$81,$00,$20
  $9060 DEFB $C0,$81,$12,$24,$C0,$01,$12,$84
  $9068 DEFB $00,$01,$04,$88,$00,$01,$44,$28
  $9070 DEFB $00,$01,$48,$24,$00,$00,$21,$84
@@ -2145,7 +2246,11 @@ b$9018 DEFB $FF,$FF,$00,$00,$FC,$3F,$00,$00
  $9080 DEFB $C0,$03,$15,$58,$00,$00,$00,$00
  $9088 DEFB $00,$00,$7F,$FE,$00,$00,$0F,$F0
  $9090 DEFB $E0,$07,$00,$00,$FF,$FF,$00,$00
- $9098 DEFB $FF,$0F,$00,$00,$FF,$03,$00,$60
+
+; Object 69 - Dinner
+;
+; #OBJECTGFXM(#PC)(object69)
+b$9098 DEFB $FF,$0F,$00,$00,$FF,$03,$00,$60
  $90A0 DEFB $FE,$00,$00,$58,$FE,$00,$00,$D6
  $90A8 DEFB $C0,$00,$00,$B2,$80,$00,$19,$2C
  $90B0 DEFB $80,$01,$3D,$C4,$80,$01,$26,$68
@@ -2154,19 +2259,10 @@ b$9018 DEFB $FF,$FF,$00,$00,$FC,$3F,$00,$00
  $90C8 DEFB $C0,$00,$0F,$E2,$E0,$08,$03,$E0
  $90D0 DEFB $F8,$0F,$00,$C0,$FE,$1F,$00,$00
 
-; Asteroids game graphics
+
+; Object 6A - Asteroids 1
 ;
-; #UDGTABLE
-; { #UDGARRAY4,$46,,4;$90D8-$9115-1-32{32}(graph40) }
-; TABLE#
-; .
-; #UDGTABLE
-; { #UDGARRAY2,$46,,2;$9116-$9227-1-16(graph4) }
-; TABLE#
-; .
-; #UDGTABLE
-; { #UDGARRAY2,$46,,4;$9228-$9237-1-16(graph5) }
-; TABLE#
+; #OBJECTGFXM(#PC)(object6a)
 b$90D8 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
  $90E0 DEFB $FE,$0F,$00,$00,$FC,$0F,$00,$E0
  $90E8 DEFB $F8,$0F,$01,$C0,$F0,$0F,$03,$80
@@ -2175,48 +2271,82 @@ b$90D8 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
  $9100 DEFB $F0,$7F,$06,$00,$F0,$FF,$04,$00
  $9108 DEFB $F1,$FF,$00,$00,$FF,$FF,$00,$00
  $9110 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
- $9118 DEFB $00,$00,$00,$00,$00,$00,$00,$00
+
+; Object 6C - Asteroids 2
+;
+; #OBJECTGFX(#PC)(object6c)
+b$9118 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $9120 DEFB $00,$80,$02,$A0,$01,$40,$06,$B0
  $9128 DEFB $01,$40,$02,$A0,$00,$80,$00,$00
  $9130 DEFB $00,$00,$00,$00,$00,$00,$00,$00
- $9138 DEFB $00,$00,$01,$80,$01,$80,$02,$C0
+
+; Object 6D - Asteroids 3
+;
+; #OBJECTGFX(#PC)(object6d)
+b$9138 DEFB $00,$00,$01,$80,$01,$80,$02,$C0
  $9140 DEFB $03,$40,$02,$C0,$07,$60,$06,$E0
  $9148 DEFB $07,$60,$0F,$F0,$0E,$70,$1C,$38
  $9150 DEFB $18,$18,$00,$00,$00,$00,$00,$00
- $9158 DEFB $00,$00,$00,$00,$00,$0C,$00,$3C
+
+; Object 6E - Asteroids 4
+;
+; #OBJECTGFX(#PC)(object6e)
+b$9158 DEFB $00,$00,$00,$00,$00,$0C,$00,$3C
  $9160 DEFB $00,$F8,$03,$D8,$0F,$B0,$3F,$70
  $9168 DEFB $7E,$E0,$7D,$E0,$07,$C0,$03,$C0
  $9170 DEFB $03,$80,$03,$80,$03,$00,$00,$00
- $9178 DEFB $00,$00,$00,$00,$00,$00,$18,$00
+
+; Object 6F - Asteroids 4
+;
+; #OBJECTGFX(#PC)(object6f)
+b$9178 DEFB $00,$00,$00,$00,$00,$00,$18,$00
  $9180 DEFB $1E,$00,$0F,$C0,$07,$F8,$03,$56
  $9188 DEFB $02,$AE,$07,$F8,$0F,$C0,$1E,$00
  $9190 DEFB $18,$00,$00,$00,$00,$00,$00,$00
- $9198 DEFB $00,$00,$03,$00,$03,$80,$03,$80
+
+; Object 70 - Asteroids 5
+;
+; #OBJECTGFX(#PC)(object70)
+b$9198 DEFB $00,$00,$03,$00,$03,$80,$03,$80
  $91A0 DEFB $03,$C0,$07,$C0,$7D,$E0,$7E,$E0
  $91A8 DEFB $3F,$70,$0F,$B0,$03,$D8,$00,$F8
  $91B0 DEFB $00,$3C,$00,$0C,$00,$00,$00,$00
- $91B8 DEFB $00,$00,$00,$00,$00,$00,$18,$18
+
+; Object 71 - Asteroids 5
+;
+; #OBJECTGFX(#PC)(object71)
+b$91B8 DEFB $00,$00,$00,$00,$00,$00,$18,$18
  $91C0 DEFB $1C,$38,$0E,$70,$0F,$F0,$06,$E0
  $91C8 DEFB $07,$60,$06,$E0,$03,$40,$02,$C0
  $91D0 DEFB $03,$40,$01,$80,$01,$80,$00,$00
- $91D8 DEFB $00,$00,$00,$C0,$01,$C0,$01,$C0
+
+; Object 72 - Asteroids 6
+;
+; #OBJECTGFX(#PC)(object72)
+b$91D8 DEFB $00,$00,$00,$C0,$01,$C0,$01,$C0
  $91E0 DEFB $03,$C0,$03,$E0,$07,$BE,$07,$7E
  $91E8 DEFB $0E,$FC,$0D,$F0,$1B,$C0,$1F,$00
  $91F0 DEFB $3C,$00,$30,$00,$00,$00,$00,$00
- $91F8 DEFB $00,$00,$00,$00,$00,$00,$00,$18
+
+; Object 73 - Asteroids 7
+;
+; #OBJECTGFX(#PC)(object73)
+b$91F8 DEFB $00,$00,$00,$00,$00,$00,$00,$18
  $9200 DEFB $00,$78,$03,$F0,$1F,$E0,$75,$40
  $9208 DEFB $6A,$C0,$1F,$E0,$03,$F0,$00,$78
  $9210 DEFB $00,$18,$00,$00,$00,$00,$00,$00
- $9218 DEFB $00,$00,$00,$00,$30,$00,$3C,$00
+
+; Object 74 - Asteroids 8
+;
+; #OBJECTGFX(#PC)(object74)
+b$9218 DEFB $00,$00,$00,$00,$30,$00,$3C,$00
  $9220 DEFB $1F,$00,$1B,$C0,$0D,$F0,$0E,$FC
  $9228 DEFB $07,$7E,$07,$BE,$03,$E0,$03,$C0
  $9230 DEFB $01,$C0,$01,$C0,$00,$C0,$00,$00
 
-; Movable objects (masked)
+; Object 75 - Pound symbol
 ;
-; #UDGTABLE
-; { #UDGARRAY4,$46,,4;$9238-$9437-1-32{32}(graph6) }
-; TABLE#
+; #OBJECTGFXM(#PC)(object75)
 b$9238 DEFB $F0,$07,$00,$00,$E0,$03,$07,$F0
  $9240 DEFB $E0,$03,$0F,$F8,$E0,$03,$0E,$38
  $9248 DEFB $E0,$83,$0E,$00,$E0,$FF,$0E,$00
@@ -2225,7 +2355,11 @@ b$9238 DEFB $F0,$07,$00,$00,$E0,$03,$07,$F0
  $9260 DEFB $80,$E3,$0E,$00,$00,$23,$3E,$08
  $9268 DEFB $00,$03,$7F,$88,$00,$03,$4F,$F8
  $9270 DEFB $00,$03,$39,$F0,$80,$07,$00,$00
- $9278 DEFB $80,$01,$00,$00,$00,$00,$33,$CC
+
+; Object 77 - Life raft
+;
+; #OBJECTGFXM(#PC)(object77)
+b$9278 DEFB $80,$01,$00,$00,$00,$00,$33,$CC
  $9280 DEFB $00,$00,$4F,$F2,$00,$00,$57,$FA
  $9288 DEFB $00,$00,$3B,$F4,$00,$00,$3C,$2C
  $9290 DEFB $00,$00,$7A,$5E,$00,$00,$78,$1E
@@ -2233,7 +2367,11 @@ b$9238 DEFB $F0,$07,$00,$00,$E0,$03,$07,$F0
  $92A0 DEFB $00,$00,$34,$3C,$00,$00,$2F,$DC
  $92A8 DEFB $00,$00,$5F,$EA,$00,$00,$4F,$F2
  $92B0 DEFB $00,$00,$33,$CC,$80,$01,$00,$00
- $92B8 DEFB $80,$01,$2A,$AA,$80,$01,$7E,$FC
+
+; Object 79 - Stamp
+;
+; #OBJECTGFXM(#PC)(object79)
+b$92B8 DEFB $80,$01,$2A,$AA,$80,$01,$7E,$FC
  $92C0 DEFB $80,$01,$3D,$5E,$80,$01,$78,$8C
  $92C8 DEFB $80,$01,$3A,$56,$80,$01,$75,$2C
  $92D0 DEFB $80,$01,$2F,$AE,$80,$01,$77,$DC
@@ -2241,7 +2379,11 @@ b$9238 DEFB $F0,$07,$00,$00,$E0,$03,$07,$F0
  $92E0 DEFB $80,$01,$3D,$5E,$80,$01,$7A,$EC
  $92E8 DEFB $80,$01,$33,$CE,$80,$01,$60,$04
  $92F0 DEFB $80,$01,$3F,$FE,$80,$01,$55,$54
- $92F8 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
+
+; Object 7B - 7F - Gas
+;
+; #OBJECTGFXM(#PC)(object7b)
+b$92F8 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
  $9300 DEFB $F1,$FF,$00,$00,$E0,$C7,$04,$00
  $9308 DEFB $E0,$C7,$0E,$10,$E0,$C7,$0E,$00
  $9310 DEFB $E0,$1F,$04,$00,$F0,$01,$00,$40
@@ -2249,14 +2391,16 @@ b$9238 DEFB $F0,$07,$00,$00,$E0,$03,$07,$F0
  $9320 DEFB $C0,$01,$00,$40,$E0,$00,$04,$04
  $9328 DEFB $E0,$00,$0E,$0E,$E0,$00,$0E,$4E
  $9330 DEFB $E0,$00,$04,$04,$F1,$F1,$00,$00
+; #OBJECTGFXM(#PC)(object7d)
  $9338 DEFB $FF,$FF,$00,$00,$FF,$C7,$00,$00
  $9340 DEFB $FF,$83,$00,$10,$F1,$83,$00,$38
  $9348 DEFB $E0,$83,$04,$38,$E0,$83,$0A,$10
  $9350 DEFB $E0,$00,$04,$04,$C0,$00,$00,$4E
  $9358 DEFB $82,$00,$10,$AE,$82,$00,$38,$44
  $9360 DEFB $83,$11,$38,$00,$80,$09,$10,$40
- $9368 DEFB $C0,$00,$04,$E4,$E0,$00,$0A,$EA
+ $9368 DEFB $C0,$00,$04,$E4,$E0,$00,$0A,$EA 
  $9370 DEFB $E0,$00,$04,$44,$F1,$11,$00,$00
+; #OBJECTGFXM(#PC)(object7f)
  $9378 DEFB $FF,$FF,$00,$00,$FF,$C7,$00,$00
  $9380 DEFB $FF,$83,$00,$10,$FF,$83,$00,$28
  $9388 DEFB $F1,$83,$00,$10,$F1,$C1,$04,$00
@@ -2265,7 +2409,11 @@ b$9238 DEFB $F0,$07,$00,$00,$E0,$03,$07,$F0
  $93A0 DEFB $83,$FF,$10,$00,$C7,$1F,$00,$00
  $93A8 DEFB $F0,$01,$00,$40,$F0,$01,$04,$A4
  $93B0 DEFB $F0,$01,$00,$40,$FF,$1F,$00,$00
- $93B8 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
+
+; Object 81 - Left arrow
+;
+; #OBJECTGFXM(#PC)(object81)
+b$93B8 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
  $93C0 DEFB $F1,$FF,$00,$00,$E1,$FF,$04,$00
  $93C8 DEFB $C1,$FF,$0C,$00,$80,$00,$1C,$00
  $93D0 DEFB $00,$00,$3B,$FE,$00,$00,$77,$FE
@@ -2273,7 +2421,11 @@ b$9238 DEFB $F0,$07,$00,$00,$E0,$03,$07,$F0
  $93E0 DEFB $80,$00,$1C,$00,$C1,$FF,$0C,$00
  $93E8 DEFB $E1,$FF,$04,$00,$F1,$FF,$00,$00
  $93F0 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
- $93F8 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
+
+; Object 83 - Right arrow
+;
+; #OBJECTGFXM(#PC)(object83)
+b$93F8 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
  $9400 DEFB $FF,$8F,$00,$00,$FF,$87,$00,$20
  $9408 DEFB $FF,$83,$00,$30,$00,$01,$00,$38
  $9410 DEFB $00,$00,$7F,$DC,$00,$00,$7F,$EE
@@ -2282,62 +2434,9 @@ b$9238 DEFB $F0,$07,$00,$00,$E0,$03,$07,$F0
  $9428 DEFB $FF,$87,$00,$20,$FF,$8F,$00,$00
  $9430 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
 
-; Character graphics
+; Wally L
 ;
-; #UDGTABLE
-; { #UDGARRAY4,$46,,4;$9438-$94B7-1-32{32}(wally0) |
-; #UDGARRAY4,$46,,4;$94B8-$9537-1-32{32}(wally1) |
-; #UDGARRAY4,$46,,4;$9538-$95B7-1-32{32}(wally2) |
-; #UDGARRAY4,$46,,4;$95B8-$9637-1-32{32}(wally3) |
-; #UDGARRAY4,$46,,4;$9638-$96B7-1-32{32}(wally4) |
-; #UDGARRAY4,$46,,4;$96B8-$9737-1-32{32}(wally5) |
-; #UDGARRAY4,$46,,4;$9738-$97B7-1-32{32}(wally6) |
-; #UDGARRAY4,$46,,4;$97B8-$9837-1-32{32}(wally7) }
-; TABLE#
-; .
-; #UDGTABLE
-; { #UDGARRAY4,$45,,4;$9838-$98B7-1-32{32}(wilma0) |
-; #UDGARRAY4,$45,,4;$98B8-$9937-1-32{32}(wilma1) |
-; #UDGARRAY4,$45,,4;$9938-$99B7-1-32{32}(wilma2) |
-; #UDGARRAY4,$45,,4;$99B8-$9A37-1-32{32}(wilma3) |
-; #UDGARRAY4,$45,,4;$9A38-$9AB7-1-32{32}(wilma4) |
-; #UDGARRAY4,$45,,4;$9AB8-$9B37-1-32{32}(wilma5) |
-; #UDGARRAY4,$45,,4;$9B38-$9BB7-1-32{32}(wilma6) |
-; #UDGARRAY4,$45,,4;$9BB8-$9C37-1-32{32}(wilma7) }
-; TABLE#
-; .
-; #UDGTABLE
-; { #UDGARRAY4,$44,,4;$9C38-$9CB7-1-32{32}(tom0) |
-; #UDGARRAY4,$44,,4;$9CB8-$9D37-1-32{32}(tom1) |
-; #UDGARRAY4,$44,,4;$9D38-$9DB7-1-32{32}(tom2) |
-; #UDGARRAY4,$44,,4;$9DB8-$9E37-1-32{32}(tom3) |
-; #UDGARRAY4,$44,,4;$9E38-$9EB7-1-32{32}(tom4) |
-; #UDGARRAY4,$44,,4;$9EB8-$9F37-1-32{32}(tom5) |
-; #UDGARRAY4,$44,,4;$9F38-$9FB7-1-32{32}(tom6) |
-; #UDGARRAY4,$44,,4;$9FB8-$A037-1-32{32}(tom7) }
-; TABLE#
-; .
-; #UDGTABLE
-; { #UDGARRAY4,$43,,4;$A038-$A0B7-1-32{32}(dick0) |
-; #UDGARRAY4,$43,,4;$A0B8-$A137-1-32{32}(dick1) |
-; #UDGARRAY4,$43,,4;$A138-$A1B7-1-32{32}(dick2) |
-; #UDGARRAY4,$43,,4;$A1B8-$A237-1-32{32}(dick3) |
-; #UDGARRAY4,$43,,4;$A238-$A2B7-1-32{32}(dick4) |
-; #UDGARRAY4,$43,,4;$A2B8-$A337-1-32{32}(dick5) |
-; #UDGARRAY4,$43,,4;$A338-$A3B7-1-32{32}(dick6) |
-; #UDGARRAY4,$43,,4;$A3B8-$A437-1-32{32}(dick7) }
-; TABLE#
-; .
-; #UDGTABLE
-; { #UDGARRAY4,$47,,4;$A438-$A4B7-1-32{32}(harry0) |
-; #UDGARRAY4,$47,,4;$A4B8-$A537-1-32{32}(harry1) |
-; #UDGARRAY4,$47,,4;$A538-$A5B7-1-32{32}(harry2) |
-; #UDGARRAY4,$47,,4;$A5B8-$A637-1-32{32}(harry3) |
-; #UDGARRAY4,$47,,4;$A638-$A6B7-1-32{32}(harry4) |
-; #UDGARRAY4,$47,,4;$A6B8-$A737-1-32{32}(harry5) |
-; #UDGARRAY4,$47,,4;$A738-$A7B7-1-32{32}(harry6) |
-; #UDGARRAY4,$47,,4;$A7B8-$A837-1-32{32}(harry7) }
-; TABLE#
+; #CALL:print_player(#PC,$46,wallyL)
 b$9438 DEFB $F0,$00,$00,$00,$E0,$00,$07,$3E
  $9440 DEFB $E0,$00,$0F,$FF,$80,$00,$07,$FE
  $9448 DEFB $80,$00,$3C,$3C,$80,$01,$01,$80
@@ -2466,7 +2565,11 @@ b$9438 DEFB $F0,$00,$00,$00,$E0,$00,$07,$3E
  $9820 DEFB $00,$00,$DC,$18,$01,$C0,$D8,$03
  $9828 DEFB $03,$F0,$50,$07,$07,$F0,$C0,$03
  $9830 DEFB $1F,$F8,$00,$00,$FF,$FF,$00,$00
- $9838 DEFB $E0,$0F,$07,$C0,$C0,$07,$0D,$60
+
+; Wilma L
+;
+; #CALL:print_player(#PC,$45,wilmaL)
+b$9838 DEFB $E0,$0F,$07,$C0,$C0,$07,$0D,$60
  $9840 DEFB $C0,$07,$1F,$B0,$C0,$03,$19,$D0
  $9848 DEFB $C0,$03,$16,$F8,$C0,$03,$06,$D0
  $9850 DEFB $F0,$03,$02,$F8,$E0,$03,$02,$D0
@@ -2594,7 +2697,11 @@ b$9438 DEFB $F0,$00,$00,$00,$E0,$00,$07,$3E
  $9C20 DEFB $F0,$00,$04,$00,$F0,$FF,$06,$00
  $9C28 DEFB $F0,$FF,$06,$00,$F0,$FF,$04,$00
  $9C30 DEFB $F1,$FF,$00,$00,$FF,$FF,$00,$00
- $9C38 DEFB $01,$FF,$00,$00,$00,$FF,$54,$00
+
+; Tom L
+;
+; #CALL:print_player(#PC,$44,tomL)
+b$9C38 DEFB $01,$FF,$00,$00,$00,$FF,$54,$00
  $9C40 DEFB $00,$7F,$7E,$00,$00,$7F,$C3,$00
  $9C48 DEFB $00,$3F,$3D,$00,$00,$3F,$7E,$80
  $9C50 DEFB $00,$3F,$1A,$80,$00,$0F,$F6,$00
@@ -2722,7 +2829,11 @@ b$9438 DEFB $F0,$00,$00,$00,$E0,$00,$07,$3E
  $A020 DEFB $01,$C0,$00,$03,$FF,$F8,$00,$01
  $A028 DEFB $FF,$F8,$00,$03,$FF,$F8,$00,$00
  $A030 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
- $A038 DEFB $FC,$3F,$00,$00,$FC,$3F,$01,$80
+
+; Dick L
+;
+; #CALL:print_player(#PC,$43,dickL)
+b$A038 DEFB $FC,$3F,$00,$00,$FC,$3F,$01,$80
  $A040 DEFB $F8,$0F,$00,$00,$F0,$07,$03,$E0
  $A048 DEFB $E0,$07,$04,$10,$E0,$07,$0F,$F0
  $A050 DEFB $E0,$07,$00,$00,$C0,$07,$09,$90
@@ -2850,7 +2961,11 @@ b$9438 DEFB $F0,$00,$00,$00,$E0,$00,$07,$3E
  $A420 DEFB $07,$FC,$C0,$00,$1F,$FF,$00,$00
  $A428 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
  $A430 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
- $A438 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
+
+; Harry L
+;
+; #CALL:print_player(#PC,$47,harryL)
+b$A438 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
  $A440 DEFB $FF,$FF,$00,$00,$E0,$FF,$00,$00
  $A448 DEFB $C0,$7F,$0A,$00,$80,$3F,$15,$00
  $A450 DEFB $80,$3F,$2A,$80,$00,$3F,$15,$00
@@ -2979,7 +3094,7 @@ b$9438 DEFB $F0,$00,$00,$00,$E0,$00,$07,$3E
  $A828 DEFB $3F,$C0,$00,$01,$FF,$FC,$00,$00
  $A830 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
 
-; Temporary workspace for putting static objects on screen
+; Temporary co-ordinates for putting static objects on screen
 b$A838 DEFB $00,$00,$00
 
 ; Temporary store for the stack pointer for putting static objects on screen
@@ -2989,22 +3104,30 @@ w$A83B DEFW $0000
 ;
 ; Used by the routines at #R$EEC1, #R$F334, #R$F43C, #R$F4D3, #R$F572, #R$F6EC,
 ; #R$F746, #R$F773, #R$F814, #R$F93A and #R$F9F5.
+;
+; A ID of the object to draw.
+;
+; The location of the object to draw is stored at #R$A838.
+; 
+; .
+;
+; This routine is a copy of code used in Pyjamarama, the previous game in the series.
 c$A83D DI            ; Disable interrupts.
  $A83E EXX           ; Exchange all main registers.
- $A83F PUSH AF       ;
+ $A83F PUSH AF       ; Remember the object ID.
  $A840 LD ($A83B),SP ; Remember the current stack pointer in #R$A83B.
- $A844 LD L,A        ;
- $A845 LD H,$00      ;
- $A847 ADD HL,HL     ;
+ $A844 LD L,A        ; { Put the object ID in #REGhl.
+ $A845 LD H,$00      ; } 
+ $A847 ADD HL,HL     ; { Multiply by 32 to get a suitable offset.
  $A848 ADD HL,HL     ;
  $A849 ADD HL,HL     ;
  $A84A ADD HL,HL     ;
- $A84B ADD HL,HL     ;
- $A84C LD SP,$8378   ;
- $A84F ADD HL,SP     ;
- $A850 LD SP,HL      ;
- $A851 LD A,($A838)  ;
- $A854 LD B,A        ;
+ $A84B ADD HL,HL     ; }
+ $A84C LD SP,$8378   ; Point the stack at the start of the graphics buffer. (#R$8378)
+ $A84F ADD HL,SP     ; { Add the offset so the stack is at the start of the graphic data.
+ $A850 LD SP,HL      ; }
+ $A851 LD A,($A838)  ; Get the x co-ordinate.
+ $A854 LD B,A        ; Set this in #REGb.
  $A855 AND $07       ;
  $A857 INC A         ;
  $A858 LD ($A87B),A  ;
@@ -3013,7 +3136,7 @@ c$A83D DI            ; Disable interrupts.
  $A85E RRCA          ;
  $A85F RRCA          ;
  $A860 RRCA          ;
- $A861 LD ($EFAF),A  ;
+ $A861 LD ($EFAF),A  ; Change the routine at #R$EF91 to use a different pointer in the buffer.
  $A864 ADD A,$02     ;
  $A866 LD E,A        ;
  $A867 LD A,($A839)  ;
@@ -3052,7 +3175,7 @@ c$A83D DI            ; Disable interrupts.
  $A895 DEC C         ;
  $A896 JP NZ,$A879   ;
  $A899 LD SP,($A83B) ; Restore the stack pointer.
- $A89D POP AF        ;
+ $A89D POP AF        ; Restore the object ID in #REGa.
  $A89E EXX           ; { Swap back all main registers and return.
  $A89F RET           ; }
 
@@ -3167,28 +3290,30 @@ c$A921 PUSH IY       ; { Copy the pointer to #REGhl.
 ;
 ; Used by the routine at #R$81AE.
 ;
-; IY - base address of character data (BC67 = Wally - BC6B = Harry)
-c$A92C PUSH IY         ;
- $A92E LD A,(IY+$0F)   ;
- $A931 LD ($B951),A    ;
- $A934 LD IY,$BC67     ;
- $A938 LD A,($B55F)    ;
- $A93B ADD A,$04       ;
- $A93D LD B,A          ;
-*$A93E PUSH BC         ;
- $A93F LD A,($B55F)    ;
- $A942 OR A            ;
- $A943 JR NZ,$A94C     ;
- $A945 CALL $A921      ;
- $A948 JR NZ,$A94C     ;
- $A94A INC IY          ;
-*$A94C LD A,(IY+$0F)   ;
- $A94F CP (IY+$5A)     ;
+; IY - base address of character data (#R$BC67 = Wally - #N$BC6B = Harry)
+c$A92C PUSH IY         ; Store #REGiy
+ $A92E LD A,(IY+$0F)   ; Get the room for the current character in #REGa.
+ $A931 LD ($B951),A    ; Store this. (#R$B951)
+ $A934 LD IY,$BC67     ; Point #REGiy at the first character.
+ $A938 LD A,($B55F)    ; Get the "computer controlled" player flag.
+ $A93B ADD A,$04       ; Add 4 to give either 4 or 5 characters to move.
+ $A93D LD B,A          ; Set this in #REGb to loop through the characters.
+*$A93E PUSH BC         ; Remember the character count.
+ $A93F LD A,($B55F)    ; { Is this player computer controlled?
+ $A942 OR A            ; }
+ $A943 JR NZ,$A94C     ; Jump forward if so.
+; This character is being controlled by the player, so nothing to do
+ $A945 CALL $A921      ; Check this character is player-controlled.
+ $A948 JR NZ,$A94C     ; Jump forward if not. (Should never get here).
+ $A94A INC IY          ; Otherwise jump to the next character.
+; This is a computer controlled character, so move them.
+*$A94C LD A,(IY+$0F)   ; Get the room for the current character.
+ $A94F CP (IY+$5A)     ; Compare to the table in #R$BCC1 (?)
  $A952 JR NZ,$A95B     ;
- $A954 LD A,(IY-$14)   ;
+ $A954 LD A,(IY-$14)   ; Get #R$BC53 (?)
  $A957 OR A            ;
  $A958 JP NZ,$A991     ;
-*$A95B CALL $AFC4      ;
+*$A95B CALL $AFC4      ; If the character is in mid-air, drop them to the ground or a platform.
  $A95E LD A,(IY+$46)   ;
  $A961 OR A            ;
  $A962 JR Z,$A96A      ;
@@ -3212,12 +3337,12 @@ c$A92C PUSH IY         ;
  $A984 LD DE,$A989     ;
  $A987 PUSH DE         ;
  $A988 JP (HL)         ;
-*$A989 POP BC          ;
- $A98A INC IY          ;
- $A98C DJNZ $A93E      ;
- $A98E POP IY          ;
- $A990 RET             ;
-*$A991 CALL $AFC4      ;
+*$A989 POP BC          ; Restore the character count.
+ $A98A INC IY          ; Move to the next character.
+ $A98C DJNZ $A93E      ; Loop until all the characters have moved.
+ $A98E POP IY          ; { Restore #REGiy and return.
+ $A990 RET             ; }
+*$A991 CALL $AFC4      ; If the character is in mid-air, drop them to the ground or a platform.
  $A994 LD A,(IY+$46)   ;
  $A997 OR A            ;
  $A998 JR Z,$A9A0      ;
@@ -3835,7 +3960,7 @@ b$AD78 DEFB $0C,$10,$0E,$10,$0E,$11,$10,$10
 ; A character can perform an action here. Do it if necessary
 ;
 ; Used by the routines at #R$A92C and #R$AE5D.
-c$ADBA LD A,(IY+$0F)   ;
+c$ADBA LD A,(IY+$0F)   ; Get the current room.
  $ADBD CP (IY+$5A)     ;
  $ADC0 JR NZ,$ADC7     ;
  $ADC2 LD (IY-$14),$01 ;
@@ -4029,14 +4154,15 @@ b$AF00 DEFB $0F
 ; Set the next room for the jumping jack or Herbert to appear in
 ;
 ; Used by the routines at #R$F10E and #R$F277.
-c$AF01 LD A,($AF00)  ;
- $AF04 INC A         ;
- $AF05 CP $20        ;
- $AF07 JR NZ,$AF0A   ;
- $AF09 XOR A         ;
-*$AF0A LD ($AF00),A  ;
- $AF0D XOR $15       ;
- $AF0F RET           ;
+c$AF01 LD A,($AF00)  ; Get the current room. (#R$AF00)
+ $AF04 INC A         ; Move to the next one along.
+ $AF05 CP $20        ; Have we reached room #N$20?
+                     ; (Herbert doesn't appear in the sewer or the cave.)
+ $AF07 JR NZ,$AF0A   ; Jump forward if not.
+ $AF09 XOR A         ; Otherwise reset to room 0 (Town Square).
+*$AF0A LD ($AF00),A  ; Set the new value.
+ $AF0D XOR $15       ; { Flip bits 0, 3 and 5 and return.
+ $AF0F RET           ; }
 
 ; Co-ordinate table
 ;
@@ -4191,21 +4317,25 @@ c$AFC4 LD (IY+$37),$01 ; Set that the character is mid-air.
 ; Check that 'left' has been pressed, and set A to 1 if it has
 ;
 ; Used by the routines at #R$B09F, #R$F0C0 and #R$F93A.
-c$B00B LD A,($B2DB)  ;
- $B00E OR A          ;
- $B00F JR Z,$B028    ;
- $B011 CP $01        ;
- $B013 JR NZ,$B01D   ;
- $B015 IN A,($1F)    ;
- $B017 BIT 0,A       ;
- $B019 JR NZ,$B025   ;
- $B01B JR $B03A      ;
+c$B00B LD A,($B2DB)  ; Get the input mechanism. (#R$B2DB)
+ $B00E OR A          ; Is it 0?
+ $B00F JR Z,$B028    ; Jump forward if it is.
+ $B011 CP $01        ; Is it 1?
+ $B013 JR NZ,$B01D   ; Jump forward if it is.
+; Use Kempston input
+ $B015 IN A,($1F)    ; Read the Kempston interface.
+ $B017 BIT 0,A       ; Was 'left' pressed?
+ $B019 JR NZ,$B025   ; If so, jump forward to signal success.
+ $B01B JR $B03A      ; Otherwise, jump forward to indicate nothing read.
+; Use Sinclair input
 *$B01D LD A,$EF      ;
  $B01F IN A,($FE)    ;
  $B021 BIT 3,A       ;
  $B023 JR NZ,$B03A   ;
-*$B025 LD A,$01      ;
- $B027 RET           ;
+; 'Left' was pressed, so indicate this.
+*$B025 LD A,$01      ; { Return #REGa with 1 to mark success.
+ $B027 RET           ; }
+; Use keyboard input.
 *$B028 LD A,$FB      ;
  $B02A IN A,($FE)    ;
  $B02C OR $F5        ;
@@ -4216,27 +4346,32 @@ c$B00B LD A,($B2DB)  ;
  $B035 AND B         ;
  $B036 CP $FF        ;
  $B038 JR NZ,$B025   ;
-*$B03A XOR A         ;
- $B03B RET           ;
+; 'Left' wasn't pressed, so indicate this.
+*$B03A XOR A         ; { Return #REGa with 0.
+ $B03B RET           ; }
 
 ; Check that 'right' has been pressed, and set A to 1 if it has
 ;
 ; Used by the routines at #R$B09F, #R$F0C0 and #R$F93A.
-c$B03C LD A,($B2DB)  ;
- $B03F OR A          ;
- $B040 JR Z,$B059    ;
- $B042 CP $01        ;
- $B044 JR NZ,$B04E   ;
- $B046 IN A,($1F)    ;
- $B048 BIT 1,A       ;
- $B04A JR NZ,$B056   ;
- $B04C JR $B06B      ;
+c$B03C LD A,($B2DB)  ; Get the input mechanism. (#R$B2DB)
+ $B03F OR A          ; Is it 0?
+ $B040 JR Z,$B059    ; Jump forward if it is.
+ $B042 CP $01        ; Is it 1?
+ $B044 JR NZ,$B04E   ; Jump forward if it is.
+; Use Kempston input
+ $B046 IN A,($1F)    ; Read the Kempston interface.
+ $B048 BIT 1,A       ; Was 'right' pressed?
+ $B04A JR NZ,$B056   ; If so, jump forward to signal success.
+ $B04C JR $B06B      ; Otherwise, jump forward to indicate nothing read.
+; Use Sinclair input
 *$B04E LD A,$EF      ;
  $B050 IN A,($FE)    ;
  $B052 BIT 4,A       ;
  $B054 JR NZ,$B06B   ;
-*$B056 LD A,$01      ;
- $B058 RET           ;
+; 'Right' was pressed, so indicate this.
+*$B056 LD A,$01      ; { Return #REGa with 1 to mark success.
+ $B058 RET           ; }
+; Use keyboard input.
 *$B059 LD A,$FB      ;
  $B05B IN A,($FE)    ;
  $B05D OR $EA        ;
@@ -4247,27 +4382,32 @@ c$B03C LD A,($B2DB)  ;
  $B066 AND B         ;
  $B067 CP $FF        ;
  $B069 JR NZ,$B056   ;
-*$B06B XOR A         ;
- $B06C RET           ;
+; 'Right' wasn't pressed, so indicate this.
+*$B06B XOR A         ; { Return #REGa with 0.
+ $B06C RET           ; }
 
 ; Check that 'jump' has been pressed, and set A to 1 if it has
 ;
 ; Used by the routines at #R$B09F and #R$F9F5.
-c$B06D LD A,($B2DB)  ;
- $B070 OR A          ;
- $B071 JR Z,$B08A    ;
- $B073 CP $01        ;
- $B075 JR NZ,$B080   ;
- $B077 IN A,($1F)    ;
- $B079 BIT 4,A       ;
- $B07B JR Z,$B09B    ;
-*$B07D LD A,$01      ;
- $B07F RET           ;
+c$B06D LD A,($B2DB)  ; Get the input mechanism. (#R$B2DB)
+ $B070 OR A          ; Is it 0?
+ $B071 JR Z,$B08A    ; Jump forward if it is.
+ $B073 CP $01        ; Is it 1?
+ $B075 JR NZ,$B080   ; Jump forward if it is.
+; Use Kempston input.
+ $B077 IN A,($1F)    ; Read the Kempston interface.
+ $B079 BIT 4,A       ; Was 'fire' pressed?
+ $B07B JR Z,$B09B    ; If not, jump forward to indicate nothing read.
+; 'Jump' / 'Fire' was pressed, so indicate this.
+*$B07D LD A,$01      ; { Return #REGa with 1 to mark success.
+ $B07F RET           ; }
+; Use Sinclair input.
 *$B080 LD A,$EF      ;
  $B082 IN A,($FE)    ;
  $B084 BIT 0,A       ;
  $B086 JR Z,$B07D    ;
  $B088 JR $B09B      ;
+; Use keyboard input.
 *$B08A LD A,$FE      ;
  $B08C IN A,($FE)    ;
  $B08E LD B,A        ;
@@ -4277,13 +4417,19 @@ c$B06D LD A,($B2DB)  ;
  $B094 OR $E0        ;
  $B096 CP $FF        ;
  $B098 JP NZ,$B07D   ;
-*$B09B XOR A         ;
- $B09C RET           ;
+; 'Jump' / 'Fire' wasn't pressed, so indicate this.
+*$B09B XOR A         ; { Return #REGa with 0.
+ $B09C RET           ; }
 
 ; Buffer for the current player
 ;
-; BC67 - Wally BC68 - Wilma BC69 - Tom BC6A - Dick BC6B - Harry
-w$B09D DEFW $0000
+; During the game, the value of #REGiy is set to this value and used to access
+; other character specific flags, such as endurance and items held.
+;
+; .
+;
+; #R$BC67 - Wally #N$BC68 - Wilma #N$BC69 - Tom #N$BC6A - Dick #N$BC6B - Harry
+g$B09D DEFW $0000
 
 ; Check for user input and act on it
 ;
@@ -4593,23 +4739,23 @@ b$B2DB DEFB $00
 ; Select Kempston control
 ;
 ; Used by the routine at #R$80E5.
-c$B2DC LD A,$02      ;
+c$B2DC LD A,$02      ; { Set 2 to the control mechanism byte.
  $B2DE LD ($B2DB),A  ;
- $B2E1 RET           ;
+ $B2E1 RET           ; }
 
 ; Select Sinclair control
 ;
 ; Used by the routine at #R$80E5.
-c$B2E2 LD A,$01      ;
+c$B2E2 LD A,$01      ; { Set 1 to the control mechanism byte.
  $B2E4 LD ($B2DB),A  ;
- $B2E7 RET           ;
+ $B2E7 RET           ; }
 
 ; Select Keyboard control
 ;
 ; Used by the routine at #R$80E5.
-c$B2E8 XOR A         ;
+c$B2E8 XOR A         ; { Set 0 to the control mechanism byte.
  $B2E9 LD ($B2DB),A  ;
- $B2EC RET           ;
+ $B2EC RET           ; }
 
 ; Temporary space to calculate individual earnings
 b$B2ED DEFB $00,$00
@@ -4620,16 +4766,18 @@ b$B2EF DEFB $00,$00
 ; Print a breakdown of who earned what
 ;
 ; Used by the routines at #R$B3C3 and #R$B451.
+;
+; IY Pointer to character data (#R$BC67 - #N$BC6E)
 c$B2F1 CALL $B8ED      ; Clear the screen.
- $B2F4 LD DE,$010A     ;
- $B2F7 LD HL,$7C1B     ;
- $B2FA CALL $B8C4      ;
- $B2FD PUSH IY         ;
+ $B2F4 LD DE,$010A     ; Set the position.
+ $B2F7 LD HL,$7C1B     ; Point #REGhl at the earning text. (#R$7C1B)
+ $B2FA CALL $B8C4      ; Print it.
+ $B2FD PUSH IY         ; Remember the current pointer.
  $B2FF LD DE,$0513     ;
  $B302 LD BC,$0545     ;
- $B305 LD HL,$B2ED     ;
- $B308 LD IY,$BC67     ;
- $B30C LD IX,$B2ED     ;
+ $B305 LD HL,$B2ED     ; Point #REGhl at the scratch buffer for earnings. (#R$B2ED)
+ $B308 LD IY,$BC67     ; Point #REGiy to the first character buffer.
+ $B30C LD IX,$B2ED     ; Point #REGhl at the scratch buffer for earnings.
  $B310 LD (IX+$02),$00 ;
  $B314 LD (IX+$03),$00 ;
 *$B318 LD A,(IY-$0A)   ;
@@ -4642,26 +4790,21 @@ c$B2F1 CALL $B8ED      ; Clear the screen.
  $B32B ADC A,(IX+$02)  ;
  $B32E DAA             ;
  $B32F LD (IX+$02),A   ;
- $B332 CALL $B34C      ;
- $B335 INC D           ;
+ $B332 CALL $B34C      ; Print the money.
+ $B335 INC D           ; { Move down three rows.
  $B336 INC D           ;
- $B337 INC D           ;
- $B338 INC IY          ;
+ $B337 INC D           ; }
+ $B338 INC IY          ; Move to the next player.
  $B33A DJNZ $B318      ;
- $B33C POP IY          ;
-; This table contains a pair of bytes, the first with the object ID,
-; .
-; the second with bit 8 set if a computer player can pick it up,
-; .
-; and a bitfield showing which players can (always F)
- $B33E LD D,$15        ;
- $B340 LD HL,$B2EF     ;
- $B343 LD E,$11        ;
- $B345 CALL $B34C      ;
- $B348 JP $B3AB        ;
+ $B33C POP IY          ; Restore the original pointer in #REGiy.
+ $B33E LD D,$15        ; Print at row #N$15.
+ $B340 LD HL,$B2EF     ; Point #REGhl at the final sum earned.
+ $B343 LD E,$11        ; Print at column #N$11.
+ $B345 CALL $B34C      ; Print the money.
+ $B348 JP $B3AB        ; Wait for a keypress and return.
 
-; Unused
-z$B34B DEFS 1
+; Game status buffer entry at B34B
+g$B34B DEFB $00
 
 ; Print a monetary value on screen
 ;
@@ -4669,10 +4812,9 @@ z$B34B DEFS 1
 ;
 ; HL Pointer to the money
 ; DE The screen position
-; C The attribute to use
-c$B34C PUSH HL       ;
+c$B34C PUSH HL       ; { Store main registers.
  $B34D PUSH BC       ;
- $B34E PUSH DE       ;
+ $B34E PUSH DE       ; }
  $B34F LD A,$3D      ;
  $B351 CALL $B715    ;
  $B354 INC E         ;
@@ -4718,25 +4860,28 @@ c$B34C PUSH HL       ;
 *$B3A3 INC E         ;
  $B3A4 INC HL        ;
  $B3A5 DJNZ $B365    ;
- $B3A7 POP DE        ;
+ $B3A7 POP DE        ; { Restore main registers and return.
  $B3A8 POP BC        ;
  $B3A9 POP HL        ;
- $B3AA RET           ;
+ $B3AA RET           ; }
 
 ; Wait for a keypress and return it in A
 ;
 ; Used by the routines at #R$B2F1, #R$B3C3 and #R$B451.
-c$B3AB XOR A         ;
- $B3AC IN A,($FE)    ;
- $B3AE OR $E0        ;
- $B3B0 CP $FF        ;
- $B3B2 JR NZ,$B3AB   ;
-*$B3B4 XOR A         ;
- $B3B5 IN A,($FE)    ;
- $B3B7 OR $E0        ;
- $B3B9 CP $FF        ;
- $B3BB JR Z,$B3B4    ;
- $B3BD RET           ;
+c$B3AB XOR A         ; { Read all rows of the keyboard, if any are pressed,
+                     ; then the relevant bit 0 - 5 will be reset.
+ $B3AC IN A,($FE)    ; Although this makes it impossible to determine
+                     ; what key is pressed, that doesn't matter here. }
+ $B3AE OR $E0        ; Switch on bits 5-7, which are not used.
+ $B3B0 CP $FF        ; Were any keys pressed?
+ $B3B2 JR NZ,$B3AB   ; Loop back while there aren't.
+; A key is pressed. Make sure it's released before continuing.
+*$B3B4 XOR A         ; { Read all keys again.
+ $B3B5 IN A,($FE)    ; }
+ $B3B7 OR $E0        ; Switch on bits 5-7.
+ $B3B9 CP $FF        ; Were any keys pressed?
+ $B3BB JR Z,$B3B4    ; Loop back while there still are.
+ $B3BD RET           ; Otherwise return.
 
 ; The offsets on screen to put everyone for the final safe cracking sequence
 b$B3BE DEFB $B0,$88,$60,$38,$10
@@ -4747,7 +4892,7 @@ b$B3BE DEFB $B0,$88,$60,$38,$10
 c$B3C3 LD DE,$131C     ;
  $B3C6 LD HL,$CCF2     ;
  $B3C9 CALL $B82B      ;
-*$B3CC LD IY,$BC67     ;
+*$B3CC LD IY,$BC67     ; Point #REGiy towards the first character buffer.
  $B3D0 LD HL,$B3BE     ;
  $B3D3 LD B,$05        ;
 *$B3D5 PUSH BC         ;
@@ -4776,7 +4921,7 @@ c$B3C3 LD DE,$131C     ;
  $B40C CALL $B288      ;
 *$B40F POP HL          ;
  $B410 POP BC          ;
-*$B411 LD IY,$BC67     ;
+*$B411 LD IY,$BC67     ; Point #REGiy towards the first character buffer.
  $B415 CALL $EEC1      ;
  $B418 CALL $B9D6      ;
  $B41B JR $B3CC        ;
@@ -4793,29 +4938,29 @@ c$B3C3 LD DE,$131C     ;
  $B430 LD DE,$0400     ;
  $B433 LD HL,$7E68     ;
  $B436 CALL $B84B      ;
- $B439 CALL $B3AB      ;
+ $B439 CALL $B3AB      ; Wait for a keypress.
  $B43C CALL $B8ED      ; Clear the screen.
- $B43F LD DE,$0002     ;
- $B442 LD HL,$7C76     ;
- $B445 CALL $B8C4      ;
- $B448 CALL $B3AB      ;
- $B44B CALL $B2F1      ;
- $B44E JP $8184        ;
+ $B43F LD DE,$0002     ; Set the position to draw the text.
+ $B442 LD HL,$7C76     ; Point #REGhl at the completed game text. (#R$7C76)
+ $B445 CALL $B8C4      ; Print it.
+ $B448 CALL $B3AB      ; Wait for a keypress.
+ $B44B CALL $B2F1      ; Print who earned what.
+ $B44E JP $8184        ; Restart the game.
 
 ; The game has ended. Print the final score.
 ;
 ; Used by the routine at #R$E33F.
 c$B451 CALL $B8ED    ; Clear the screen.
- $B454 LD HL,$ECFE   ;
- $B457 LD DE,$080A   ;
- $B45A LD C,$00      ;
- $B45C CALL $B34C    ;
- $B45F LD HL,$7D48   ;
- $B462 LD DE,$0504   ;
- $B465 CALL $B8C4    ;
- $B468 CALL $B3AB    ;
- $B46B CALL $B2F1    ;
- $B46E JP $8184      ;
+ $B454 LD HL,$ECFE   ; Point #REGhl at the total money earned.
+ $B457 LD DE,$080A   ; Set the position to draw this.
+ $B45A LD C,$00      ; 
+ $B45C CALL $B34C    ; Draw it.
+ $B45F LD HL,$7D48   ; Point #REGhl at the game over text. (#R$7D48)
+ $B462 LD DE,$0504   ; Set the position to draw the text.
+ $B465 CALL $B8C4    ; Print it.
+ $B468 CALL $B3AB    ; Wait for a keypress.
+ $B46B CALL $B2F1    ; Print who earned what.
+ $B46E JP $8184      ; Restart the game.
 
 ; Initialize the theme tune data
 ;
@@ -4971,7 +5116,10 @@ b$B537 DEFB $00,$00,$EC,$1C,$DF,$1C,$D3,$1E
  $B54F DEFB $7C,$36,$73,$3A,$6E,$3C,$67,$40
  $B557 DEFB $62,$42,$5C,$48,$56,$4C,$51,$52
 
-; Index to the current theme tune note.
+; Set to '1' if the current character is computer controlled
+;
+; During the intro screen, this byte is used as an 
+; index to the current theme tune note.
 g$B55F DEFB $00
 
 ; Theme tune
@@ -5172,6 +5320,7 @@ c$B77B PUSH AF       ; { Store the main registers.
 ; Used by the routines at #R$B84B and #R$E36D.
 ;
 ; HL The address of the graphic
+; A The frame number
 ; D The y co-ordinate
 ; E The x co-ordinate
 ; C The attribute to use
@@ -5587,7 +5736,7 @@ c$B9AC LD DE,$5B00   ; Point #REGde into the screen buffer.
 ; Used by the routines at #R$813B, #R$81AE and #R$B3C3.
 ;
 ; IY The buffer containing the current character's data
-c$B9D6 LD A,(IY+$0F) ;
+c$B9D6 LD A,(IY+$0F) ; Get the current room in #REGa.
  $B9D9 LD ($B951),A  ;
  $B9DC LD B,$05      ;
  $B9DE PUSH IY       ;
@@ -5674,7 +5823,7 @@ c$BA6E LD A,($BAB3)  ; { Are we in the middle of redrawing a room?
 ; Not redrawing the room, so the message can be printed.
  $BA73 LD HL,$DFDC   ;
  $BA76 LD ($B7E9),HL ;
- $BA79 LD A,(IY+$0F) ;
+ $BA79 LD A,(IY+$0F) ; Get the current room in #REGa.
  $BA7C LD HL,$7F1F   ; Point #REGhl at the start of the room text entries.
  $BA7F CALL $AC6C    ; Search for the right entry, returns with #REGhl
                      ; pointing to the correct address for the room's text.
@@ -5742,27 +5891,31 @@ c$BACE LD B,$00      ;
 ; Initialize character data
 ;
 ; Used by the routines at #R$8155 and #R$8184.
-c$BAD8 LD IY,$BC67   ; { Set the current player buffer (#$B09D) to Wally. (#R$BC67) }
+c$BAD8 LD IY,$BC67   ; { Set the current player buffer (#R$B09D) to Wally. (#R$BC67) }
  $BADC LD ($B09D),IY ;
- $BAE0 LD HL,$BB3E   ;
- $BAE3 LD DE,$BCE9   ;
- $BAE6 LD B,$1F      ;
-*$BAE8 PUSH BC       ;
-*$BAE9 LD A,(DE)     ;
- $BAEA CP $FF        ;
- $BAEC JR NZ,$BAF1   ;
- $BAEE INC DE        ;
- $BAEF JR $BAE9      ;
-*$BAF1 LDI           ;
- $BAF3 INC DE        ;
- $BAF4 INC DE        ;
- $BAF5 LDI           ;
- $BAF7 POP BC        ;
- $BAF8 DJNZ $BAE8    ;
- $BAFA LD BC,$00AF   ;
- $BAFD LD HL,$BB7C   ;
- $BB00 LD DE,$BC30   ;
- $BB03 LDIR          ;
+; Copy the initial object states. Objects 00 - #N$1E are held in rooms, the remainder
+; are held by the characters.
+ $BAE0 LD HL,$BB3E   ; Point #REGhl at the initial collectable object states. (#R$BB3E)
+ $BAE3 LD DE,$BCE9   ; Point #REGde at the start of the room object data. (#R$BCE9)
+ $BAE6 LD B,$1F      ; #N$1F items to initialise 
+*$BAE8 PUSH BC       ; Remember this value.
+*$BAE9 LD A,(DE)     ; Get the next byte.
+ $BAEA CP $FF        ; Is it an end marker?
+ $BAEC JR NZ,$BAF1   ; Move forward if it isn't ie: there are objects here.
+ $BAEE INC DE        ; { Otherwise move to the next byte and check the next room.
+ $BAEF JR $BAE9      ; }
+; An object was found. Copy the template data.
+*$BAF1 LDI           ; Copy the object ID.
+ $BAF3 INC DE        ; { Skip over the co-ordinates which are fixed.
+ $BAF4 INC DE        ; }
+ $BAF5 LDI           ; Copy the flags.
+ $BAF7 POP BC        ; Restore the flags.
+ $BAF8 DJNZ $BAE8    ; Loop while there are more objects to initialise.
+; Copy the initial flags
+ $BAFA LD BC,$00AF   ; Number of bytes to copy.
+ $BAFD LD HL,$BB7C   ; Copy from the initial template. (#R$BB7C)
+ $BB00 LD DE,$BC30   ; Copy to start of main buffer. (#R$BC30)
+ $BB03 LDIR          ; Do the copy.
  $BB05 XOR A         ;
  $BB06 LD ($ECF5),A  ;
  $BB09 LD ($ECFE),A  ;
@@ -5792,162 +5945,213 @@ c$BAD8 LD IY,$BC67   ; { Set the current player buffer (#$B09D) to Wally. (#R$BC
  $BB3D RET           ;
 
 ; Initial states for collectable objects
-g$BB3E DEFB $00,$1F,$01,$9F,$02,$1F,$03,$9F
- $BB46 DEFB $04,$9F,$05,$9F,$06,$9F,$07,$1F
- $BB4E DEFB $08,$1F,$09,$1F,$0A,$9F,$0B,$9F
- $BB56 DEFB $0C,$1F,$0D,$9F,$0E,$1F,$0F,$1F
- $BB5E DEFB $10,$1F,$11,$9F,$12,$9F,$13,$9F
- $BB66 DEFB $14,$1F,$15,$1F,$16,$9F,$17,$9F
- $BB6E DEFB $18,$9F,$19,$1F,$1A,$9F,$1B,$9F
- $BB76 DEFB $1C,$1F,$1D,$9F,$1E,$9F
+;
+; Used by the routine at #R$BAD8.
+;
+; .
+;
+; Objects 00 to #N$1E are put sequentially into rooms.
+; The remainder of the objects are initially held by the characters.
+;
+; Each table contains the object ID, plus the flags.
+; Bits 0 - 5 show which player can pick the object up,
+; if bit 7 if reset then a computer controlled player can also pick it up.
+b$BB3E DEFB $00,$1F     ; Object 00 - The plunger
+ $BB40 DEFB $01,$9F     ; Object 01 - The letter A
+ $BB42 DEFB $02,$1F     ; Object 02 - Book 2
+ $BB44 DEFB $03,$9F     ; Object 03 - The sand
+ $BB46 DEFB $04,$9F     ; Object 04 - The battery
+ $BB48 DEFB $05,$9F     ; Object 05 - The letter K
+ $BB4A DEFB $06,$9F     ; Object 06 - The cement
+ $BB4C DEFB $07,$1F     ; Object 07 - Book 3
+ $BB4E DEFB $08,$1F     ; Object 08 - The trowel
+ $BB50 DEFB $09,$1F     ; Object 09 - The matches
+ $BB52 DEFB $0A,$9F     ; Object 0A - The cracked insulator
+ $BB54 DEFB $0B,$9F     ; Object 0B - Book 1
+ $BB56 DEFB $0C,$1F     ; Object 0C - The monkey nuts
+ $BB58 DEFB $0D,$9F     ; Object 0D - The money
+ $BB5A DEFB $0E,$1F     ; Object 0E - Superglue
+ $BB5C DEFB $0F,$1F     ; Object 0F - Chewing gum
+ $BB5E DEFB $10,$1F     ; Object 10 - The bucket
+ $BB60 DEFB $11,$9F     ; Object 11 - The jump leads
+ $BB62 DEFB $12,$9F     ; Object 12 - The bunsen burner
+ $BB64 DEFB $13,$9F     ; Object 13 - The letter B
+ $BB66 DEFB $14,$1F     ; Object 14 - The gask mask
+ $BB68 DEFB $15,$1F     ; Object 15 - The parcel
+ $BB6A DEFB $16,$9F     ; Object 16 - The fuse
+ $BB6C DEFB $17,$9F     ; Object 17 - The meat
+ $BB6E DEFB $18,$9F     ; Object 18 - The monkey wrench
+ $BB70 DEFB $19,$1F     ; Object 19 - Screwdriver
+ $BB72 DEFB $1A,$9F     ; Object 1A - The letter E
+ $BB74 DEFB $1B,$9F     ; Object 1B - The hook
+ $BB76 DEFB $1C,$1F     ; Object 1C - The patch
+ $BB78 DEFB $1D,$9F     ; Object 1D - The pipe
+ $BB7A DEFB $1E,$9F     ; Object 1E - The letter R
 
 ; Template for initial game data
-b$BB7C DEFB $1F,$1F,$1F,$1F,$1F,$1F,$1F,$1F
- $BB84 DEFB $1F,$1F,$00,$00,$00,$00,$00,$01
- $BB8C DEFB $02,$04,$08,$10,$00,$06,$0C,$10
- $BB94 DEFB $15,$00,$00,$00,$00,$00,$00,$00
- $BB9C DEFB $00,$00,$00,$00,$00,$00,$00,$00
- $BBA4 DEFB $00,$00,$00,$00,$00,$00,$00,$00
- $BBAC DEFB $00,$00,$00,$00,$00,$00,$00,$00
- $BBB4 DEFB $00,$00,$00,$00,$40,$08,$90,$A8
- $BBBC DEFB $E8,$98,$98,$98,$98,$98,$00,$00
- $BBC4 DEFB $00,$00,$00,$80,$80,$80,$80,$80
- $BBCC DEFB $5B,$5C,$5D,$5E,$5F,$46,$45,$44
- $BBD4 DEFB $43,$07,$38,$38,$38,$38,$38,$94
- $BBDC DEFB $98,$9C,$A0,$A4,$03,$03,$03,$03
- $BBE4 DEFB $03,$00,$00,$00,$00,$00,$00,$00
- $BBEC DEFB $00,$00,$00,$00,$00,$00,$00,$00
- $BBF4 DEFB $01,$01,$01,$01,$01,$00,$00,$00
- $BBFC DEFB $00,$00,$00,$00,$00,$00,$00,$1F
- $BC04 DEFB $21,$23,$25,$27,$20,$22,$24,$26
- $BC0C DEFB $28,$14,$05,$17,$12,$08,$00,$00
- $BC14 DEFB $00,$00,$00,$00,$00,$00,$01,$01
- $BC1C DEFB $18,$18,$18,$01,$01,$01,$01,$01
- $BC24 DEFB $18,$18,$01,$01,$01,$00,$00
+b$BB7C DEFB $1F,$1F,$1F,$1F,$1F     ; All players can pick any object up. (#R$BC30)
+ $BB81 DEFB $1F,$1F,$1F,$1F,$1F     ; All players can pick any object up. (#R$BC35)
+ $BB86 DEFB $00,$00,$00,$00,$00     ; Not near any object  (#R$BC3A)
+ $BB8B DEFB $01,$02,$04,$08,$10     ; Character IDs.  (#R$BC3F)
+ $BB90 DEFB $00,$06,$0C,$10,$15     ; Character names.  (#R$BC44)
+ $BB95 DEFB $00,$00,$00,$00,$00     ; Earnings / 100 - start at 0.  (#R$BC49)
+ $BB9A DEFB $00,$00,$00,$00,$00     ; Turn off footstep flags.  (#R$BC4E)
+ $BB9F DEFB $00,$00,$00,$00,$00     ;  (#R$BC53)
+ $BBA4 DEFB $00,$00,$00,$00,$00     ;  (#R$BC58)
+ $BBA9 DEFB $00,$00,$00,$00,$00     ; Earnings % 100 - start at 0.  (#R$BC5D)
+ $BBAE DEFB $00,$00,$00,$00,$00     ;  (#R$BC62)
+ $BBB3 DEFB $00,$00,$00,$00,$00     ; Default to frame 0 for all characters.  (#R$BC67)
+ $BBB8 DEFB $40,$08,$90,$A8,$E8     ; Default x co-ordinates.  (#R$BC6C)
+ $BBBD DEFB $98,$98,$98,$98,$98     ; Default y co-ordinates.  (#R$BC71)
+ $BBC2 DEFB $00,$00,$00,$00,$00     ; Everyone starts in the town square.  (#R$BC76)
+ $BBC7 DEFB $80,$80,$80,$80,$80     ; Everyone starts with full endurance.  (#R$BC7B)
+ $BBCC DEFB $5B,$5C,$5D,$5E,$5F     ;  (#R$BC80)
+ $BBD1 DEFB $46,$45,$44,$43,$07     ;  (#R$BC85)
+ $BBD6 DEFB $38,$38,$38,$38,$38     ;  (#R$BC8A)
+ $BBDB DEFB $94,$98,$9C,$A0,$A4     ;  (#R$BC8F)
+ $BBE0 DEFB $03,$03,$03,$03,$03     ; Everyone starts with 3 lives.  (#R$BC94)
+ $BBE5 DEFB $00,$00,$00,$00,$00     ;  (#R$BC99)
+ $BBEA DEFB $00,$00,$00,$00,$00     ;  (#R$BC9E)
+ $BBEF DEFB $00,$00,$00,$00,$00     ; Default to not jumping. (#R$BCA3)
+ $BBF4 DEFB $01,$01,$01,$01,$01     ; Default to undefined direction. (#R$BCA8)
+ $BBF9 DEFB $00,$00,$00,$00,$00     ;  (#R$BCAD)
+ $BBFE DEFB $00,$00,$00,$00,$00     ;  (#R$BCB2)
+ $BC03 DEFB $1F,$21,$23,$25,$27     ; Default first item. (#R$BCB7)
+ $BC08 DEFB $20,$22,$24,$26,$28     ; Default second item. (#R$BCBC)
+ $BC0D DEFB $14,$05,$17,$12,$08     ;  (#R$BCC1)
+ $BC12 DEFB $00,$00,$00,$00,$00     ;  (#R$BCC6)
+ $BC17 DEFB $00,$00,$00,$01,$01     ;  (#R$BCCB)
+ $BC1C DEFB $18,$18,$18,$01,$01     ;  (#R$BCD0)
+ $BC21 DEFB $01,$01,$01,$18,$18     ;  (#R$BCD5)
+ $BC26 DEFB $01,$01,$01,$00,$00     ;  (#R$BCDA)
 
 ; Unused
-u$BC2B DEFB $00,$00,$00,$00,$00
+s$BC2B DEFS $05
 
 ; Flags for objects (?)
-b$BC30 DEFB $1F,$1F,$1F,$1F,$1F
+g$BC30 DEFB $1F,$1F,$1F,$1F,$1F
 
 ; Flags for objects (?)
-b$BC35 DEFB $1F,$1F,$1F,$1F,$1F
+g$BC35 DEFB $1F,$1F,$1F,$1F,$1F
 
 ; ID of the object a player is standing near and could potentially pick up.
-b$BC3A DEFB $00,$00,$00,$00,$00
+g$BC3A DEFB $00,$00,$00,$00,$00
 
 ; Character ID (1 = Wally, 2 = Wilma, 4 = Tom, 8 = Dick, 10 = Harry)
-b$BC3F DEFB $01,$02,$04,$08,$10
+g$BC3F DEFB $01,$02,$04,$08,$10
 
 ; Offset for each character name (from 7C00)
-b$BC44 DEFB $00,$06,$0C,$10,$15
+g$BC44 DEFB $00,$06,$0C,$10,$15
 
 ; Earnings / 100
-b$BC49 DEFB $00,$00,$00,$00,$00
+g$BC49 DEFB $00,$00,$00,$00,$00
 
 ; Set to 1 to trigger a footstep sound for each character
-b$BC4E DEFB $00,$00,$00,$00,$00
+g$BC4E DEFB $00,$00,$00,$00,$00
 
-; Data block at BC53
-b$BC53 DEFB $00,$00,$00,$00,$00
+; Game status buffer at BC53
+g$BC53 DEFB $00,$00,$00,$00,$00
 
-; Data block at BC58
-b$BC58 DEFB $00,$00,$00,$00,$00
+; Game status buffer at BC58
+g$BC58 DEFB $00,$00,$00,$00,$00
 
 ; Earnings % 100
-b$BC5D DEFB $00,$00,$00,$00,$00
+g$BC5D DEFB $00,$00,$00,$00,$00
 
-; Data block at BC62
-b$BC62 DEFB $00,$00,$00,$00,$00
+; Game status buffer at BC62
+g$BC62 DEFB $00,$00,$00,$00,$00
 
 ; The animation phase for each character
 ;
 ; Runs from #N$BC67 (Wally) to #N$BC6B (Harry).
-b$BC67 DEFB $00,$00,$00,$00,$00
+;
+; .
+;
+; This value is also stored in #REGiy in order to access all the other flags.
+g$BC67 DEFB $00,$00,$00,$00,$00
 
 ; x position on screen for each character
 ;
 ; Runs from #N$BC6C (Wally) to #N$BC70 (Harry).
-b$BC6C DEFB $40,$08,$90,$A8,$E8
+g$BC6C DEFB $40,$08,$90,$A8,$E8
 
 ; y position on screen for each character
 ;
 ; Runs from #N$BC71 (Wally) to #N$BC75 (Harry).
-b$BC71 DEFB $98,$98,$98,$98,$98
+g$BC71 DEFB $98,$98,$98,$98,$98
 
 ; Room number a character is in
 ;
 ; Runs from #N$BC76 (Wally) to #N$BC7A (Harry).
-b$BC76 DEFB $00,$00,$00,$00,$00
+g$BC76 DEFB $00,$00,$00,$00,$00
 
 ; Endurance level for each character
 ;
 ; Runs from #N$BC7B (Wally) to #N$BC7F (Harry).
-b$BC7B DEFB $80,$80,$80,$80,$80
+g$BC7B DEFB $80,$80,$80,$80,$80
 
-; Data block at BC80
-b$BC80 DEFB $5B,$5C,$5D,$5E,$5F
+; Game status buffer at BC80
+g$BC80 DEFB $5B,$5C,$5D,$5E,$5F
 
 ; Mask offset for a character
-b$BC85 DEFB $46,$45,$44,$43,$07
+g$BC85 DEFB $46,$45,$44,$43,$07
 
 ; Graphic offset for a character
-b$BC8A DEFB $38,$38,$38,$38,$38
+g$BC8A DEFB $38,$38,$38,$38,$38
 
 ; Base address for a character's graphic
-b$BC8F DEFB $94,$98,$9C,$A0,$A4
+g$BC8F DEFB $94,$98,$9C,$A0,$A4
 
 ; Lives left for each player
-b$BC94 DEFB $03,$03,$03,$03,$03
+g$BC94 DEFB $03,$03,$03,$03,$03
 
-; Data block at BC99
-b$BC99 DEFB $00,$00,$00,$00,$00
+; Game status buffer at BC99
+g$BC99 DEFB $00,$00,$00,$00,$00
 
-; Data block at BC9E
-b$BC9E DEFB $00,$00,$00,$00,$00
+; Game status buffer at BC9E
+g$BC9E DEFB $00,$00,$00,$00,$00
 
 ; Character jumping (0 = yes)
-b$BCA3 DEFB $00,$00,$00,$00,$00
+g$BCA3 DEFB $00,$00,$00,$00,$00
 
 ; Character direction (0 = left, FF = right)
-b$BCA8 DEFB $01,$01,$01,$01,$01
+g$BCA8 DEFB $01,$01,$01,$01,$01
 
-; Data block at BCAD
-b$BCAD DEFB $00,$00,$00,$00,$00
+; Game status buffer at BCAD
+g$BCAD DEFB $00,$00,$00,$00,$00
 
-; Data block at BCB2
-b$BCB2 DEFB $00,$00,$00,$00,$00
+; Game status buffer at BCB2
+g$BCB2 DEFB $00,$00,$00,$00,$00
 
 ; First item of each character
-b$BCB7 DEFB $1F,$21,$23,$25,$27
+g$BCB7 DEFB $1F,$21,$23,$25,$27
 
 ; Second item of each character
-b$BCBC DEFB $20,$22,$24,$26,$28
+g$BCBC DEFB $20,$22,$24,$26,$28
 
-; Data block at BCC1
-b$BCC1 DEFB $14,$05,$17,$12,$08
+; Target room for a computer character (?)
+g$BCC1 DEFB $14,$05,$17,$12,$08
 
-; Data block at BCC6
-b$BCC6 DEFB $00,$00,$00,$00,$00
+; Game status buffer at BCC6
+g$BCC6 DEFB $00,$00,$00,$00,$00
 
 ; Next movement for a computer character
-b$BCCB DEFB $00,$00,$00,$01,$01
+g$BCCB DEFB $00,$00,$00,$01,$01
 
-; Data block at BCD0
-b$BCD0 DEFB $18,$18,$18,$01,$01
+; Game status buffer at BCD0
+g$BCD0 DEFB $18,$18,$18,$01,$01
 
-; Data block at BCD5
-b$BCD5 DEFB $01,$01,$01,$18,$18
+; Game status buffer at BCD5
+g$BCD5 DEFB $01,$01,$01,$18,$18
 
-; Data block at BCDA
-b$BCDA DEFB $01,$01,$01,$00,$00
+; Game status buffer at BCDA
+g$BCDA DEFB $01,$01,$01,$00,$00
 
 ; Lo byte of the item swap buffer
-b$BCDF DEFB $A7,$B0,$B9,$C2,$CB
+g$BCDF DEFB $A7,$B0,$B9,$C2,$CB
 
 ; Hi byte of the item swap buffer
-b$BCE4 DEFB $AE,$AE,$AE,$AE,$AE
+g$BCE4 DEFB $AE,$AE,$AE,$AE,$AE
 
 ; Items in the Town Square (none)
 b$BCE9 DEFB $FF
@@ -8339,76 +8543,82 @@ c$E2FC LD A,(IY+$00) ;
 ; Used by the routines at #R$ED8A, #R$F057, #R$F10E, #R$F24B, #R$F277, #R$F309,
 ; #R$F334, #R$F37D, #R$F3AB, #R$F409, #R$F49D, #R$F4D3, #R$F503, #R$F5F1,
 ; #R$F674, #R$F6EC and #R$F746.
-c$E329 LD A,($A838)  ;
- $E32C SUB (IY+$05)  ;
- $E32F SUB $0D       ;
- $E331 CP $E6        ;
- $E333 RET C         ;
- $E334 LD A,($A839)  ;
- $E337 SUB (IY+$0A)  ;
- $E33A SUB $1C       ;
- $E33C CP $D6        ;
- $E33E RET C         ;
-
-; The character has collided with something. Decrease endurance.
 ;
-; The amount to decrease by is set in F26E.
-; .
-; Herbert is 2. The shark in the sewer is 64!
-c$E33F LD A,($B55F)    ;
- $E342 OR A            ;
- $E343 RET NZ          ;
- $E344 EXX             ;
- $E345 LD BC,$640A     ;
+; IY Pointer to character buffer
+c$E329 LD A,($A838)  ; Get the x co-ordinate in the scratch buffer. (#R$A838)
+ $E32C SUB (IY+$05)  ; { Is it close enough to this player?
+ $E32F SUB $0D       ;
+ $E331 CP $E6        ; }
+ $E333 RET C         ; Return if it isn't.
+ $E334 LD A,($A839)  ; Get the y co-ordinate in the scratch buffer.
+ $E337 SUB (IY+$0A)  ; { Is it close enough to this player?
+ $E33A SUB $1C       ;
+ $E33C CP $D6        ; }
+ $E33E RET C         ; Return if it isn't.
+; The character has collided with something. Decrease endurance.
+; The amount to decrease by is set in #R$F26E, set up by the various room specific routines.
+; (Herbert is 2. The shark in the sewer is 64!)
+;
+; This entry point is used by the routines at #R$F773 and #R$F8B9,
+; which reduce endurance by other means.
+*$E33F LD A,($B55F)    ; { Is the current player computer controlled?
+ $E342 OR A            ; }
+ $E343 RET NZ          ; Return if so.
+; The current character is human controlled, so decrease endurance.
+ $E344 EXX             ; Swap main registers.
+ $E345 LD BC,$640A     ; { Play the 'decrease endurance' sound effect.
  $E348 LD DE,$0101     ;
  $E34B LD HL,$6401     ;
- $E34E CALL $E3D3      ;
- $E351 LD A,($F26E)    ;
- $E354 LD B,A          ;
- $E355 LD A,(IY+$14)   ;
- $E358 SUB B           ;
- $E359 LD (IY+$14),A   ;
- $E35C JR Z,$E362      ;
- $E35E JR C,$E362      ;
- $E360 JR $E36C        ;
-*$E362 LD (IY+$14),$80 ;
- $E366 DEC (IY+$2D)    ;
- $E369 JP Z,$B451      ;
-*$E36C EXX             ;
+ $E34E CALL $E3D3      ; }
+ $E351 LD A,($F26E)    ; Get the amount of endurance to decrease by.
+ $E354 LD B,A          ; Put this in #REGb.
+ $E355 LD A,(IY+$14)   ; { Decrease the character's endurance by
+ $E358 SUB B           ; this amount. 
+ $E359 LD (IY+$14),A   ; }
+ $E35C JR Z,$E362      ; { If the endurance is zero or less, a life is lost.
+ $E35E JR C,$E362      ; }
+ $E360 JR $E36C        ; Otherwise jump forward.
+; The character has run out of endurance, so lose a life.
+*$E362 LD (IY+$14),$80 ; Put the endurance back up to maximum. (#N$80)
+ $E366 DEC (IY+$2D)    ; Decrease the number of lives.
+ $E369 JP Z,$B451      ; If no lives are left, signal the game is over.
+*$E36C EXX             ; Swap main registers. Control continues to #R$E36D.
 
-; Update endurance display
+; Update endurance and lives display
 ;
-; Used by the routines at #R$E3FD and #R$F814.
-c$E36D EXX           ;
- $E36E LD C,$46      ;
- $E370 LD HL,$DFDC   ;
- $E373 LD ($B7E9),HL ;
- $E376 LD DE,$021C   ;
- $E379 LD L,(IY+$2D) ;
- $E37C DEC L         ;
- $E37D LD B,$02      ;
-*$E37F LD A,L        ;
- $E380 OR A          ;
- $E381 LD A,$1F      ;
- $E383 JR NZ,$E386   ;
- $E385 INC A         ;
-*$E386 CALL $B7BA    ;
- $E389 INC E         ;
- $E38A INC E         ;
- $E38B CP $20        ;
- $E38D JR Z,$E390    ;
- $E38F DEC L         ;
-*$E390 DJNZ $E37F    ;
- $E392 LD C,$43      ;
- $E394 LD DE,$0310   ;
+; Used by the routines at #R$E33F, #R$E3FD and #R$F814.
+c$E36D EXX           ; Swap main registers.
+; First, draw the lives.
+ $E36E LD C,$46      ; Set the attribute to be bright yellow on black.
+ $E370 LD HL,$DFDC   ; Point #REGhl at the UDGs for the endurance display.
+ $E373 LD ($B7E9),HL ; Change the routine at #R$B7BA to use these UDGs.
+ $E376 LD DE,$021C   ; Set the co-ordinates to #N$1C , 02.
+ $E379 LD L,(IY+$2D) ; Put the number of lives in #REGl.
+ $E37C DEC L         ; Make this 0 based.
+ $E37D LD B,$02      ; Maximum of two lives to draw.
+*$E37F LD A,L        ; { Set the zero flag if this is the last life,
+ $E380 OR A          ; ie: nothing to draw. }
+ $E381 LD A,$1F      ; Set the initial position to #N$1F.
+ $E383 JR NZ,$E386   ; Jump forward if there are no lives left to draw.
+ $E385 INC A         ; Increment the current position.
+*$E386 CALL $B7BA    ; Draw the graphic.
+ $E389 INC E         ; { Move forward two columns.
+ $E38A INC E         ; }
+ $E38B CP $20        ; Have we reached the last column?
+ $E38D JR Z,$E390    ; Jump forward if we have.
+ $E38F DEC L         ; { Otherwise decrement the number of lives left to draw
+*$E390 DJNZ $E37F    ; and loop back to draw another one. }
+; The lives are all drawn, now draw the endurance.
+ $E392 LD C,$43      ; Set the attribute to be bright magenta on black.
+ $E394 LD DE,$0310   ; Set the co-ordinates to #N$10 , 03.
  $E397 LD L,$5C      ;
- $E399 LD B,(IY+$14) ;
-*$E39C LD A,B        ;
- $E39D SUB $08       ;
+ $E399 LD B,(IY+$14) ; Put the endurance value in #REGb.
+*$E39C LD A,B        ; Get the amount of endurance left to draw.
+ $E39D SUB $08       ; 
  $E39F JR C,$E3BC    ;
  $E3A1 LD B,A        ;
  $E3A2 LD A,L        ;
- $E3A3 CALL $B7BA    ;
+ $E3A3 CALL $B7BA    ; Draw the graphic.
  $E3A6 XOR $01       ;
  $E3A8 LD L,A        ;
  $E3A9 INC E         ;
@@ -8420,7 +8630,7 @@ c$E36D EXX           ;
  $E3B2 EXX           ;
  $E3B3 RET           ;
 *$E3B4 LD A,$20      ;
- $E3B6 CALL $B7BA    ;
+ $E3B6 CALL $B7BA    ; Draw the graphic.
  $E3B9 INC E         ;
  $E3BA JR $E3AE      ;
 *$E3BC ADD A,$08     ;
@@ -8433,7 +8643,7 @@ c$E36D EXX           ;
  $E3C8 JR $E3CC      ;
 *$E3CA LD A,$60      ;
 *$E3CC ADD A,B       ;
- $E3CD CALL $B7BA    ;
+ $E3CD CALL $B7BA    ; Draw the graphic.
  $E3D0 INC E         ;
  $E3D1 JR $E3AE      ;
 
@@ -8447,52 +8657,54 @@ c$E36D EXX           ;
 c$E3D3 LD A,B        ;
  $E3D4 SUB H         ;
  $E3D5 LD B,A        ;
- $E3D6 CALL $E3EC    ;
+ $E3D6 CALL $E3EC    ; Play one wave of sound.
  $E3D9 DEC C         ;
  $E3DA JR NZ,$E3D3   ;
-*$E3DC CALL $E3EC    ;
+*$E3DC CALL $E3EC    ; Play one wave of sound.
  $E3DF DEC D         ;
  $E3E0 JR NZ,$E3DC   ;
 *$E3E2 LD A,B        ;
  $E3E3 ADD A,L       ;
  $E3E4 LD B,A        ;
- $E3E5 CALL $E3EC    ;
+ $E3E5 CALL $E3EC    ; Play one wave of sound.
  $E3E8 DEC E         ;
  $E3E9 JR NZ,$E3E2   ;
  $E3EB RET           ;
 
-; Generate a part of a sound effect
+; Generate one wave cycle in a sound effect
 ;
 ; Used by the routine at #R$E3D3.
 ;
 ; B - pitch
-c$E3EC LD A,$10      ;
- $E3EE OUT ($FE),A   ;
- $E3F0 PUSH BC       ;
-*$E3F1 DJNZ $E3F1    ;
- $E3F3 POP BC        ;
- $E3F4 LD A,$00      ;
- $E3F6 OUT ($FE),A   ;
- $E3F8 PUSH BC       ;
-*$E3F9 DJNZ $E3F9    ;
- $E3FB POP BC        ;
- $E3FC RET           ;
+c$E3EC LD A,$10      ; { Switch the speaker on.
+ $E3EE OUT ($FE),A   ; }
+ $E3F0 PUSH BC       ; Remember the pitch value.
+*$E3F1 DJNZ $E3F1    ; Wait a while with the speaker switched on,
+                     ; to generate part of a sound wave.
+ $E3F3 POP BC        ; Restore the pitch value.
+ $E3F4 LD A,$00      ; { Switch the speaker off.
+ $E3F6 OUT ($FE),A   ; }
+ $E3F8 PUSH BC       ; Remember the pitch value.
+*$E3F9 DJNZ $E3F9    ; Wait a while with the speaker switched on,
+                     ; to generate part of a sound wave.
+ $E3FB POP BC        ; { Restore the pitch value and return.
+ $E3FC RET           ; }
 
 ; Do a full refresh of the top status bar
 ;
 ; Used by the routines at #R$8155, #R$8184 and #R$E79B.
-c$E3FD CALL $B931    ;
- $E400 LD HL,$7E3F   ;
- $E403 LD DE,$0010   ;
- $E406 CALL $B84B    ;
- $E409 LD H,$7C      ;
- $E40B LD L,(IY-$23) ;
- $E40E LD C,$45      ;
- $E410 LD DE,$001B   ;
- $E413 CALL $B84B    ;
- $E416 CALL $E36D    ;
- $E419 CALL $E420    ;
- $E41C RET           ;
+c$E3FD CALL $B931    ; Clear the top status bar.
+ $E400 LD HL,$7E3F   ; Point #REGhl at the status bar text. (#R$7E3F)
+ $E403 LD DE,$0010   ; Set the position.
+ $E406 CALL $B84B    ; Draw it.
+ $E409 LD H,$7C      ; { Point #REGhl at the right character name (#R$7C00)
+ $E40B LD L,(IY-$23) ; based on their ID. }
+ $E40E LD C,$45      ; Set the attribute to bright cyan on black.
+ $E410 LD DE,$001B   ; Set the position.
+ $E413 CALL $B84B    ; Draw the main character display.
+ $E416 CALL $E36D    ; Draw endurance.
+ $E419 CALL $E420    ; Draw the inventory.
+ $E41C RET           ; Return.
 
 ; Print a character's inventory
 ;
@@ -8928,7 +9140,7 @@ c$E79B LD A,$F7        ; { Get keyboard input from 1 - 5.
  $E7B0 INC IY          ; { Otherwise move to the next entry and loop back.
  $E7B2 JR $E7AD        ; }
 ; Found the character to switch to, can it be done?
-*$E7B4 LD A,(IY+$0F)   ; Get the character's room?
+*$E7B4 LD A,(IY+$0F)   ; Get the character's room.
  $E7B7 CP B            ; Is it this one?
  $E7B8 JR Z,$E7C0      ; Yes, so we can switch.
  $E7BA CALL $BA6E      ; Otherwise, print "{character} is in {room}"
@@ -9638,10 +9850,10 @@ b$ED06 DEFB $30,$78,$02,$02,$78,$44,$FE,$02
 ; Room logic : The Laboratory
 ;
 ; Used by the routine at #R$F54F.
-c$ED13 LD A,$02      ;
- $ED15 LD ($F26E),A  ;
+c$ED13 LD A,$02      ; { Moving objects decrease endurance by 2 here.
+ $ED15 LD ($F26E),A  ; }
  $ED18 LD A,($ED12)  ;
- $ED1B CALL $ED8A    ;
+ $ED1B CALL $ED8A    ; Set up moving objects.
  $ED1E ADD A,$02     ;
  $ED20 CP $82        ;
  $ED22 JR NZ,$ED26   ;
@@ -9870,7 +10082,7 @@ c$EEA2 LD DE,$6B00   ;
 ;
 ; Used by the routines at #R$81AE and #R$B3C3.
 c$EEC1 CALL $EEA2    ;
- $EEC4 LD A,(IY+$0F) ;
+ $EEC4 LD A,(IY+$0F) ; Get the current room in #REGa.
  $EEC7 LD ($B951),A  ;
  $EECA LD B,$00      ; { Point #REGhl at the start of the object buffer for this room.
  $EECC CALL $AA8C    ; }
@@ -9883,7 +10095,7 @@ c$EEC1 CALL $EEA2    ;
  $EED7 LD D,(HL)     ; }
  $EED8 INC HL        ; { Move to the buffer for the next item.
  $EED9 INC HL        ; }
- $EEDA LD ($A838),DE ; Put the position in #R$A838.
+ $EEDA LD ($A838),DE ; Put the position in the scratch buffer at #R$A838.
  $EEDE CALL $A83D    ; { Draw the object, and loop back to see if there is anything
  $EEE1 JR $EECF      ; further to draw. }
 *$EEE3 LD E,(IY+$0F) ;
@@ -9994,41 +10206,41 @@ c$EF35 LD E,(IX+$02) ;
  $EF8E INC IX        ;
  $EF90 RET           ;
 
-; Animate the fountain in the town square if it is repaired
+; Set the attributes for the fountain in the town square if it is repaired
 ;
 ; Used by the routines at #R$F277 and #R$F572.
-c$EF91 PUSH AF       ;
- $EF92 EXX           ;
- $EF93 LD A,($F26F)  ;
- $EF96 LD C,A        ;
- $EF97 LD A,($A839)  ;
- $EF9A AND $07       ;
+c$EF91 PUSH AF       ; Remember #REGaf.
+ $EF92 EXX           ; Exchange main registers.
+ $EF93 LD A,($F26F)  ; { Put the current attribute (#R$F26F) in #REGc.
+ $EF96 LD C,A        ; }
+ $EF97 LD A,($A839)  ; Get the Y co-ordinate to print. (#R$A838)
+ $EF9A AND $07       ; Select bits 0 - 2.
  $EF9C JR Z,$EFA2    ;
  $EF9E LD B,$03      ;
  $EFA0 JR $EFA4      ;
 *$EFA2 LD B,$02      ;
-*$EFA4 LD A,($A839)  ;
- $EFA7 AND $F8       ;
- $EFA9 LD H,$00      ;
- $EFAB LD L,A        ;
- $EFAC ADD HL,HL     ;
- $EFAD ADD HL,HL     ;
- $EFAE LD DE,$FB00   ;
- $EFB1 ADD HL,DE     ;
- $EFB2 LD DE,$001E   ;
-*$EFB5 LD (HL),C     ;
+*$EFA4 LD A,($A839)  ; Get the Y co-ordinate to print.
+ $EFA7 AND $F8       ; Select bits 3 - 8
+ $EFA9 LD H,$00      ; { Put this in #REGhl.
+ $EFAB LD L,A        ; }
+ $EFAC ADD HL,HL     ; { Multiply by 4 to get a suitable offset.
+ $EFAD ADD HL,HL     ; }
+ $EFAE LD DE,$FB00   ; { Add the base address to get an offset from #R$FD00.
+ $EFB1 ADD HL,DE     ; Note that this address is modified by the routines in #R$A83D and #R$A8A0. }
+ $EFB2 LD DE,$001E   ; Set #REGde as the amount to increment for each row.
+*$EFB5 LD (HL),C     ; { Set the attribute for the next two columns.
  $EFB6 INC HL        ;
  $EFB7 LD (HL),C     ;
- $EFB8 INC HL        ;
- $EFB9 LD A,($A838)  ;
- $EFBC AND $07       ;
- $EFBE JR Z,$EFC1    ;
- $EFC0 LD (HL),C     ;
-*$EFC1 ADD HL,DE     ;
- $EFC2 DJNZ $EFB5    ;
- $EFC4 EXX           ;
- $EFC5 POP AF        ;
- $EFC6 RET           ;
+ $EFB8 INC HL        ; }
+ $EFB9 LD A,($A838)  ; Get the X co-ordinate to print.
+ $EFBC AND $07       ; Select bits 0 - 2.
+ $EFBE JR Z,$EFC1    ; Jump forward if this is 0.
+ $EFC0 LD (HL),C     ; Otherwise set the attribute here.
+*$EFC1 ADD HL,DE     ; Move on a row.
+ $EFC2 DJNZ $EFB5    ; Loop while all rows are printed.
+ $EFC4 EXX           ; Exchange main registers.
+ $EFC5 POP AF        ; { Restore #REGaf and return.
+ $EFC6 RET           ; }
 
 ; Action 9 CHASE. Drop down to the "shark chase" game
 c$EFC7 LD A,(IY+$05)   ;
@@ -10110,8 +10322,8 @@ c$F057 LD A,($F046)  ;
  $F073 XOR $02       ;
  $F075 LD ($F3A0),A  ;
  $F078 CALL $A8A0    ;
- $F07B LD A,$0C      ;
- $F07D LD ($F26E),A  ;
+ $F07B LD A,$0C      ; { Touching the shark drops endurance by #N$0C.
+ $F07D LD ($F26E),A  ; }
  $F080 CALL $E329    ;
  $F083 LD A,(IY+$0A) ;
  $F086 CP $98        ;
@@ -10199,8 +10411,8 @@ b$F10A DEFB $00,$F0,$A0,$A8
 ; See if the jumping jack needs to be on screen, and if so, move it
 ;
 ; Used by the routine at #R$81AE.
-c$F10E LD A,$04        ;
- $F110 LD ($F26E),A    ;
+c$F10E LD A,$04        ; { Touching the jumping jack drops endurance by 4.
+ $F110 LD ($F26E),A    ; }
  $F113 LD IX,$F104     ;
  $F117 LD BC,$F10A     ;
  $F11A CALL $EF35      ;
@@ -10262,8 +10474,8 @@ c$F177 LD A,(IY+$05)   ;
  $F1A1 JR $F1D2        ;
 *$F1A3 CALL $EEA2      ;
  $F1A6 CALL $F202      ;
- $F1A9 LD A,$04        ;
- $F1AB LD ($F26E),A    ;
+ $F1A9 LD A,$04        ; { Touching an arrow drops the endurance by 4.
+ $F1AB LD ($F26E),A    ; }
  $F1AE LD A,($F15A)    ;
  $F1B1 CP $02          ;
  $F1B3 LD A,$82        ;
@@ -10342,8 +10554,8 @@ c$F233 INC A         ;
 b$F243 DEFB $20,$44,$04,$02,$98,$A0,$FC,$02
 
 ; Room logic : The Post Office.
-c$F24B LD A,$04      ;
- $F24D LD ($F26E),A  ;
+c$F24B LD A,$04      ; { Touching a stamp drops the endurance by 4.
+ $F24D LD ($F26E),A  ; }
  $F250 LD IX,$F243   ;
  $F254 LD BC,$F2F7   ;
  $F257 CALL $EF35    ;
@@ -10359,7 +10571,7 @@ c$F24B LD A,$04      ;
 ; The amount to decrease endurance by in a collision
 g$F26E DEFB $00
 
-; Animination state : various
+; The next attribute to use with drawing
 b$F26F DEFB $43
 
 ; Movement table : Herbert
@@ -10368,8 +10580,8 @@ b$F270 DEFB $5A,$A8,$01,$00,$00,$03,$40
 ; Move Herbert
 ;
 ; Used by the routine at #R$81AE.
-c$F277 LD A,$02      ;
- $F279 LD ($F26E),A  ;
+c$F277 LD A,$02      ; { Touching Herbert reduces endurance by 2.
+ $F279 LD ($F26E),A  ; }
  $F27C LD IX,$F270   ;
  $F280 LD BC,$F2F7   ;
  $F283 CALL $EF35    ;
@@ -10419,8 +10631,8 @@ c$F277 LD A,$02      ;
  $F2E3 JR C,$F2DF    ;
 *$F2E5 LD (IX+$02),A ;
  $F2E8 CALL $A8A0    ;
- $F2EB LD A,$46      ;
- $F2ED LD ($F26F),A  ;
+ $F2EB LD A,$46      ; { Set bright yellow on black.
+ $F2ED LD ($F26F),A  ; }
  $F2F0 CALL $EF91    ;
  $F2F3 CALL $E329    ;
  $F2F6 RET           ;
@@ -10436,8 +10648,8 @@ b$F2FD DEFB $22,$90,$02,$00,$D6,$90,$FE,$00
  $F305 DEFB $78,$90,$04,$00
 
 ; Room logic : The Pub
-c$F309 LD A,$06      ;
- $F30B LD ($F26E),A  ;
+c$F309 LD A,$06      ; { Touching a mug drops endurance by 6.
+ $F30B LD ($F26E),A  ; }
  $F30E LD IX,$F2FD   ;
  $F312 LD B,$03      ;
 *$F314 PUSH BC       ;
@@ -10458,8 +10670,8 @@ b$F327 DEFB $32,$64,$FE,$00,$60,$32,$6E,$00
 b$F330 DEFB $08,$60,$00,$A8
 
 ; Room logic : The Zoo
-c$F334 LD A,$08        ;
- $F336 LD ($F26E),A    ;
+c$F334 LD A,$08        ; { Touching a banana drops endurance by 8.
+ $F336 LD ($F26E),A    ; }
  $F339 LD IX,$F327     ;
  $F33D LD BC,$F330     ;
  $F340 CALL $EF35      ;
@@ -10488,8 +10700,8 @@ c$F334 LD A,$08        ;
 b$F375 DEFB $78,$A8,$02,$00,$78,$A8,$FE,$00
 
 ; Room logic : The Docks
-c$F37D LD A,$04      ;
- $F37F LD ($F26E),A  ;
+c$F37D LD A,$04      ; { Touching a moving object drops endurance by 4.
+ $F37F LD ($F26E),A  ; }
  $F382 LD IX,$F375   ;
  $F386 LD BC,$F2F7   ;
  $F389 CALL $EF35    ;
@@ -10512,8 +10724,8 @@ b$F3A1 DEFB $00,$50
 b$F3A3 DEFB $0A,$98,$02,$00,$0A,$A8,$02,$00
 
 ; Room logic : The Sewer
-c$F3AB LD A,$40      ;
- $F3AD LD ($F26E),A  ;
+c$F3AB LD A,$40      ; { Touching the shark drops endurance by #N$40,
+ $F3AD LD ($F26E),A  ; which can kill a player pretty quickly. }
  $F3B0 LD IX,$F3A3   ;
  $F3B4 LD A,(IX+$02) ;
  $F3B7 CP $02        ;
@@ -10554,8 +10766,8 @@ b$F3FD DEFB $00,$F0,$78,$A8
 b$F401 DEFB $00,$80,$02,$FC,$64,$8C,$02,$04
 
 ; Room logic : The Bakers
-c$F409 LD A,$06        ;
- $F40B LD ($F26E),A    ;
+c$F409 LD A,$06        ; { Touching a moving object drops endurance by 6.
+ $F40B LD ($F26E),A    ; }
  $F40E LD IX,$F401     ;
  $F412 LD B,$02        ;
 *$F414 PUSH BC         ;
@@ -10620,8 +10832,8 @@ b$F491 DEFB $40,$64,$00,$02,$64,$40,$00,$02
  $F499 DEFB $DC,$78,$00,$02
 
 ; Room logic : The Work Shed
-c$F49D LD A,$06        ;
- $F49F LD ($F26E),A    ;
+c$F49D LD A,$06        ; { Touching a moving object drops endurance by 6.
+ $F49F LD ($F26E),A    ; }
  $F4A2 LD IX,$F491     ;
  $F4A6 LD B,$03        ;
 *$F4A8 PUSH BC         ;
@@ -10658,8 +10870,8 @@ c$F4D3 LD A,($BD7D)  ;
  $F4DF RET NZ        ;
 *$F4E0 LD HL,$A880   ;
  $F4E3 LD ($A838),HL ;
- $F4E6 LD A,$04      ;
- $F4E8 LD ($F26E),A  ;
+ $F4E6 LD A,$04      ; { Touching the flame (if it's there)
+ $F4E8 LD ($F26E),A  ; drops endurance by 4. }
  $F4EB LD A,($F4D2)  ;
  $F4EE INC A         ;
  $F4EF CP $50        ;
@@ -10679,8 +10891,8 @@ c$F503 LD A,$FF      ;
  $F508 LD A,$0C      ;
  $F50A CALL $EC1D    ;
  $F50D JR Z,$F543    ;
- $F50F LD A,$06      ;
- $F511 LD ($F26E),A  ;
+ $F50F LD A,$06      ; { Touching a moving object drops endurance by 6.
+ $F511 LD ($F26E),A  ; }
  $F514 LD IX,$F4FF   ;
  $F518 LD BC,$F2F7   ;
  $F51B CALL $EF35    ;
@@ -10709,60 +10921,74 @@ c$F503 LD A,$FF      ;
 ; Room logic : The Cave
 ;
 ; If the pipe is not patched and the gas mask is not carried, start
-; .
-; dropping endurance as the room is full of gas!
-c$F54F LD A,($BD7D)  ;
- $F552 CP $1D        ;
- $F554 JR NZ,$F55C   ;
- $F556 LD A,$05      ;
- $F558 CALL $EC1D    ;
- $F55B RET NZ        ;
-*$F55C LD A,$14      ;
- $F55E CP (IY+$50)   ;
- $F561 RET Z         ;
- $F562 CP (IY+$55)   ;
- $F565 RET Z         ;
- $F566 LD A,$04      ;
- $F568 LD ($F26E),A  ;
- $F56B CALL $E33F    ;
- $F56E JP $ED13      ;
+; dropping endurance immediately as the room is full of gas!
+c$F54F LD A,($BD7D)  ; { Is the pipe in the room?
+ $F552 CP $1D        ; }
+ $F554 JR NZ,$F55C   ; Jump forward if it isn't.
+ $F556 LD A,$05      ; { Is the pipe patched?
+ $F558 CALL $EC1D    ; }
+ $F55B RET NZ        ; Return if it is.
+; The pipe is not patched. See if the player has the gas mask.
+*$F55C LD A,$14      ; { Is the first item carried the gas mask?
+ $F55E CP (IY+$50)   ; }
+ $F561 RET Z         ; Return if so.
+ $F562 CP (IY+$55)   ; { Is the second item carried the gas mask?
+ $F565 RET Z         ; }
+; The pipe is not patched and the player does not have the gas mask.
+; Start dropping endurance as they choke to death - oh dear.
+ $F566 LD A,$04      ; { Drop endurance by 6 each frame.
+ $F568 LD ($F26E),A  ; }
+ $F56B CALL $E33F    ; Mark an immediate collision to drop endurance.
+ $F56E JP $ED13      ; Otherwise, the logic is the same as the laboratory.
 
 ; The animation state for the water in the Town Square fountain
+;
+; Cycles between #N$50 - #N$52 / #N$53 - #N$55.
 b$F571 DEFB $50
 
 ; Room logic : Town Square
 ;
 ; Check the fountain's repaired
-c$F572 LD A,$08      ;
- $F574 CALL $EC1D    ;
- $F577 RET Z         ;
+c$F572 LD A,$08      ; { Is flag 08 (fountain repaired) set?
+ $F574 CALL $EC1D    ; }
+ $F577 RET Z         ; Return if not.
+; The fountain is repaired, so draw it.
+; 
 ; This entry point is used by the routine at #R$813B.
-*$F578 LD A,$45      ;
- $F57A LD ($F26F),A  ;
- $F57D LD HL,$9878   ;
- $F580 LD ($A838),HL ;
- $F583 LD A,($F571)  ;
- $F586 CALL $A83D    ;
- $F589 CALL $EF91    ;
- $F58C LD HL,$8868   ;
- $F58F LD ($A838),HL ;
- $F592 CALL $A83D    ;
- $F595 CALL $EF91    ;
- $F598 LD HL,$9818   ;
- $F59B LD ($A838),HL ;
- $F59E ADD A,$03     ;
- $F5A0 CALL $A83D    ;
- $F5A3 CALL $EF91    ;
- $F5A6 LD HL,$8828   ;
- $F5A9 LD ($A838),HL ;
- $F5AC CALL $A83D    ;
- $F5AF CALL $EF91    ;
- $F5B2 SUB $02       ;
- $F5B4 CP $53        ;
- $F5B6 JR NZ,$F5BA   ;
- $F5B8 LD A,$50      ;
-*$F5BA LD ($F571),A  ;
- $F5BD RET           ;
+*$F578 LD A,$45      ; { Set bright cyan on black.
+ $F57A LD ($F26F),A  ; }
+; Draw bottom right.
+ $F57D LD HL,$9878   ; { Set the position.
+ $F580 LD ($A838),HL ; }
+ $F583 LD A,($F571)  ; Get the next object ID of the water.
+ $F586 CALL $A83D    ; Draw it.
+ $F589 CALL $EF91    ; Set the attributes.
+; Draw top right.
+ $F58C LD HL,$8868   ; { Set the position.
+ $F58F LD ($A838),HL ; }
+ $F592 CALL $A83D    ; Draw the water.
+ $F595 CALL $EF91    ; Set the attributes.
+; Draw bottom left.
+ $F598 LD HL,$9818   ; { Set the position.
+ $F59B LD ($A838),HL ; }
+ $F59E ADD A,$03     ; Add 3 to the object ID to get the water
+                     ; facing left instead of right.
+ $F5A0 CALL $A83D    ; Draw the water.
+ $F5A3 CALL $EF91    ; Set the attributes.
+; Draw top left.
+ $F5A6 LD HL,$8828   ; { Set the position.
+ $F5A9 LD ($A838),HL ; }
+ $F5AC CALL $A83D    ; Draw the water.
+ $F5AF CALL $EF91    ; Set the attributes.
+; Change the graphic used.
+ $F5B2 SUB $02       ; Decrement 2 from the object ID.
+                     ; ie: subtract 3 to get back to the right facing graphics,
+                     ; then add 1 for the next.
+ $F5B4 CP $53        ; Is it #N$53?
+ $F5B6 JR NZ,$F5BA   ; Jump forward if it isn't.
+ $F5B8 LD A,$50      ; Otherwise reset to #N$50.
+*$F5BA LD ($F571),A  ; { Set the next ID to use and return.
+ $F5BD RET           ; }
 
 ; Movement table : School Lane
 b$F5BE DEFB $28,$46,$02,$02,$3C,$78,$FE,$02
@@ -10804,8 +11030,8 @@ c$F5F1 LD HL,$5DE7   ;
  $F618 SBC HL,DE     ;
 *$F61A INC HL        ;
  $F61B JR $F5FA      ;
-*$F61D LD A,$06      ;
- $F61F LD ($F26E),A  ;
+*$F61D LD A,$06      ; { Moving objects decrease endurance by 6.
+ $F61F LD ($F26E),A  ; }
  $F622 LD IX,$F5BE   ;
  $F626 LD B,$03      ;
 *$F628 PUSH BC       ;
@@ -10835,8 +11061,8 @@ b$F653 DEFB $28,$46,$01,$01,$05,$04,$C8,$78
  $F673 DEFB $00
 
 ; Room logic : The Park
-c$F674 LD A,$04      ;
- $F676 LD ($F26E),A  ;
+c$F674 LD A,$04      ; { Moving objects decrease endurance by 4.
+ $F676 LD ($F26E),A  ; }
  $F679 LD B,$05      ;
  $F67B LD IX,$F653   ;
 *$F67F PUSH BC       ;
@@ -10914,8 +11140,8 @@ c$F6EC LD A,($EDC5)  ;
 *$F716 LD A,($EDC5)  ;
  $F719 CP $06        ;
  $F71B RET Z         ;
- $F71C LD A,$06      ;
- $F71E LD ($F26E),A  ;
+ $F71C LD A,$06      ; { Moving objects decrease endurance by 6.
+ $F71E LD ($F26E),A  ; }
  $F721 LD IX,$F6DC   ;
  $F725 LD B,$04      ;
 *$F727 PUSH BC       ;
@@ -10933,8 +11159,8 @@ b$F73A DEFB $34,$40,$00,$02,$74,$6C,$00,$02
  $F742 DEFB $B4,$A0,$00,$02
 
 ; Room logic : Wally's House
-c$F746 LD A,$08        ;
- $F748 LD ($F26E),A    ;
+c$F746 LD A,$08        ; { Moving objects decrease endurance by 8.
+ $F748 LD ($F26E),A    ; }
  $F74B LD IX,$F73A     ;
  $F74F LD B,$03        ;
 *$F751 PUSH BC         ;
@@ -10953,17 +11179,19 @@ c$F746 LD A,$08        ;
  $F772 RET             ;
 
 ; Room logic : The School
-c$F773 LD A,$02        ;
- $F775 LD ($F26E),A    ;
- $F778 LD A,(IY+$0A)   ;
- $F77B CP $98          ;
- $F77D JR NZ,$F78D     ;
+c$F773 LD A,$02        ; { Moving objects decrease endurance by 2.
+ $F775 LD ($F26E),A    ; }
+ $F778 LD A,(IY+$0A)   ; Get the player's Y co-ordinate.
+ $F77B CP $98          ; Is the player on the floor?
+ $F77D JR NZ,$F78D     ; Jump forward if they're not.
+; The player is on the floor.
  $F77F LD A,(IY+$05)   ;
  $F782 CP $28          ;
  $F784 JR C,$F78D      ;
  $F786 CP $E6          ;
  $F788 JR NC,$F78D     ;
- $F78A CALL $E33F      ;
+ $F78A CALL $E33F      ; Decrease endurance.
+; Work out what to do next.
 *$F78D LD B,$05        ;
  $F78F LD A,($F7DE)    ;
  $F792 INC A           ;
@@ -11003,10 +11231,10 @@ c$F773 LD A,$02        ;
  $F7DD RET             ;
 
 ; Location of moving desk in the school (57-5B)
-b$F7DE DEFB $5A
+g$F7DE DEFB $5A
 
 ; Time until the moving school desk switches
-b$F7DF DEFB $38
+g$F7DF DEFB $38
 
 ; Data block at F7E0
 b$F7E0 DEFB $29,$60,$21,$88,$19,$B0,$11,$D8
@@ -11014,39 +11242,50 @@ b$F7E0 DEFB $29,$60,$21,$88,$19,$B0,$11,$D8
 
 ; The food table (not current room). Format is room, x co-ord, y co-ord, object
 ; number
-b$F7E9 DEFB $0E,$90,$A0,$5B,$0A,$08,$A8,$5C
- $F7F1 DEFB $0F,$F0,$A8,$5E,$19,$90,$A0,$5D
- $F7F9 DEFB $17,$20,$90,$5F,$FF
+b$F7E9 DEFB $0E,$90,$A0
+ $F7EC DEFB $5B,$0A,$08
+ $F7EF DEFB $A8,$5C,$0F
+ $F7E2 DEFB $F0,$A8,$5E
+ $F7E5 DEFB $19,$90,$A0
+ $F7E8 DEFB $5D,$17,$20
+ $F7EB DEFB $90,$5F,$FF
 
 ; The food table (current room). Format is room, x co-ord, y co-ord, object
 ; number
-b$F7FE DEFB $0F,$F0,$A8,$5E,$19,$90,$A0,$5D
- $F806 DEFB $17,$20,$90,$5F,$0E,$90,$A0,$5B
- $F80E DEFB $0A,$08,$A8,$5C
+b$F7FE DEFB $0F,$F0,$A8
+ $F801 DEFB $5E,$19,$90
+ $F804 DEFB $A0,$5D,$17
+ $F807 DEFB $20,$90,$5F
+ $F80A DEFB $0E,$90,$A0
+ $F80D DEFB $5B,$0A,$08
+
+; Game status buffer entry at F810
+g$F810 DEFB $A8,$5C
 
 ; Pointer to the next food table entry
-w$F812 DEFW $F7E9
+g$F812 DEFW $F7E9
 
 ; See if any food is in the current room, and display it if so
 ;
 ; Used by the routine at #R$81AE.
-c$F814 LD HL,($F812) ;
- $F817 LD A,(IY+$0F) ;
- $F81A CP (HL)       ;
- $F81B JR Z,$F823    ;
- $F81D LD DE,$0015   ;
- $F820 ADD HL,DE     ;
- $F821 CP (HL)       ;
- $F822 RET NZ        ;
-*$F823 INC HL        ;
- $F824 LD E,(HL)     ;
- $F825 INC HL        ;
- $F826 LD D,(HL)     ;
- $F827 INC HL        ;
- $F828 LD A,(HL)     ;
- $F829 LD B,A        ;
- $F82A LD ($A838),DE ;
- $F82E CALL $A83D    ;
+c$F814 LD HL,($F812) ; Point #REGhl at the next food.
+ $F817 LD A,(IY+$0F) ; Get the current room in #REGa.
+ $F81A CP (HL)       ; Is the food in this room?
+ $F81B JR Z,$F823    ; Jump foward if there is.
+ $F81D LD DE,$0015   ; { Point to the second food table.
+ $F820 ADD HL,DE     ; }
+ $F821 CP (HL)       ; Is the food in this room?
+ $F822 RET NZ        ; Return if it isn't - there's no food here.
+; There's food in the room, so draw it.
+*$F823 INC HL        ; { Put the x co-ordinate in #REGe.
+ $F824 LD E,(HL)     ; }
+ $F825 INC HL        ; { Put the y co-ordinate in #REGd.
+ $F826 LD D,(HL)     ; }
+ $F827 INC HL        ; { Put the object number in #REGb.
+ $F828 LD A,(HL)     ; 
+ $F829 LD B,A        ; }
+ $F82A LD ($A838),DE ; Copy the position to the scratch buffer at #R$A838.
+ $F82E CALL $A83D    ; Draw the food.
  $F831 LD A,(IY+$05) ;
  $F834 SUB E         ;
  $F835 SUB $04       ;
@@ -11100,8 +11339,8 @@ b$F8B5 DEFB $00,$F0,$40,$B0
 ;
 ; Used by the routine at #R$EDF7.
 c$F8B9 LD IX,$80A9   ;
- $F8BD LD A,$08      ;
- $F8BF LD ($F26E),A  ;
+ $F8BD LD A,$08      ; { Moving objects decrease endurance by 8.
+ $F8BF LD ($F26E),A  ; }
  $F8C2 LD B,$0C      ;
 *$F8C4 PUSH BC       ;
  $F8C5 LD BC,$F8B5   ;
@@ -11426,7 +11665,10 @@ c$FAF0 PUSH IX       ;
  $FB29 RET           ;
 
 ; Unused
-s$FB2A DEFS $2D6 
+s$FB2A DEFS $1D6
+
+; Copy of attribute buffer for additional graphics.
+g$FD00 DEFS $100
  
 ; Copy of attribute buffer for main play area
 g$FE00 DEFS $200
