@@ -43,8 +43,8 @@ b$5DA8 DI            ; Disable interrupts - essential for tape loading.
  $5DDB JP $FE46      ; Jump to the main loader.
 
 ; Main loader (1)
-c$FE46 LD IX,$4000   ; Set the start to #R$4000.
- $FE4A LD DE,$BF25   ; Set the length.
+c$FE46 LD IX,$4000   ; Set the start to #N$4000.
+ $FE4A LD DE,$BF25   ; Set the length to read up to #N$FF25.
  $FE4D LD A,$16      ;
  $FE4F LD ($FEAA),A  ;
  $FE52 LD A,$FF      ;
@@ -91,6 +91,7 @@ c$FE46 LD IX,$4000   ; Set the start to #R$4000.
  $FE9F LD H,$00      ;
  $FEA1 LD B,$B0      ;
  $FEA3 JR $FEDE      ;
+
 ; Load an edge off tape
 c$FEA5 CALL $FEA9    ;
  $FEA8 RET NC        ;
@@ -129,6 +130,7 @@ c$FEA5 CALL $FEA9    ;
 *$FEDA DEC DE        ;
  $FEDB EX AF,AF'     ;
  $FEDC LD B,$B2      ;
+
 ; Main loader (2)
 c$FEDE LD L,$01      ;
 *$FEE0 CALL $FEA5    ;
