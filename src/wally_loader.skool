@@ -19,6 +19,9 @@ b$5B80 LD BC,$A299   ; Set #REGbc to the length
 ; Main entry point
 ;
 ; The basic is :
+; 
+; .
+;
 ; 1 REM
 ; 2 REM
 ; 100: PAPER 0: INK 0: BRIGHT 0: FLASH 0: CLS :
@@ -26,6 +29,7 @@ b$5B80 LD BC,$A299   ; Set #REGbc to the length
 ; RANDOMIZE USR (PEEK 23627+256*PEEK 23628+6)
 ;
 ; .
+;
 ; On a freshly reset Spectrum, VARS defaults to #N$5DA2, add 6 gives #N$5DA8.
 ; 
 b$5DA8 DI            ; Disable interrupts - essential for tape loading.
