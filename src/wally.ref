@@ -69,6 +69,35 @@ It bit 7 is reset, a computer character can pick the item up.
 
 The end of the table is denoted by the byte #N$FF. If the room has no objects in it, that is the only byte in the buffer.
 
+[DataStructures:Movement tables]
+Each moving object in a room, along with Herbert and the jumping jack (which can appear in any room),
+is associated with two four-byte buffers. The first is fixed and contains the object bounds; the second
+is dynamic and contains the current position and direction change. This is updated by calls to the
+routine at #R$EF35.
+
+The buffer containing bounds is fixed at:
+#TABLE(default, center)
+{ =h Byte | =h Description }
+{ 0 | Minimum x co-ordinate }
+{ 1 | Maximum x co-ordinate }
+{ 2 | Minimum y co-ordinate }
+{ 3 | Maximum y co-ordinate }
+TABLE#
+
+The buffer containing the positions varies over time and contains:
+#TABLE(default, center)
+{ =h Byte | =h Description }
+{ 0 | Current x co-ordinate }
+{ 1 | Current y co-ordinate }
+{ 2 | Distance to move in x }
+{ 3 | Distance to move in y }
+TABLE#
+The distances to move are stored as a 2s complement value.
+
+When an object hits the minimum or maximum value, its distance to move is
+inverted between positive and negative and it starts travelling back in the
+other direction.
+
 [DataStructures:Next rooms]
 Each room has links to others in a table starting at #R$AC7F. The lookup is done at the routine in #R$AC69.
 
@@ -199,6 +228,22 @@ TABLE#
 
 The index of the next index into the buffer is stored in #R$ECF5.
 
+[Fact:Screen updates]
+There are two copies of the screen, one with the background graphics (stored at #R$5B00) and one
+with moving objects and characters overlaid (#R$6B00).
+
+The background buffer is usually left untouched after entering a room (but it can occasionally
+be changed, see the routine in #R$B82B), but the moving objects buffer is updated
+continuously as objects move around the screen, by copying the background layer and overlaying
+everything in its current position.
+
+Although this seems slow and redundant, it's not slow enough to make the game unplayable,
+and it does solve the requirement of having to write code
+that invalidates a specific part of the screen. The routine that puts sprites in the buffer
+at #R$A83D also uses the stack for copying data. This is a
+#HTML(<a href="https://chuntey.wordpress.com/2013/10/02/how-to-write-zx-spectrum-games-chapter-13/">well-known trick</a>)
+to make graphics updating faster.
+
 [Fact:Miles out of town]
 The "out of town" screen at #R$F177 uses a simple 16-bit word at #R$F15B to store the number of miles walked.
 Therefore if you've walked 65,535 miles and walk one more, the counter will reset to 0 and you'll be able
@@ -206,12 +251,18 @@ to get back into town in a single move.
 
 (Note that 65,535 miles is approximately twice round the circumerence of the Earth.)
 
+[Fact:Shark]
+The shark in the sewer is treated as two separate moving objects stacked on top of each other,
+with the movement and bounds tables set up to be contiguous.
+
+To see the shark appear to move while sawn in half, try POKE #N$F3A9 , 3
+
 [Page:Pokes]
 SectionType=ListItems
 
 [Poke:Pokes]
 Immunity
- E343,C9
+ #N$E343 , #N$C9
 
 [OtherCode:Loading system]
 Source=wally_loader.skool

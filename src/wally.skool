@@ -875,9 +875,28 @@ b$4000 DEFB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
  $5AF8 DEFB $3A,$3A,$3A,$3A,$3A,$3A,$3A,$3A
 
 ; Copy of main playing area
+;
+; This is a copy of the bottom two thirds of the screen
+; containing the background graphics that don't change
+; until a room is redrawn.
+;
+; .
+;
+; The buffer is initialised by the routine at #R$B9AC
+; when all the background graphics are drawn.
 g$5B00 DEFS $1000
 
 ; Sprite buffer
+;
+; The buffer contains a copy of the lower two thirds of the screen,
+; sorted sequentially by rows.
+;
+; .
+;
+; The data is written to the screen by the routine at #R$B9FB.
+; It is initialised as a copy of the main screen at #R$5B00
+; by the routine at #R$EEA2. 
+; Sprites are then drawn on top by the routine at #R$A83D.
 g$6B00 DEFS $1000 
 
 ; Lookup table for reversing graphics
@@ -1100,8 +1119,17 @@ t$7ECC DEFB $FE
 ; #CALL:print_block_data(#PC, asteroids)
 b$7F02 DEFB $FE,$42,$FB,$BC,$D7,$00,$01,$C6
  $7F0A DEFB $01,$02,$03,$DC,$FF,$00,$01,$C6
- $7F12 DEFB $01,$02,$03,$FF,$FB,$DC,$DF,$FE
- $7F1A DEFB $46,$FD,$04,$20,$FF
+ $7F12 DEFB $01,$02,$03,$FF
+
+; Room block data : Hole opening for chase
+;
+; Used by the routine at #R$EFC7.
+;
+; .
+;
+; This block data is simply four empty spaces.
+b$7F16 DEFB $FB,$DC,$DF,$FE,$46,$FD,$04,$20
+ $7F1E DEFB $FF
 
 ; Location text
 ;
@@ -1240,7 +1268,7 @@ g$813A DEFB $00
 c$813B CALL $B952    ; Draw the room.
  $813E LD BC,$0014   ; Number of entries to update.
 *$8141 PUSH BC       ; Store #REGbc.
- $8142 CALL $EEA2    ; Update the sprite buffers
+ $8142 CALL $EEA2    ; Initialize the sprite buffers
  $8145 CALL $F578    ; Draw the fountain.
  $8148 CALL $B9D6    ; Update character positions.
  $814B CALL $B9FB    ; Put sprites on screen.
@@ -1298,7 +1326,7 @@ c$8184 DI            ; Disable interrupts.
 ; Move everything on screen
 ;
 ; Used by the routines at #R$8155, #R$8184 and #R$EFC7.
-c$81AE CALL $BAB4    ; Move to a new room if necessary.
+c$81AE CALL $BAB4    ; Update the "{character} is in {room}" tick count, if any.
  $81B1 CALL $A92C    ; Move a computer controlled character.
  $81B4 CALL $EEC1    ; Refresh the current room.
  $81B7 CALL $F10E    ; Move the jumping jack.
@@ -1358,11 +1386,17 @@ c$81E3 LD A,(DE)     ; Get the first byte.
  $81F6 EXX           ; { Swap all main registers and return.
  $81F7 RET           ; }
 
-; Screen offsets for status bar
+; Screen offset table
 ;
-; This buffer holds the various locations on screen
+; Used by the routines at #R$B715, #R$B77B, #R$B7BA, #R$B931 and #R$E77A.
+;
 ; .
-; where each line of text should go
+;
+; This buffer holds the various locations on screen where each line of text should go
+;
+; .
+;
+; Status bar
 w$81F8 DEFW $4000
  $81FA DEFW $4100
  $81FC DEFW $4200
@@ -1403,9 +1437,8 @@ w$81F8 DEFW $4000
  $8242 DEFW $4580
  $8244 DEFW $4680
  $8246 DEFW $4780
-
-; Screen offset table : Separator bar between status and main screen
-w$8248 DEFW $40A0
+; Separator bar between status and main screen
+*$8248 DEFW $40A0
  $824A DEFW $41A0
  $824C DEFW $42A0
  $824E DEFW $43A0
@@ -1429,9 +1462,8 @@ w$8248 DEFW $40A0
  $8272 DEFW $45E0
  $8274 DEFW $46E0
  $8276 DEFW $47E0
-
-; Screen offset table : Main screen
-w$8278 DEFW $4800
+; Main screen
+*$8278 DEFW $4800
  $827A DEFW $4900
  $827C DEFW $4A00
  $827E DEFW $4B00
@@ -3166,22 +3198,22 @@ c$A83D DI            ; Disable interrupts.
  $A861 LD ($EFAF),A  ; Change the routine at #R$EF91 to use a different pointer in the buffer.
  $A864 ADD A,$02     ;
  $A866 LD E,A        ;
- $A867 LD A,($A839)  ;
- $A86A SUB $40       ;
- $A86C LD L,A        ;
- $A86D LD H,$00      ;
- $A86F ADD HL,HL     ;
+ $A867 LD A,($A839)  ; Get the Y co-ordinate.
+ $A86A SUB $40       ; Subtract #N$40 to get an offset on screen.
+ $A86C LD L,A        ; { Put this in #REGhl.
+ $A86D LD H,$00      ; }
+ $A86F ADD HL,HL     ; { Multiply by 32 so it points at the start of a row.
  $A870 ADD HL,HL     ;
  $A871 ADD HL,HL     ;
  $A872 ADD HL,HL     ;
- $A873 ADD HL,HL     ;
- $A874 LD D,$6B      ;
- $A876 ADD HL,DE     ;
- $A877 LD C,$10      ;
-*$A879 POP DE        ;
- $A87A LD B,$00      ;
- $A87C DEC B         ;
- $A87D JR Z,$A889    ;
+ $A873 ADD HL,HL     ; }
+ $A874 LD D,$6B      ; Point the high byte of #REGde at the sprite buffer. (#R$6B00)
+ $A876 ADD HL,DE     ; Add this to the offset so #REGhl points to the correct row.
+ $A877 LD C,$10      ; 16 rows to copy.
+*$A879 POP DE        ; Put the next graphic data in #REGde.
+ $A87A LD B,$00      ; 
+ $A87C DEC B         ; 
+ $A87D JR Z,$A889    ; 
  $A87F XOR A         ;
 *$A880 SRL E         ;
  $A882 RR D          ;
@@ -3197,35 +3229,40 @@ c$A83D DI            ; Disable interrupts.
  $A88E LD A,(HL)     ;
  $A88F OR E          ;
  $A890 LD (HL),A     ;
- $A891 LD DE,$0022   ;
- $A894 ADD HL,DE     ;
- $A895 DEC C         ;
- $A896 JP NZ,$A879   ;
+ $A891 LD DE,$0022   ; { Move to the next row (?) 
+ $A894 ADD HL,DE     ; }
+ $A895 DEC C         ; Decrement the number of rows to copy.
+ $A896 JP NZ,$A879   ; Loop while there is more to draw.
  $A899 LD SP,($A83B) ; Restore the stack pointer.
  $A89D POP AF        ; Restore the object ID in #REGa.
  $A89E EXX           ; { Swap back all main registers and return.
  $A89F RET           ; }
 
-; Update moving graphic buffers
+; Draw an object in the sprite buffer
 ;
 ; Used by the routines at #R$ED2A, #R$ED8A, #R$F057, #R$F10E, #R$F24B, #R$F277,
 ; #R$F309, #R$F37D, #R$F3AB, #R$F409, #R$F49D, #R$F503, #R$F5F1, #R$F674,
 ; #R$F6EC and #R$F8B9.
-c$A8A0 EXX           ;
- $A8A1 PUSH AF       ;
- $A8A2 LD ($A83B),SP ;
- $A8A6 LD SP,$8378   ;
- $A8A9 LD L,A        ;
- $A8AA LD H,$00      ;
- $A8AC ADD HL,HL     ;
+;
+; A ID of the graphic to update
+;
+; .
+; The co-ordinates to update are stored in #R$A838.
+c$A8A0 EXX           ; Exchange main registers.
+ $A8A1 PUSH AF       ; Remember #REGaf.
+ $A8A2 LD ($A83B),SP ; Store the stack pointer in #R$A83B.
+ $A8A6 LD SP,$8378   ; Set the stack pointer to the start of the object graphics. (#R$8378)
+ $A8A9 LD L,A        ; { Put the sprite ID in #REGhl.
+ $A8AA LD H,$00      ; }
+ $A8AC ADD HL,HL     ; { Multiply by 32.
  $A8AD ADD HL,HL     ;
  $A8AE ADD HL,HL     ;
  $A8AF ADD HL,HL     ;
- $A8B0 ADD HL,HL     ;
- $A8B1 ADD HL,SP     ;
- $A8B2 LD SP,HL      ;
- $A8B3 LD A,($A838)  ;
- $A8B6 LD B,A        ;
+ $A8B0 ADD HL,HL     ; }
+ $A8B1 ADD HL,SP     ; { Use this to set the stack pointer at the graphic data for this object.
+ $A8B2 LD SP,HL      ; }
+ $A8B3 LD A,($A838)  ; { Put the X co-ordinate in #REGb.
+ $A8B6 LD B,A        ; }
  $A8B7 AND $07       ;
  $A8B9 INC A         ;
  $A8BA LD ($A8E0),A  ;
@@ -3239,18 +3276,18 @@ c$A8A0 EXX           ;
  $A8C9 ADD A,$02     ;
  $A8CB LD E,A        ;
  $A8CC LD C,$10      ;
- $A8CE LD A,($A839)  ;
- $A8D1 SUB $40       ;
- $A8D3 LD L,A        ;
- $A8D4 LD H,$00      ;
- $A8D6 ADD HL,HL     ;
+ $A8CE LD A,($A839)  ; Get the Y co-ordinate.
+ $A8D1 SUB $40       ; Subtract #N$40 to get an offset in the sprite buffer.
+ $A8D3 LD L,A        ; { Put this in #REGhl.
+ $A8D4 LD H,$00      ; }
+ $A8D6 ADD HL,HL     ; { Multiply by 32 to get a row offset.
  $A8D7 ADD HL,HL     ;
  $A8D8 ADD HL,HL     ;
  $A8D9 ADD HL,HL     ;
- $A8DA ADD HL,HL     ;
- $A8DB LD D,$6B      ;
- $A8DD ADD HL,DE     ;
-*$A8DE POP DE        ;
+ $A8DA ADD HL,HL     ; }
+ $A8DB LD D,$6B      ; Set the high byte of #REGde to an offset in the sprite buffer. (#R$6B00)
+ $A8DD ADD HL,DE     ; Add this.
+*$A8DE POP DE        ; Restore #REGde.
  $A8DF LD B,$00      ;
  $A8E1 DEC B         ;
  $A8E2 JR Z,$A8F0    ;
@@ -3295,10 +3332,10 @@ c$A8A0 EXX           ;
  $A915 ADD HL,DE     ;
  $A916 DEC C         ;
  $A917 JP NZ,$A8DE   ;
- $A91A EXX           ;
- $A91B LD SP,($A83B) ;
- $A91F POP AF        ;
- $A920 RET           ;
+ $A91A EXX           ; Restore main registers.
+ $A91B LD SP,($A83B) ; Restore the stack pointer.
+ $A91F POP AF        ; { Restore #REGaf and return.
+ $A920 RET           ; }
 
 ; Set the zero flag if the player is the current one.
 ;
@@ -5045,52 +5082,54 @@ c$B482 LD HL,($B4E7) ; Point #REGhl towards the next note in the tune.
  $B490 LD ($B4E9),A  ; 
  $B493 RET           ; }
 ; There is more of the tune to play, so do it.
-*$B494 INC HL        ;
- $B495 CP $FE        ;
- $B497 JR NZ,$B4A2   ;
- $B499 XOR A         ;
-*$B49A LD ($B4EA),A  ;
- $B49D LD ($B4E7),HL ;
- $B4A0 JR $B482      ;
-*$B4A2 CP $FF        ;
- $B4A4 JR NZ,$B4AA   ;
- $B4A6 LD A,$01      ;
- $B4A8 JR $B49A      ;
-*$B4AA PUSH AF       ;
- $B4AB LD A,(HL)     ;
- $B4AC INC HL        ;
- $B4AD LD ($B4E7),HL ;
- $B4B0 OR A          ;
- $B4B1 JR Z,$B4DB    ;
- $B4B3 LD L,A        ;
- $B4B4 LD H,$00      ;
- $B4B6 ADD HL,HL     ;
- $B4B7 LD DE,$B537   ;
- $B4BA ADD HL,DE     ;
- $B4BB LD C,(HL)     ;
- $B4BC LD B,$00      ;
- $B4BE INC HL        ;
+; First, work out if the type of sound wave needs changing.
+*$B494 INC HL        ; Point #REGhl at the next note.
+ $B495 CP $FE        ; Is it a control character #N$FE?
+ $B497 JR NZ,$B4A2   ; Jump forward if it isn't.
+ $B499 XOR A         ; { Switch to sawtooth wave.
+*$B49A LD ($B4EA),A  ; }
+ $B49D LD ($B4E7),HL ; Set the next address of the tune to play. (#R$B4E7)
+ $B4A0 JR $B482      ; Jump forward to play the note.
+*$B4A2 CP $FF        ; Is it a control character #N$FF?
+ $B4A4 JR NZ,$B4AA   ; Jump forward if not.
+ $B4A6 LD A,$01      ; { Switch to square wave and jump back to set this.
+ $B4A8 JR $B49A      ; }
+; Now play the note.
+*$B4AA PUSH AF       ; Store #REGaf.
+ $B4AB LD A,(HL)     ; Get the current note.
+ $B4AC INC HL        ; { Point #REGhl at the next note to play.
+ $B4AD LD ($B4E7),HL ; }
+ $B4B0 OR A          ; Is it zero?
+ $B4B1 JR Z,$B4DB    ; If so, jump forward.
+ $B4B3 LD L,A        ; { Put the note in #REGhl.
+ $B4B4 LD H,$00      ; }
+ $B4B6 ADD HL,HL     ; Double it to get a word offset.
+ $B4B7 LD DE,$B537   ; { Add the base address for the note frequencies. (#R$B537)
+ $B4BA ADD HL,DE     ; }
+ $B4BB LD C,(HL)     ; { Get the frequency and put it in #REGbc.
+ $B4BC LD B,$00      ; }
+ $B4BE INC HL        ; { Get the length and put it in #REGde.
  $B4BF LD E,(HL)     ;
- $B4C0 LD D,B        ;
- $B4C1 POP AF        ;
- $B4C2 LD HL,$0000   ;
+ $B4C0 LD D,B        ; }
+ $B4C1 POP AF        ; Restore #REGaf.
+ $B4C2 LD HL,$0000   ; { Multiply #REGde with the note value to get the length.
 *$B4C5 ADD HL,DE     ;
  $B4C6 DEC A         ;
- $B4C7 JR NZ,$B4C5   ;
- $B4C9 EX DE,HL      ;
- $B4CA CALL $B505    ;
+ $B4C7 JR NZ,$B4C5   ; }
+ $B4C9 EX DE,HL      ; Swap #REGde and #REGhl.
+ $B4CA CALL $B505    ; Play the note.
  $B4CD LD A,($B4E9)  ; { Was a key pressed?
  $B4D0 CP $FF        ; }
  $B4D2 RET NZ        ; Return if it was.
-*$B4D3 LD BC,$0320   ;
- $B4D6 CALL $B4EB    ;
- $B4D9 JR $B482      ;
+*$B4D3 LD BC,$0320   ; {
+ $B4D6 CALL $B4EB    ; Pause and get a keypress. }
+ $B4D9 JR $B482      ; Jump back and play more of the tune.
 *$B4DB LD BC,$19C8   ;
- $B4DE POP AF        ;
-*$B4DF CALL $B4EB    ;
- $B4E2 DEC A         ;
- $B4E3 JR NZ,$B4DF   ;
- $B4E5 JR $B4D3      ;
+ $B4DE POP AF        ; Restore #REGaf.
+*$B4DF CALL $B4EB    ; Pause and get a keypress.
+ $B4E2 DEC A         ; { Was a key pressed?
+ $B4E3 JR NZ,$B4DF   ; Loop while there was. }
+ $B4E5 JR $B4D3      ; Otherwise jump back to play more of the tune.
 
 ; The address of the next note in the theme tune to play
 g$B4E7 DEFW $B571
@@ -5132,17 +5171,19 @@ c$B4EB PUSH AF       ; { Store the main registers.
 ;
 ; Used by the routine at #R$B482.
 ;
-; C The pitch to play
-; DE The length note to play
-c$B505 LD A,($B4EA)  ;
- $B508 OR A          ;
- $B509 JR Z,$B50F    ;
- $B50B LD H,B        ;
- $B50C LD L,C        ;
- $B50D JR $B520      ;
-*$B50F LD H,B        ;
- $B510 LD L,C        ;
- $B511 SRA B         ;
+; BC The pitch 
+; DE The length 
+c$B505 LD A,($B4EA)  ; Get the sound type.
+ $B508 OR A          ; Is it 0 (sawtooth)?
+ $B509 JR Z,$B50F    ; Jump forward if it is.
+; Play a square wave.
+ $B50B LD H,B        ; { Copy the pitch from #REGbc to #REGhl.
+ $B50C LD L,C        ; }
+ $B50D JR $B520      ; Jump forward to play the note.
+; Play a sawtooth wave.
+*$B50F LD H,B        ; { Copy the pitch from #REGbc to #REGhl.
+ $B510 LD L,C        ; }
+ $B511 SRA B         ; { Add three quarters of the pitch (?)
  $B513 RR C          ;
  $B515 ADD HL,BC     ;
  $B516 SRA B         ;
@@ -5150,29 +5191,45 @@ c$B505 LD A,($B4EA)  ;
  $B51A ADD HL,BC     ;
  $B51B SRA B         ;
  $B51D RR C          ;
- $B51F ADD HL,BC     ;
-*$B520 LD A,$10      ;
- $B522 OUT ($FE),A   ;
- $B524 CALL $B4EB    ;
- $B527 XOR A         ;
- $B528 OUT ($FE),A   ;
- $B52A PUSH BC       ;
- $B52B LD B,H        ;
- $B52C LD C,L        ;
- $B52D CALL $B4EB    ;
- $B530 POP BC        ;
- $B531 DEC DE        ;
- $B532 LD A,D        ;
- $B533 OR E          ;
- $B534 JR NZ,$B520   ;
- $B536 RET           ;
+ $B51F ADD HL,BC     ; }
+; Now play the note.
+*$B520 LD A,$10      ; { Switch the speaker on.
+ $B522 OUT ($FE),A   ; }
+ $B524 CALL $B4EB    ; Pause and collect a keypress.
+ $B527 XOR A         ; { Switch the speaker off.
+ $B528 OUT ($FE),A   ; }
+ $B52A PUSH BC       ; Store #REGbc.
+ $B52B LD B,H        ; { Restore the value that was previously copied to #REGhl.
+ $B52C LD C,L        ; }
+ $B52D CALL $B4EB    ; Pause and collect a keypress.
+ $B530 POP BC        ; Restore #REGbc.
+ $B531 DEC DE        ; Decrease the length.
+ $B532 LD A,D        ; { Loop while there is more to play.
+ $B533 OR E          ; 
+ $B534 JR NZ,$B520   ; }
+ $B536 RET           ; Otherwise return.
 
-; Theme tune timing constants
-b$B537 DEFB $00,$00,$EC,$1C,$DF,$1C,$D3,$1E
- $B53F DEFB $C7,$20,$BB,$24,$B1,$25,$A7,$27
- $B547 DEFB $9D,$2A,$94,$2C,$8A,$2D,$83,$31
- $B54F DEFB $7C,$36,$73,$3A,$6E,$3C,$67,$40
- $B557 DEFB $62,$42,$5C,$48,$56,$4C,$51,$52
+; Theme tune pitch / timing constants
+b$B537 DEFB $00,$00     ; 00
+ $B539 DEFB $EC,$1C     ; 01
+ $B53B DEFB $DF,$1C     ; 02
+ $B53D DEFB $D3,$1E     ; 03
+ $B53F DEFB $C7,$20     ; 04
+ $B541 DEFB $BB,$24     ; 05
+ $B543 DEFB $B1,$25     ; 06
+ $B545 DEFB $A7,$27     ; 07
+ $B547 DEFB $9D,$2A     ; 08
+ $B549 DEFB $94,$2C     ; 09
+ $B54B DEFB $8A,$2D     ; 0A
+ $B54D DEFB $83,$31     ; 0B
+ $B54F DEFB $7C,$36     ; 0C
+ $B551 DEFB $73,$3A     ; 0D
+ $B553 DEFB $6E,$3C     ; 0E
+ $B555 DEFB $67,$40     ; 0F
+ $B557 DEFB $62,$42     ; 10
+ $B559 DEFB $5C,$48     ; 11
+ $B55B DEFB $56,$4C     ; 12
+ $B55D DEFB $51,$52     ; 13
 
 ; Set to '1' if the current character is computer controlled
 ;
@@ -5245,50 +5302,52 @@ b$B560 DEFB $FF,$03,$07,$03,$07,$02,$07,$01
 ; HL The address of the character to print
 ; D The y co-ordinate
 ; E The x co-ordinate
-c$B715 PUSH AF       ;
+c$B715 PUSH AF       ; { Store main registers.
  $B716 PUSH IX       ;
  $B718 PUSH HL       ;
  $B719 PUSH BC       ;
- $B71A PUSH DE       ;
- $B71B EX DE,HL      ;
- $B71C PUSH HL       ;
- $B71D LD D,$58      ;
- $B71F LD E,L        ;
- $B720 LD L,H        ;
- $B721 LD H,$00      ;
- $B723 ADD HL,HL     ;
+ $B71A PUSH DE       ; }
+ $B71B EX DE,HL      ; Swap #REGde and #REGhl.
+; First, set the attribute.
+ $B71C PUSH HL       ; Store the co-ordinates in #REGhl.
+ $B71D LD D,$58      ; Point the high byte of #REGde to the attribute buffer.
+ $B71F LD E,L        ; Point the low byte to the x co-ordinate.
+ $B720 LD L,H        ; { Put the y co-ordinate in #REGhl.
+ $B721 LD H,$00      ; }
+ $B723 ADD HL,HL     ; { Multiply by 16 to get the right offset.
  $B724 ADD HL,HL     ;
  $B725 ADD HL,HL     ;
  $B726 ADD HL,HL     ;
- $B727 ADD HL,HL     ;
- $B728 ADD HL,DE     ;
- $B729 LD (HL),C     ;
- $B72A PUSH DE       ;
- $B72B LD DE,$0020   ;
- $B72E ADD HL,DE     ;
- $B72F POP DE        ;
- $B730 LD (HL),C     ;
- $B731 POP HL        ;
- $B732 LD L,H        ;
- $B733 LD D,$00      ;
- $B735 LD H,D        ;
- $B736 LD C,E        ;
- $B737 LD B,D        ;
- $B738 ADD HL,HL     ;
+ $B727 ADD HL,HL     ; }
+ $B728 ADD HL,DE     ; Add the earlier address in the attribute buffer.
+ $B729 LD (HL),C     ; Set the attribute to the colour specified.
+ $B72A PUSH DE       ; Remember the current address in #REGde.
+ $B72B LD DE,$0020   ; { Move forward a row.
+ $B72E ADD HL,DE     ; }
+ $B72F POP DE        ; Restore #REGde.
+ $B730 LD (HL),C     ; Set the attribute.
+ $B731 POP HL        ; Restore the co-ordinates.
+; Now, set the graphic data.
+ $B732 LD L,H        ; { Put the y co-ordinate in #REGhl and set #REGd to 0.
+ $B733 LD D,$00      ; 
+ $B735 LD H,D        ; }
+ $B736 LD C,E        ; Put the current column. in #REGc.
+ $B737 LD B,D        ; Set #REGb to the current row.
+ $B738 ADD HL,HL     ; { Multiply #REGhl by 8 to get a suitable offset.
  $B739 ADD HL,HL     ;
  $B73A ADD HL,HL     ;
- $B73B ADD HL,HL     ;
+ $B73B ADD HL,HL     ; }
  $B73C LD DE,$81F8   ; { Add the base address for the screen offsets table. (#R$81F8)
  $B73F ADD HL,DE     ; }
- $B740 PUSH HL       ;
- $B741 POP IX        ;
- $B743 LD L,A        ;
+ $B740 PUSH HL       ; { Put this in #REGix.
+ $B741 POP IX        ; }
+ $B743 LD L,A        ; 
  $B744 LD H,$00      ;
  $B746 ADD HL,HL     ;
  $B747 ADD HL,HL     ;
  $B748 ADD HL,HL     ;
- $B749 LD DE,$DFDC   ;
- $B74C ADD HL,DE     ;
+ $B749 LD DE,$DFDC   ; { Add the base address for the character set. (#R$DFDC)
+ $B74C ADD HL,DE     ; }
  $B74D EX DE,HL      ;
  $B74E LD A,$08      ;
 *$B750 LD L,(IX+$00) ;
@@ -5312,12 +5371,12 @@ c$B715 PUSH AF       ;
  $B770 INC BC        ;
  $B771 DEC A         ;
  $B772 JR NZ,$B750   ;
- $B774 POP DE        ;
+ $B774 POP DE        ; { Restore main registers and return.
  $B775 POP BC        ;
  $B776 POP HL        ;
  $B777 POP IX        ;
  $B779 POP AF        ;
- $B77A RET           ;
+ $B77A RET           ; }
 
 ; Print an inventory graphic
 ;
@@ -5408,7 +5467,7 @@ c$B7BA PUSH AF       ; { Push the main registers.
  $B7D4 ADD HL,HL     ;
  $B7D5 ADD HL,HL     ;
  $B7D6 ADD HL,HL     ; }
- $B7D7 LD DE,$81F8   ; { Add the base address of the screen offsets table.
+ $B7D7 LD DE,$81F8   ; { Add the base address of the screen offsets table. (#R$81F8)
  $B7DA ADD HL,DE     ; }
  $B7DB LD E,(HL)     ; { Put the actual address in #REGde.
  $B7DC INC HL        ;
@@ -5447,7 +5506,7 @@ c$B7BA PUSH AF       ; { Push the main registers.
 ; E The x co-ordinate
 ; C The attribute to use
 ;
-; This routine is done when only part of the screen needs updating.
+; This routine is done when only part of the screen needs updating
 ; eg: wall built, safe cracked.
 c$B7F9 PUSH AF       ; { Remember main registers.
  $B7FA PUSH HL       ;
@@ -5489,11 +5548,15 @@ c$B7F9 PUSH AF       ; { Remember main registers.
  $B829 POP AF        ;
  $B82A RET           ; }
 
-; Patch the display to do something different
+; Overwrite part of the screen buffer with a graphic
 ;
 ; Used by the routines at #R$B3C3, #R$EB79 and #R$EFC7.
+;
+; HL The address of the graphic to draw
+; D The y co-ordinate
+; E The x co-ordinate
 c$B82B PUSH HL       ; Remember #REGhl.
- $B82C LD HL,$B7F9   ; { Replace the "CALL $B7BA" 
+ $B82C LD HL,$B7F9   ; { Replace the "CALL #N$B7BA" 
  $B82F LD ($B8BE),HL ; instructions in the routine at #R$B84B
  $B832 LD ($B8B5),HL ; to call #R$B7F9 instead.
  $B835 LD ($B895),HL ; }
@@ -5767,10 +5830,10 @@ c$B952 LD A,$B8      ;
  $B9A2 CALL $B84B    ; Draw the graphic string.
  $B9A5 POP HL        ; Restore #REGhl.
  $B9A6 JR $B969      ; Jump back to draw some more.
-*$B9A8 CALL $B9AC    ; Copy the data to screen.
+*$B9A8 CALL $B9AC    ; Copy the data to the working buffer.
  $B9AB RET           ;
 
-; Draw the screen
+; Copy the screen to the working buffer
 ;
 ; Used by the routines at #R$B952, #R$ED2A and #R$EDF7.
 c$B9AC LD DE,$5B00   ; Point #REGde into the screen buffer.
@@ -5815,28 +5878,33 @@ c$B9D6 LD A,(IY+$0F) ; Get the current room in #REGa.
 ;
 ; Used by the routines at #R$813B, #R$B9D6, #R$ED2A, #R$EDF7, #R$EFC7 and
 ; #R$F177.
-c$B9FB LD HL,$6B00   ;
- $B9FE LD IX,$8278   ;
- $BA02 LD BC,$1000   ;
-*$BA05 LD E,(IX+$00) ;
- $BA08 LD D,(IX+$01) ;
- $BA0B INC IX        ;
- $BA0D INC IX        ;
- $BA0F CALL $BA25    ;
- $BA12 JP PE,$BA05   ;
- $BA15 LD BC,$0200   ;
- $BA18 LD HL,$FC00   ;
- $BA1B LD DE,$5900   ;
-*$BA1E CALL $BA25    ;
- $BA21 JP PE,$BA1E   ;
- $BA24 RET           ;
+c$B9FB LD HL,$6B00   ; Point #REGhl at the sprite buffer. (#R$6B00)
+ $B9FE LD IX,$8278   ; Point #REGix at the screen offset table. (#R$8278)
+ $BA02 LD BC,$1000   ; Initial length is #N$1000.
+*$BA05 LD E,(IX+$00) ; { Put the next screen offset in #REGde.
+ $BA08 LD D,(IX+$01) ; }
+ $BA0B INC IX        ; { Move to the next offset in the table.
+ $BA0D INC IX        ; }
+ $BA0F CALL $BA25    ; Copy the next row of the sprite buffer to screen.
+ $BA12 JP PE,$BA05   ; Loop while there is more to draw.
+; Now put the attributes on screen.
+ $BA15 LD BC,$0200   ; Length is #N$200.
+ $BA18 LD HL,$FC00   ; Point #REGhl at the attribute buffer. (#R$FC00)
+ $BA1B LD DE,$5900   ; Point #REGde to the middle third of the screen.
+*$BA1E CALL $BA25    ; Copy the next row of the attribute buffer to screen.
+ $BA21 JP PE,$BA1E   ; Loop back while there is more to draw.
+ $BA24 RET           ; Otherwise return.
 
-; Fast copy memory
+; Copy a row of screen or attribute data
 ;
 ; Used by the routines at #R$B9AC, #R$B9FB and #R$EEA2.
-c$BA25 LDI           ;
- $BA27 LDI           ;
- $BA29 LDI           ;
+;
+; HL Source
+; DE Destination
+; BC On entry, holds the current count. On exit, holds the count decremented by #N$20.
+c$BA25 LDI           ; { Copy HL to DE, decrement BC, increment and repeat #N$20 times.
+ $BA27 LDI           ; 
+ $BA29 LDI           ; 
  $BA2B LDI           ;
  $BA2D LDI           ;
  $BA2F LDI           ;
@@ -5865,8 +5933,8 @@ c$BA25 LDI           ;
  $BA5D LDI           ;
  $BA5F LDI           ;
  $BA61 LDI           ;
- $BA63 LDI           ;
- $BA65 RET           ;
+ $BA63 LDI           ; 
+ $BA65 RET           ; }
 
 ; '{character} is in {location}'
 t$BA66 DEFM " IS IN "
@@ -5875,76 +5943,79 @@ t$BA66 DEFM " IS IN "
 ; Print a "{character} is in {room}" message
 ;
 ; Used by the routine at #R$E79B.
-c$BA6E LD A,($BAB3)  ; { Are we in the middle of redrawing a room?
+c$BA6E LD A,($BAB3)  ; { Are we in the middle of printing a message?
  $BA71 OR A          ; }
  $BA72 RET NZ        ; Return if so, busy at the moment.
 ; Not redrawing the room, so the message can be printed.
- $BA73 LD HL,$DFDC   ;
- $BA76 LD ($B7E9),HL ;
+ $BA73 LD HL,$DFDC   ; Point #REGhl at the character set. (#R$DFDC)
+ $BA76 LD ($B7E9),HL ; Set the printing routine in #R$B7BA to use this.
  $BA79 LD A,(IY+$0F) ; Get the current room in #REGa.
  $BA7C LD HL,$7F1F   ; Point #REGhl at the start of the room text entries.
  $BA7F CALL $AC6C    ; Search for the right entry, returns with #REGhl
                      ; pointing to the correct address for the room's text.
- $BA82 PUSH HL       ;
- $BA83 CALL $BACE    ;
- $BA86 LD C,B        ;
- $BA87 LD H,$7C      ;
- $BA89 LD L,(IY-$23) ;
- $BA8C PUSH HL       ;
- $BA8D CALL $BACE    ;
- $BA90 LD A,$07      ;
- $BA92 ADD A,B       ;
- $BA93 ADD A,C       ;
+ $BA82 PUSH HL       ; Store #REGhl.
+ $BA83 CALL $BACE    ; { Put the string's length in #REGc.
+ $BA86 LD C,B        ; }
+ $BA87 LD H,$7C      ; Point #REGh at the high byte for the character names. (#R$7C00)
+ $BA89 LD L,(IY-$23) ; Get the low byte from the character. (#R$BC44)
+ $BA8C PUSH HL       ; Remember the address for the character in #REGhl.
+ $BA8D CALL $BACE    ; Put the string's length in #REGb.
+ $BA90 LD A,$07      ; { Given the total string length (character + room + extra),
+ $BA92 ADD A,B       ; work out the position on screen that will put the
+ $BA93 ADD A,C       ; display justified in the centre.
  $BA94 LD C,A        ;
  $BA95 LD A,$20      ;
  $BA97 SUB C         ;
- $BA98 SRL A         ;
- $BA9A LD E,A        ;
- $BA9B LD D,$04      ;
- $BA9D POP HL        ;
- $BA9E LD C,$4E      ;
- $BAA0 CALL $B84B    ;
- $BAA3 LD HL,$BA66   ;
- $BAA6 CALL $B84B    ;
- $BAA9 POP HL        ;
- $BAAA CALL $B84B    ;
- $BAAD LD A,$1E      ;
+ $BA98 SRL A         ; 
+ $BA9A LD E,A        ; }
+ $BA9B LD D,$04      ; Start drawing at row 4.
+ $BA9D POP HL        ; Restore the character name in #REGhl.
+ $BA9E LD C,$4E      ; Set bright yellow on blue attribute.
+ $BAA0 CALL $B84B    ; Draw the graphic.
+ $BAA3 LD HL,$BA66   ; Point #REGhl at "{character} is in {room}" text. (#R$BA66)
+ $BAA6 CALL $B84B    ; Draw it.
+ $BAA9 POP HL        ; Restore the room text in #REGhl.
+ $BAAA CALL $B84B    ; Draw it.
+ $BAAD LD A,$1E      ; { Set the tick count to #N$1E and return.
  $BAAF LD ($BAB3),A  ;
- $BAB2 RET           ;
+ $BAB2 RET           ; }
 
-; Set to 1 to signal a room redraw
-g$BAB3 DEFS 1
+; Tick count for displaying "{character} is in {room}" message
+;
+; Used by the routines in #R$BA6E and #R$BAB4.
+g$BAB3 DEFB $00
 
-; Move to a new room
+; Update the tick counter for the "{character} is in {room}" display
 ;
 ; Used by the routines at #R$81AE and #R$EDF7.
-c$BAB4 LD HL,$BAB3   ;
+c$BAB4 LD HL,$BAB3   ; { Are we in the middle of printing a message?
  $BAB7 LD A,(HL)     ;
- $BAB8 OR A          ;
- $BAB9 RET Z         ;
- $BABA DEC (HL)      ;
- $BABB RET NZ        ;
+ $BAB8 OR A          ; }
+ $BAB9 RET Z         ; Return if not.
+ $BABA DEC (HL)      ; Otherwise decrement the tick count.
+ $BABB RET NZ        ; Return if it is not zero.
+; The tick count has reached 0, so get rid of the message.
  $BABC LD C,$42      ;
- $BABE LD HL,$DFDC   ;
- $BAC1 LD ($B7E9),HL ;
- $BAC4 LD DE,$0400   ;
- $BAC7 LD HL,$7E68   ;
- $BACA CALL $B84B    ;
- $BACD RET           ;
+ $BABE LD HL,$DFDC   ; { Set the drawing routine at #R$B7BA to use the character set (#R$DFDC) as a base address.
+ $BAC1 LD ($B7E9),HL ; }
+ $BAC4 LD DE,$0400   ; Set the position.
+ $BAC7 LD HL,$7E68   ; Point #REGhl at the status bar text (#R$7E3F) that was overwritten by the message.
+ $BACA CALL $B84B    ; { Draw the graphic and return.
+ $BACD RET           ; }
 
-; Skip forward a string
+; Get the length of a string
 ;
 ; Used by the routine at #R$BA6E.
 ;
 ; HL The address of the current string
-; B The offset of the current string
-c$BACE LD B,$00      ;
-*$BAD0 LD A,(HL)     ;
- $BAD1 CP $FF        ;
- $BAD3 RET Z         ;
- $BAD4 INC B         ;
- $BAD5 INC HL        ;
- $BAD6 JR $BAD0      ;
+; B On exit, returns the length
+c$BACE LD B,$00      ; Set #REGb to 0.
+*$BAD0 LD A,(HL)     ; Get the byte pointed to by #REGhl.
+ $BAD1 CP $FF        ; Is it #N$FF?
+ $BAD3 RET Z         ; Return if it is.
+ $BAD4 INC B         ; Otherwise increase the count.
+ $BAD5 INC HL        ; { Move forward to the next part of the string
+ $BAD6 JR $BAD0      ; and repeat. }
 
 ; Initialize character data
 ;
@@ -8452,6 +8523,12 @@ b$DFCC DEFB $FF,$7E,$00,$00,$00,$00,$00,$00
 
 ; Room block graphics
 ;
+; When printing a string, this is set to the base address
+; so that ASCII characters from #N$20 upwards point to the
+; correct place in #R$E0DC.
+;
+; .
+;
 ; #UDGTABLE
 ; { #UDGARRAY1,$47,,1;$DFDC-$DFEB-8(rbgV) }
 ; TABLE#
@@ -8784,70 +8861,70 @@ c$E3FD CALL $B931    ; Clear the top status bar.
 ; Used by the routines at #R$AA30, #R$EB0F and #R$EC4A.
 c$E41D CALL $E77A    ;
 ; This entry point is used by the routine at #R$E3FD.
-*$E420 LD A,(IY+$50) ;
- $E423 ADD A,A       ;
- $E424 LD E,A        ;
- $E425 LD D,$00      ;
- $E427 LD HL,$E728   ;
- $E42A ADD HL,DE     ;
- $E42B LD E,(HL)     ;
+*$E420 LD A,(IY+$50) ; Put the ID of the first item held in #REGa.
+ $E423 ADD A,A       ; Double it to get a word offset.
+ $E424 LD E,A        ; { Put this in #REGde.
+ $E425 LD D,$00      ; }
+ $E427 LD HL,$E728   ; { Add the base address of the strings lookup table. (#R$E728)
+ $E42A ADD HL,DE     ; }
+ $E42B LD E,(HL)     ; { Put the actual address of the string in #REGde.
  $E42C INC HL        ;
- $E42D LD D,(HL)     ;
- $E42E LD A,(IY+$55) ;
- $E431 ADD A,A       ;
- $E432 LD C,A        ;
- $E433 LD B,$00      ;
- $E435 LD HL,$E728   ;
- $E438 ADD HL,BC     ;
- $E439 LD C,(HL)     ;
+ $E42D LD D,(HL)     ; }
+ $E42E LD A,(IY+$55) ; Put the ID of the second item held in #REGa.
+ $E431 ADD A,A       ; Double it to get a word offset.
+ $E432 LD C,A        ; { Put this in #REGbc.
+ $E433 LD B,$00      ; }
+ $E435 LD HL,$E728   ; { Add the base address of the strings lookup table. (#R$E728)
+ $E438 ADD HL,BC     ; }
+ $E439 LD C,(HL)     ; { Put the actual address of the string in #REGbc.
  $E43A INC HL        ;
- $E43B LD B,(HL)     ;
- $E43C PUSH BC       ;
- $E43D EX DE,HL      ;
- $E43E LD DE,$DFDC   ;
- $E441 LD ($B7E9),DE ;
- $E445 LD DE,$0003   ;
- $E448 LD C,$43      ;
- $E44A CALL $E468    ;
- $E44D POP HL        ;
- $E44E LD DE,$0203   ;
- $E451 LD C,$45      ;
- $E453 CALL $E468    ;
- $E456 LD A,(IY+$50) ;
- $E459 LD DE,$0000   ;
- $E45C CALL $B77B    ;
- $E45F LD A,(IY+$55) ;
- $E462 LD D,$02      ;
- $E464 CALL $B77B    ;
- $E467 RET           ;
+ $E43B LD B,(HL)     ; }
+ $E43C PUSH BC       ; Remember this value.
+ $E43D EX DE,HL      ; Swap #REGde and #REGhl.
+ $E43E LD DE,$DFDC   ; { Set the drawing routine at #R$B7BA to use the character set (#R$DFDC) as a base address.
+ $E441 LD ($B7E9),DE ; }
+ $E445 LD DE,$0003   ; Start at position 3,0.
+ $E448 LD C,$43      ; Set bright magenta on black attribute.
+ $E44A CALL $E468    ; Print the item description
+ $E44D POP HL        ; Restore the address of the second item's description in #REGhl.
+ $E44E LD DE,$0203   ; Start at position 3,2.
+ $E451 LD C,$45      ; Set bright cyan on black attribute.
+ $E453 CALL $E468    ; Print the item description
+ $E456 LD A,(IY+$50) ; Put the ID of the first item held in #REGa.
+ $E459 LD DE,$0000   ; Set position to 0,0
+ $E45C CALL $B77B    ; Draw the item's graphic.
+ $E45F LD A,(IY+$55) ; Put the ID of the second item held in #REGa.
+ $E462 LD D,$02      ; Set position to 0,2
+ $E464 CALL $B77B    ; Draw the item's graphic.
+ $E467 RET           ; Return.
 
-; Display an item's description.
+; Display an item in the inventory.
 ;
 ; Used by the routine in #R$E41D.
-; .
-; Print the description of an item. If the control code F4+flag
-; .
-; is found, use the first or the second description depending on
-; .
-; whether or not that flag is set.
+; 
+; HL Pointer to the item data
+; DE Location to print
 ;
-; HL Pointer to the description
-c$E468 CALL $B84B    ;
- $E46B LD C,$07      ;
- $E46D LD A,(HL)     ;
- $E46E CP $F4        ;
- $E470 RET NZ        ;
- $E471 INC HL        ;
- $E472 LD A,(HL)     ;
- $E473 INC HL        ;
- $E474 CALL $EC1D    ;
- $E477 JP NZ,$B84B   ;
- $E47A PUSH BC       ;
- $E47B LD B,$FF      ;
+; Print the description of an item. If the control code F4+flag
+; is found, use the first or the second description depending on
+; whether or not that flag is set.
+c$E468 CALL $B84B    ; Print the string up to the first #N$FF marker.
+ $E46B LD C,$07      ; 
+ $E46D LD A,(HL)     ; Get the next byte.
+ $E46E CP $F4        ; Is it a flag specifier?
+ $E470 RET NZ        ; Return if it isn't.
+; This item's description is dependent on a flag.
+ $E471 INC HL        ; { Put the flag in #REGa.
+ $E472 LD A,(HL)     ; }
+ $E473 INC HL        ; Point to the next place in the buffer.
+ $E474 CALL $EC1D    ; Is the flag set?
+ $E477 JP NZ,$B84B   ; Jump forward if it is to use the first description.
+ $E47A PUSH BC       ; { Otherwise search for the next instance of
+ $E47B LD B,$FF      ; #N$FF, to point at the second description.
  $E47D LD A,B        ;
  $E47E CPIR          ;
- $E480 POP BC        ;
- $E481 JP $B84B      ;
+ $E480 POP BC        ; }
+ $E481 JP $B84B      ; Jump to print the flag-specific description.
 
 ; THE PLUNGER
 t$E484 DEFM "THE PLUNGER"
@@ -9632,27 +9709,27 @@ c$EB55 LD BC,$0000   ; Set #REGb to 0 (first object) and #REGc to 0 (no items).
 ; -
 ;
 ; HL The data for this action (graphic, x, y)
-c$EB79 LD A,(HL)     ;
- $EB7A INC HL        ;
- $EB7B LD E,(HL)     ;
- $EB7C INC HL        ;
- $EB7D LD D,(HL)     ;
- $EB7E INC HL        ;
- $EB7F PUSH HL       ;
- $EB80 PUSH DE       ;
- $EB81 ADD A,A       ;
- $EB82 LD E,A        ;
- $EB83 LD D,$00      ;
- $EB85 LD HL,$BD86   ;
- $EB88 ADD HL,DE     ;
- $EB89 LD E,(HL)     ;
+c$EB79 LD A,(HL)     ; Put the graphic ID in #REGa.
+ $EB7A INC HL        ; { Put the x co-ordinate in #REGe.
+ $EB7B LD E,(HL)     ; }
+ $EB7C INC HL        ; { Put the y co-ordinate in #REGd.
+ $EB7D LD D,(HL)     ; }
+ $EB7E INC HL        ; Point to the next action in the buffer.
+ $EB7F PUSH HL       ; Store #REGhl.
+ $EB80 PUSH DE       ; Store the position that is in #REGde.
+ $EB81 ADD A,A       ; Double the graphic ID to get a word offset.
+ $EB82 LD E,A        ; { Put this in #REGde.
+ $EB83 LD D,$00      ; }
+ $EB85 LD HL,$BD86   ; { Add the offset for the basic room block components. (#R$BD86)
+ $EB88 ADD HL,DE     ; }
+ $EB89 LD E,(HL)     ; { Put the actual address in #REGde.
  $EB8A INC HL        ;
- $EB8B LD D,(HL)     ;
- $EB8C EX DE,HL      ;
- $EB8D POP DE        ;
- $EB8E CALL $B82B    ;
- $EB91 POP HL        ;
- $EB92 JP $EAEB      ;
+ $EB8B LD D,(HL)     ; }
+ $EB8C EX DE,HL      ; Swap #REGde and #REGhl, so #REGhl has the graphic address.
+ $EB8D POP DE        ; Restore #REGde with the position.
+ $EB8E CALL $B82B    ; Draw the graphic.
+ $EB91 POP HL        ; Restore #REGhl.
+ $EB92 JP $EAEB      ; Jump to handle any other actions.
 
 ; Pattern 0 AT OBJ(x) : Match if at an item
 ;
@@ -9902,8 +9979,8 @@ b$ECF5 DEFB $00
 ;
 ; £600 - morning tea, £1700 - lunch, £3300 - tea
 b$ECF6 DEFB $00,$06
-b$ECF8 DEFB $00,$13
-b$ECFA DEFB $00,$21
+ $ECF8 DEFB $00,$13
+ $ECFA DEFB $00,$21
 
 ; Total amount of money that can be earned
 b$ECFC DEFB $00,$40
@@ -9916,8 +9993,8 @@ w$ED00 DEFW $7E71
  $ED02 DEFW $7E9F
  $ED04 DEFW $7ECC
 
-; Movement table : Laboratory / Reward screens
-b$ED06 DEFB $30,$78,$02,$02,$78,$44,$FE,$02
+; Movement table : Laboratory / Reward screens / Cave
+g$ED06 DEFB $30,$78,$02,$02,$78,$44,$FE,$02
  $ED0E DEFB $C0,$8C,$02,$FE,$7C
 
 ; Room logic : The Laboratory
@@ -9976,7 +10053,7 @@ c$ED2A LD A,($ECF5)  ; Get the index of the next reward screen. (#R$ECF5)
 *$ED6C PUSH BC       ; Store #REGbc.
  $ED6D LD BC,$F5CA   ; Point #REGbc at the bounds for the moving graphics.
  $ED70 CALL $EF35    ; Update the moving objects.
- $ED73 CALL $A8A0    ; Update the graphic buffers.
+ $ED73 CALL $A8A0    ; Put the object in the sprite buffer.
  $ED76 POP BC        ; Restore #REGbc.
  $ED77 DJNZ $ED6C    ; Loop back while there's more to display.
  $ED79 CALL $B9FB    ; Put the sprites on screen.
@@ -9996,7 +10073,7 @@ c$ED8A LD IX,$ED06   ;
 *$ED90 PUSH BC       ;
  $ED91 LD BC,$F5CA   ;
  $ED94 CALL $EF35    ;
- $ED97 CALL $A8A0    ;
+ $ED97 CALL $A8A0    ; Put the object in the sprite buffer.
  $ED9A PUSH AF       ;
  $ED9B CALL $E329    ;
  $ED9E POP AF        ;
@@ -10098,8 +10175,8 @@ c$EDF7 XOR A           ;
  $EE3B LD DE,$0F04     ;
  $EE3E CALL $B84B      ;
  $EE41 CALL $B9AC      ;
-*$EE44 CALL $BAB4      ;
- $EE47 CALL $EEA2      ;
+*$EE44 CALL $BAB4      ; Update the "{character} is in {room}" tick count, if any.
+ $EE47 CALL $EEA2      ; Update the sprite buffers.
  $EE4A CALL $F93A      ;
  $EE4D CALL $F9F5      ;
  $EE50 CALL $F9F5      ;
@@ -10132,29 +10209,35 @@ c$EDF7 XOR A           ;
  $EE90 LD (IY+$0A),$98 ;
  $EE94 LD (IY+$46),$00 ;
  $EE98 LD (IY+$00),$00 ;
- $EE9C LD SP,$FC00     ;
- $EE9F JP $8194        ;
+ $EE9C LD SP,$FC00     ; Reset the stack to its initial place.
+ $EE9F JP $8194        ; Start a new game.
 
-; Update the sprite buffers at 6B00 and FE00
+; Initialise the sprite buffers
 ;
 ; Used by the routines at #R$813B, #R$ED2A, #R$EDF7, #R$EEC1, #R$EFC7 and
 ; #R$F177.
-c$EEA2 LD DE,$6B00   ;
- $EEA5 LD HL,$5B00   ;
- $EEA8 LD BC,$1000   ;
-*$EEAB CALL $BA25    ;
- $EEAE JP PE,$EEAB   ;
- $EEB1 LD BC,$0200   ;
- $EEB4 LD HL,$FE00   ;
- $EEB7 LD DE,$FC00   ;
-*$EEBA CALL $BA25    ;
- $EEBD JP PE,$EEBA   ;
- $EEC0 RET           ;
+;
+; .
+;
+; This routine takes a copy of the screen already in #R$5B00 (set by the
+; routine in #R$B9AC) ready to start overlaying sprites on top of it.
+c$EEA2 LD DE,$6B00   ; Point #REGde at the sprite buffer.
+ $EEA5 LD HL,$5B00   ; Point #REGhl at the screen buffer.
+ $EEA8 LD BC,$1000   ; Length is #N$1000.
+*$EEAB CALL $BA25    ; Copy a row.
+ $EEAE JP PE,$EEAB   ; Loop back while there is more to draw.
+; Now copy the attributes.
+ $EEB1 LD BC,$0200   ; Length is #N$200.
+ $EEB4 LD HL,$FE00   ; Point #REGhl at the attribute buffer.
+ $EEB7 LD DE,$FC00   ; Point #REGde at the sprite attribute buffer.
+*$EEBA CALL $BA25    ; Copy a row.
+ $EEBD JP PE,$EEBA   ; Loop back while there is more to draw.
+ $EEC0 RET           ; Otherwise return.
 
 ; Refresh the current room
 ;
 ; Used by the routines at #R$81AE and #R$B3C3.
-c$EEC1 CALL $EEA2    ;
+c$EEC1 CALL $EEA2    ; Initialize the sprite buffers.
  $EEC4 LD A,(IY+$0F) ; Get the current room in #REGa.
  $EEC7 LD ($B951),A  ;
  $EECA LD B,$00      ; { Point #REGhl at the start of the object buffer for this room.
@@ -10171,51 +10254,56 @@ c$EEC1 CALL $EEA2    ;
  $EEDA LD ($A838),DE ; Put the position in the scratch buffer at #R$A838.
  $EEDE CALL $A83D    ; { Draw the object, and loop back to see if there is anything
  $EEE1 JR $EECF      ; further to draw. }
-*$EEE3 LD E,(IY+$0F) ;
- $EEE6 SLA E         ;
- $EEE8 LD D,$00      ;
- $EEEA LD HL,$EEF3   ;
- $EEED ADD HL,DE     ;
- $EEEE LD E,(HL)     ;
+; See if there is any custom routines for this room, and if so, execute them.
+*$EEE3 LD E,(IY+$0F) ; { Put the current room in #REGe and double it to get a word offset.
+ $EEE6 SLA E         ; 
+ $EEE8 LD D,$00      ; }
+ $EEEA LD HL,$EEF3   ; { Add the base address of the room logic table (#R$EEF3).
+ $EEED ADD HL,DE     ; }
+ $EEEE LD E,(HL)     ; { Put the address found in #REGde.
  $EEEF INC HL        ;
- $EEF0 LD D,(HL)     ;
- $EEF1 EX DE,HL      ;
- $EEF2 JP (HL)       ;
+ $EEF0 LD D,(HL)     ; }
+ $EEF1 EX DE,HL      ; Swap #REGde and #REGhl so #REGhl points to the logic routine.
+ $EEF2 JP (HL)       ; Execute it.
 
 ; Jump table for custom room logic
-w$EEF3 DEFW $F572
- $EEF5 DEFW $F2F6
- $EEF7 DEFW $F24B
- $EEF9 DEFW $F2F6
- $EEFB DEFW $F503
- $EEFD DEFW $F674
- $EEFF DEFW $F2F6
- $EF01 DEFW $F2F6
- $EF03 DEFW $F43C
- $EF05 DEFW $F2F6
- $EF07 DEFW $F49D
- $EF09 DEFW $F5F1
- $EF0B DEFW $F773
- $EF0D DEFW $F2F6
- $EF0F DEFW $F409
- $EF11 DEFW $F309
- $EF13 DEFW $F4D3
- $EF15 DEFW $ED13
- $EF17 DEFW $F2F6
- $EF19 DEFW $F2F6
- $EF1B DEFW $F2F6
- $EF1D DEFW $F2F6
- $EF1F DEFW $F6EC
- $EF21 DEFW $F746
- $EF23 DEFW $F2F6
- $EF25 DEFW $F2F6
- $EF27 DEFW $F2F6
- $EF29 DEFW $F334
- $EF2B DEFW $F2F6
- $EF2D DEFW $F2F6
- $EF2F DEFW $F37D
- $EF31 DEFW $F3AB
- $EF33 DEFW $F54F
+;
+; If a room has extra code associated with it, a pointer to it is stored here.
+; If there is no custom routine, a pointer to #R$F2F6 is stored instead, which is a
+; simple RET instruction.
+w$EEF3 DEFW $F572   ; The Town Square
+ $EEF5 DEFW $F2F6   ; Stamp Street
+ $EEF7 DEFW $F24B   ; The Post Office
+ $EEF9 DEFW $F2F6   ; Market Street
+ $EEFB DEFW $F503   ; The Super Market
+ $EEFD DEFW $F674   ; The Park
+ $EEFF DEFW $F2F6   ; Wobbly Walk
+ $EF01 DEFW $F2F6   ; Rubble Road
+ $EF03 DEFW $F43C   ; Wall Street
+ $EF05 DEFW $F2F6   ; Pete Street
+ $EF07 DEFW $F49D   ; The Work Shed
+ $EF09 DEFW $F5F1   ; School Lane
+ $EF0B DEFW $F773   ; The School
+ $EF0D DEFW $F2F6   ; Baker Street
+ $EF0F DEFW $F409   ; The Bakers
+ $EF11 DEFW $F309   ; The Pub
+ $EF13 DEFW $F4D3   ; Motor Way
+ $EF15 DEFW $ED13   ; The Laboratory
+ $EF17 DEFW $F2F6   ; The Garage
+ $EF19 DEFW $F2F6   ; Reference Road
+ $EF1B DEFW $F2F6   ; The Library
+ $EF1D DEFW $F2F6   ; Penny Lane
+ $EF1F DEFW $F6EC   ; The Bank
+ $EF21 DEFW $F746   ; Wally's House
+ $EF23 DEFW $F2F6   ; Meat Street
+ $EF25 DEFW $F2F6   ; The Butchers
+ $EF27 DEFW $F2F6   ; Trunk Road
+ $EF29 DEFW $F334   ; The Zoo
+ $EF2B DEFW $F2F6   ; Rail Road
+ $EF2D DEFW $F2F6   ; The Station
+ $EF2F DEFW $F37D   ; The Docks
+ $EF31 DEFW $F3AB   ; The Sewer
+ $EF33 DEFW $F54F   ; The Cave
 
 ; Update the current position of moving objects
 ;
@@ -10223,61 +10311,96 @@ w$EEF3 DEFW $F572
 ; #R$F334, #R$F37D, #R$F3AB, #R$F409, #R$F49D, #R$F503, #R$F5F1, #R$F674,
 ; #R$F6EC, #R$F746, #R$F8B9 and #R$F9F5.
 ;
-; IX = pointer to a buffer containing current x, current y, movement in x, movement in y
-; BC = pointer to bounds (both x and y for bidirectional movement)
-c$EF35 LD E,(IX+$02) ;
- $EF38 LD D,(IX+$03) ;
- $EF3B PUSH BC       ;
- $EF3C PUSH AF       ;
+; IX pointer to a buffer containing current positions
+; BC Pointer to a buffer containing bounds
+;
+; The buffer containing bounds is fixed at:
+; #TABLE(map)
+; { 0 | Minimum x co-ordinate }
+; { 1 | Maximum x co-ordinate }
+; { 2 | Minimum y co-ordinate }
+; { 3 | Maximum y co-ordinate }
+; TABLE#
+;
+; The buffer containing the positions varies over time and contains:
+; #TABLE(map)
+; { 0 | Current x co-ordinate }
+; { 1 | Current y co-ordinate }
+; { 2 | Distance to move in x }
+; { 3 | Distance to move in y }
+; TABLE#
+; The distances to move are stored as a 2s complement value.
+; When an object hits the minimum or maximum value, its distance to move is
+; inverted between positive and negative and it starts travelling back in the
+; other direction.
+;
+; .
+;
+; The function updates #REGix on each call to point at the next entries beyond the one
+; it was called with, and can be called multiple times or in a loop
+; for each moving object in the room.
+c$EF35 LD E,(IX+$02) ; { Put the distance to move in #REGde.
+ $EF38 LD D,(IX+$03) ; }
+ $EF3B PUSH BC       ; { Store #REGbc and #REGaf.
+ $EF3C PUSH AF       ; }
  $EF3D XOR A         ;
  $EF3E LD ($F673),A  ;
  $EF41 LD ($F672),A  ;
- $EF44 LD A,(IX+$00) ;
- $EF47 ADD A,E       ;
- $EF48 LD L,A        ;
- $EF49 LD A,(BC)     ;
- $EF4A INC BC        ;
- $EF4B CP L          ;
- $EF4C JR NZ,$EF59   ;
+ $EF44 LD A,(IX+$00) ; Get the current x co-ordinate in #REGa.
+ $EF47 ADD A,E       ; Add the distance to move by.
+ $EF48 LD L,A        ; Put this in #REGl.
+; Check the minimum x co-ordinate.
+ $EF49 LD A,(BC)     ; Get the minimum x co-ordinate.
+ $EF4A INC BC        ; Point #REGbc to the next place in the buffer.
+ $EF4B CP L          ; Is our current x co-ordinate the minimum?
+ $EF4C JR NZ,$EF59   ; Jump forward if not.
+; x co-ordinate has reached the minimum or maximum.
 *$EF4E LD A,$01      ;
  $EF50 LD ($F672),A  ;
- $EF53 LD A,E        ;
+ $EF53 LD A,E        ; { Flip the distance to change between negative and positive.
  $EF54 NEG           ;
- $EF56 LD E,A        ;
- $EF57 JR $EF5D      ;
-*$EF59 LD A,(BC)     ;
- $EF5A CP L          ;
- $EF5B JR Z,$EF4E    ;
-*$EF5D INC BC        ;
- $EF5E LD A,(IX+$01) ;
- $EF61 ADD A,D       ;
- $EF62 LD H,A        ;
- $EF63 LD A,(BC)     ;
- $EF64 INC BC        ;
- $EF65 CP H          ;
- $EF66 JR NZ,$EF73   ;
+ $EF56 LD E,A        ; 
+ $EF57 JR $EF5D      ; }
+; Check the maxmimum x co-ordinate.
+*$EF59 LD A,(BC)     ; Get the maxmimum x co-ordinate.
+ $EF5A CP L          ; Is our current x co-ordinate the maximum?
+ $EF5B JR Z,$EF4E    ; Jump back to flip direction if so.
+; x co-ordinate is in range, check the y co-ordinate.
+*$EF5D INC BC        ; Point #REGbc to the next place in the buffer.
+ $EF5E LD A,(IX+$01) ; Get the current y co-ordinate in #REGa.
+ $EF61 ADD A,D       ; Add the distance to move by.
+ $EF62 LD H,A        ; Put this in #REGh.
+; Check the minimum y co-ordinate.
+ $EF63 LD A,(BC)     ; Get the minumum y co-ordinate.
+ $EF64 INC BC        ; Point #REGbc to the next place in the buffer.
+ $EF65 CP H          ; Is our current y co-ordinate the minimum?
+ $EF66 JR NZ,$EF73   ; Jump forward if not.
+; y co-ordinate has reached the minimum or maximum.
 *$EF68 LD A,$01      ;
  $EF6A LD ($F673),A  ;
- $EF6D LD A,D        ;
+ $EF6D LD A,D        ; { Flip the distance to change between negative and positive.
  $EF6E NEG           ;
- $EF70 LD D,A        ;
- $EF71 JR $EF77      ;
-*$EF73 LD A,(BC)     ;
- $EF74 CP H          ;
- $EF75 JR Z,$EF68    ;
-*$EF77 LD ($A838),HL ;
- $EF7A LD (IX+$00),L ;
- $EF7D LD (IX+$01),H ;
- $EF80 LD (IX+$02),E ;
- $EF83 LD (IX+$03),D ;
- $EF86 POP AF        ;
- $EF87 POP BC        ;
+ $EF70 LD D,A        ; 
+ $EF71 JR $EF77      ; }
+; Check the maximum y co-ordinate.
+*$EF73 LD A,(BC)     ; Get the maximum y co-ordinate.
+ $EF74 CP H          ; Is our current y co-ordinate the maxmimum?
+ $EF75 JR Z,$EF68    ; Jump back to flip the direction if so.
+; The positions have all been updated, so write them out.
+*$EF77 LD ($A838),HL ; Write the position to update that will be used
+                     ; by the next call to the routine at #R$A83D.
+ $EF7A LD (IX+$00),L ; { Write back the positions.
+ $EF7D LD (IX+$01),H ; }
+ $EF80 LD (IX+$02),E ; { Write back the directions.
+ $EF83 LD (IX+$03),D ; }
+ $EF86 POP AF        ; { Restore #REGaf and #REGbc. 
+ $EF87 POP BC        ; }
 ; This entry point is used by the routines at #R$F8B9 and #R$FAF0.
-*$EF88 INC IX        ;
+*$EF88 INC IX        ; { Move to the next entry and return.
  $EF8A INC IX        ;
  $EF8C INC IX        ;
- $EF8E INC IX        ;
- $EF90 RET           ;
+ $EF8E INC IX        ; 
+ $EF90 RET           ; }
 
 ; Set the attributes for the fountain in the town square if it is repaired
 ;
@@ -10298,7 +10421,7 @@ c$EF91 PUSH AF       ; Remember #REGaf.
  $EFAB LD L,A        ; }
  $EFAC ADD HL,HL     ; { Multiply by 4 to get a suitable offset.
  $EFAD ADD HL,HL     ; }
- $EFAE LD DE,$FB00   ; { Add the base address to get an offset from #R$FD00.
+ $EFAE LD DE,$FB00   ; { Add the base address to get an offset from #R$FC00.
  $EFB1 ADD HL,DE     ; Note that this address is modified by the routines in #R$A83D and #R$A8A0. }
  $EFB2 LD DE,$001E   ; Set #REGde as the amount to increment for each row.
 *$EFB5 LD (HL),C     ; { Set the attribute for the next two columns.
@@ -10316,94 +10439,101 @@ c$EF91 PUSH AF       ; Remember #REGaf.
  $EFC6 RET           ; }
 
 ; Action 9 CHASE. Drop down to the "shark chase" game
-c$EFC7 LD A,(IY+$05)   ;
- $EFCA SUB $08         ;
- $EFCC CP $E0          ;
- $EFCE JR C,$EFD2      ;
- $EFD0 LD A,$E0        ;
-*$EFD2 SRL A           ;
- $EFD4 SRL A           ;
+c$EFC7 LD A,(IY+$05)   ; Get the X co-ordinate.
+ $EFCA SUB $08         ; Move back 8 columns.
+ $EFCC CP $E0          ; { If the co-ordinate is greater than #N$E0
+ $EFCE JR C,$EFD2      ; then set it to that.
+ $EFD0 LD A,$E0        ; }
+*$EFD2 SRL A           ; { Divide it by 8 and set the result in #REGe
+ $EFD4 SRL A           ; as the column to draw at.
  $EFD6 SRL A           ;
- $EFD8 LD E,A          ;
- $EFD9 LD D,$17        ;
- $EFDB LD HL,$7F16     ;
- $EFDE CALL $B82B      ;
-*$EFE1 LD A,(IY+$0A)   ;
- $EFE4 ADD A,$04       ;
- $EFE6 CP $A0          ;
- $EFE8 JR C,$EFEC      ;
- $EFEA LD A,$A0        ;
-*$EFEC LD (IY+$0A),A   ;
- $EFEF CALL $81AE      ;
- $EFF2 LD A,(IY+$0A)   ;
- $EFF5 CP $A0          ;
- $EFF7 JR NZ,$EFE1     ;
- $EFF9 LD (IY+$00),$00 ;
- $EFFD LD A,(IY-$3C)   ;
- $F000 OR A            ;
- $F001 CALL NZ,$81D4   ;
+ $EFD8 LD E,A          ; }
+ $EFD9 LD D,$17        ; Set the row to #N$17.
+ $EFDB LD HL,$7F16     ; Point #REGhl at the data for the hole.
+ $EFDE CALL $B82B      ; Patch the display to overwrite graphics.
+; A hole has opened, so drop the player down to it.
+*$EFE1 LD A,(IY+$0A)   ; Get the Y co-ordinate.
+ $EFE4 ADD A,$04       ; Drop down four rows.
+ $EFE6 CP $A0          ; { If the co-ordinate is creater than #N$A0,
+ $EFE8 JR C,$EFEC      ; set it to that. 
+ $EFEA LD A,$A0        ; }
+*$EFEC LD (IY+$0A),A   ; Set the new Y co-ordinate.
+ $EFEF CALL $81AE      ; Move everything on screen.
+ $EFF2 LD A,(IY+$0A)   ; Get the Y co-ordinate.
+ $EFF5 CP $A0          ; Is it #N$A0?
+ $EFF7 JR NZ,$EFE1     ; Jump back if not to fall some more.
+; The player has fallen into the hole, so update for the chase sequence.
+ $EFF9 LD (IY+$00),$00 ; Set the frame counter to 0.
+ $EFFD LD A,(IY-$3C)   ; Get the current direction of the sprite. (#R$BC2B)
+ $F000 OR A            ; Is it 0 (left)?
+ $F001 CALL NZ,$81D4   ; If not, need to flip the sprite around to be left-facing.
  $F004 LD A,$F0        ;
  $F006 LD ($F0BD),A    ;
  $F009 LD HL,$F0B7     ;
  $F00C CALL $B902      ; Clear the playing area.
  $F00F CALL $B969      ;
- $F012 LD (IY+$05),$DA ;
- $F016 LD (IY+$0A),$3C ;
-*$F01A LD A,(IY+$0A)   ;
- $F01D CP $98          ;
- $F01F JR Z,$F026      ;
- $F021 ADD A,$04       ;
- $F023 LD (IY+$0A),A   ;
-*$F026 CALL $EEA2      ;
- $F029 CALL $F057      ;
- $F02C CALL $F0C0      ;
- $F02F CALL $B0E6      ;
- $F032 CALL $B9FB      ;
- $F035 LD A,(IY+$05)   ;
- $F038 OR A            ;
- $F039 JR NZ,$F01A     ;
- $F03B LD (IY+$0F),$1F ;
- $F03F LD (IY+$05),$F0 ;
- $F043 JP $EE8D        ;
- $F046 NOP             ;
+ $F012 LD (IY+$05),$DA ; Set the X co-ordinate to #N$DA.
+ $F016 LD (IY+$0A),$3C ; Set the Y co-ordinate to #N$3C.
+*$F01A LD A,(IY+$0A)   ; Get the Y co-ordinate.
+ $F01D CP $98          ; Is the player on the ground yet?
+ $F01F JR Z,$F026      ; Jump forward if so.
+ $F021 ADD A,$04       ; { Otherwise just drop down a row.
+ $F023 LD (IY+$0A),A   ; }
+*$F026 CALL $EEA2      ; Initialize the sprite buffers.
+ $F029 CALL $F057      ; Update the shark.
+ $F02C CALL $F0C0      ; Check for player movement.
+ $F02F CALL $B0E6      ; Update the sprite buffer.
+ $F032 CALL $B9FB      ; Put the sprites on screen.
+ $F035 LD A,(IY+$05)   ; Get the Y co-ordinate.
+ $F038 OR A            ; Is it 0?
+ $F039 JR NZ,$F01A     ; Jump back if it's not.
+ $F03B LD (IY+$0F),$1F ; Set the Y co-ordinate to #N$1F.
+ $F03F LD (IY+$05),$F0 ; Set the X co-ordinate to #N$F0.
+ $F043 JP $EE8D        ; Move to the sewer.
 
-; Refresh a moving object into the graphics buffer
+; Direction of the shark
+;
+; 0 - left, 1 - right
+g$F046 DEFB $00        ;
+
+; Flip the shark so it's the right way round.
 ;
 ; Used by the routines at #R$F057 and #R$F3AB.
-c$F047 EXX           ;
- $F048 XOR $01       ;
- $F04A LD ($F046),A  ;
- $F04D LD DE,$88F8   ;
- $F050 LD BC,$00C0   ;
- $F053 CALL $81E3    ;
- $F056 RET           ;
+c$F047 EXX           ; Exchange main registers.
+ $F048 XOR $01       ; { Flip bit 1 in #R$F046.
+ $F04A LD ($F046),A  ; }
+ $F04D LD DE,$88F8   ; Point #REGde at the shark graphic. (#R$88F8)
+ $F050 LD BC,$00C0   ; Set the size.
+ $F053 CALL $81E3    ; Change the sprite to reverse direction.
+ $F056 RET           ; Return.
 
-; Chase : Drop the player down to ground level
+; Chase : Update the shark
 ;
 ; Used by the routine at #R$EFC7.
-c$F057 LD A,($F046)  ;
- $F05A OR A          ;
- $F05B CALL NZ,$F047 ;
- $F05E LD HL,($F0BD) ;
- $F061 LD H,$98      ;
- $F063 LD A,$30      ;
- $F065 LD ($A838),HL ;
- $F068 CALL $A8A0    ;
- $F06B LD H,$A8      ;
- $F06D LD ($A838),HL ;
- $F070 LD A,($F3A0)  ;
- $F073 XOR $02       ;
- $F075 LD ($F3A0),A  ;
- $F078 CALL $A8A0    ;
+c$F057 LD A,($F046)  ; Get the shark's direction.
+ $F05A OR A          ; Is it facing left?
+ $F05B CALL NZ,$F047 ; If not, reverse the graphic so it is.
+ $F05E LD HL,($F0BD) ; { Put the x co-ordinate in #REGl and set the y co-ordinate to #N$98.
+ $F061 LD H,$98      ; }
+ $F063 LD A,$30      ; Set the object ID to be the shark's head (#N$88F8)
+ $F065 LD ($A838),HL ; Set the position.
+ $F068 CALL $A8A0    ; Put the object in the sprite buffer.
+ $F06B LD H,$A8      ; Set the y co-ordinate to #N$A8.
+ $F06D LD ($A838),HL ; Set the position.
+ $F070 LD A,($F3A0)  ; Get the object ID of the shark's body.
+ $F073 XOR $02       ; { Toggle bit 2, so it alternates between #N$2D and #N$2F.
+ $F075 LD ($F3A0),A  ; }
+ $F078 CALL $A8A0    ; Put the object in the sprite buffer.
  $F07B LD A,$0C      ; { Touching the shark drops endurance by #N$0C.
  $F07D LD ($F26E),A  ; }
- $F080 CALL $E329    ;
- $F083 LD A,(IY+$0A) ;
- $F086 CP $98        ;
- $F088 RET NZ        ;
- $F089 LD HL,$F0BD   ;
- $F08C LD A,(HL)     ;
- $F08D SUB (IY+$05)  ;
+ $F080 CALL $E329    ; Check for collision detection.
+ $F083 LD A,(IY+$0A) ; Get the player's Y co-ordinate.
+ $F086 CP $98        ; Is it #N$98 ie: ground level.
+ $F088 RET NZ        ; Return if it is, chase hasn't started.
+; The chase is on.
+ $F089 LD HL,$F0BD   ; Point #REGhl to the shark's x co-ordinate.
+ $F08C LD A,(HL)     ; Get the value in #REGa.
+ $F08D SUB (IY+$05)  ; 
  $F090 SUB $01       ;
  $F092 CP $FE        ;
  $F094 JR NC,$F09A   ;
@@ -10428,55 +10558,64 @@ c$F057 LD A,($F046)  ;
  $F0B6 RET           ;
 
 ; Chase : Room data
-b$F0B7 DEFB $80,$07,$75,$03,$7F,$00,$F0
+b$F0B7 DEFB $80,$07,$75,$03,$7F,$00
 
-; Chase : The amount of frames left to move the player on this control action
+; Chase : Current x co-ordinate of the shark
+g$F0BD DEFB $F0
+
+; Chase : The amount of ticks left to move the player on this control action
 b$F0BE DEFB $04
 
-; Chase : The next direction control the player should use to move (0 or 1)
+; Chase : The next direction control the player should use to move
+;
+; 1 - left, 0 - right
 b$F0BF DEFB $00
 
 ; Chase : Check for player movement
 ;
 ; Used by the routine at #R$EFC7.
-c$F0C0 LD A,(IY+$0A)   ;
- $F0C3 CP $98          ;
- $F0C5 RET NZ          ;
- $F0C6 CALL $B03C      ;
- $F0C9 LD C,A          ;
- $F0CA CALL $B00B      ;
- $F0CD LD B,A          ;
- $F0CE LD A,($F0BF)    ;
- $F0D1 OR A            ;
- $F0D2 JR NZ,$F0DB     ;
- $F0D4 LD A,B          ;
- $F0D5 OR A            ;
- $F0D6 JR NZ,$F0FB     ;
- $F0D8 LD A,C          ;
- $F0D9 JR $F0E0        ;
-*$F0DB LD A,C          ;
- $F0DC OR A            ;
- $F0DD JR NZ,$F0FB     ;
- $F0DF LD A,B          ;
-*$F0E0 OR A            ;
- $F0E1 JR Z,$F0FB      ;
- $F0E3 LD A,$05        ;
- $F0E5 LD ($F0BE),A    ;
- $F0E8 LD A,($F0BF)    ;
- $F0EB XOR $01         ;
- $F0ED LD ($F0BF),A    ;
-*$F0F0 LD (IY+$3C),$FF ;
- $F0F4 LD (IY+$41),$FF ;
- $F0F8 JP $B288        ;
-*$F0FB LD HL,$F0BE     ;
- $F0FE LD A,(HL)       ;
- $F0FF OR A            ;
- $F100 RET Z           ;
- $F101 DEC (HL)        ;
- $F102 JR $F0F0        ;
+c$F0C0 LD A,(IY+$0A)   ; Get the Y co-ordinate.
+ $F0C3 CP $98          ; Is the player on the floor yet?
+ $F0C5 RET NZ          ; Return if so.
+ $F0C6 CALL $B03C      ; { Check for 'left' and put the result in #REGc.
+ $F0C9 LD C,A          ; }
+ $F0CA CALL $B00B      ; { Check for 'right' and put the result in #REGb.
+ $F0CD LD B,A          ; }
+ $F0CE LD A,($F0BF)    ; Get the next direction control. (#R$F0BF)
+ $F0D1 OR A            ; Is it zero?
+ $F0D2 JR NZ,$F0DB     ; Jump forward if it isn't.
+; Player should be moving left.
+ $F0D4 LD A,B          ; { Did the player move right?
+ $F0D5 OR A            ; }
+ $F0D6 JR NZ,$F0FB     ; Jump forward to reduce the tick count if so.
+ $F0D8 LD A,C          ; { Otherwise test for moving left.
+ $F0D9 JR $F0E0        ; }
+; Player should be moving right.
+*$F0DB LD A,C          ; { Did the player move left?
+ $F0DC OR A            ; }
+ $F0DD JR NZ,$F0FB     ; Jump forward to reduce the tick count if so.
+ $F0DF LD A,B          ; Otherwise test for moving right.
+*$F0E0 OR A            ; Did the player move in the correct direction?
+ $F0E1 JR Z,$F0FB      ; If not, skip forward to reducing the frame count.
+; The character moved in the right way, so move them forward.
+ $F0E3 LD A,$05        ; { Set the number of ticks left (#R$F0BE) to 5.
+ $F0E5 LD ($F0BE),A    ; }
+ $F0E8 LD A,($F0BF)    ; { Invert the direction flag.
+ $F0EB XOR $01         ; 
+ $F0ED LD ($F0BF),A    ; }
+*$F0F0 LD (IY+$3C),$FF ; { Set the direction to left.
+ $F0F4 LD (IY+$41),$FF ; }
+ $F0F8 JP $B288        ; Move the character.
+; Move forward one frame.
+*$F0FB LD HL,$F0BE     ; Point #REGhl at the tick count. (#R$F0BE)
+ $F0FE LD A,(HL)       ; Get the value in #REGa.
+ $F0FF OR A            ; Is it zero?
+ $F100 RET Z           ; Return if it is.
+ $F101 DEC (HL)        ; { Otherwise, reduce the tick count and move.
+ $F102 JR $F0F0        ; }
 
 ; Movement table : Jumping jack
-b$F104 DEFB $00,$A8,$02,$FE,$05,$02
+g$F104 DEFB $00,$A8,$02,$FE,$05,$02
 
 ; Bounds table : Jumping jack
 b$F10A DEFB $00,$F0,$A0,$A8
@@ -10486,9 +10625,9 @@ b$F10A DEFB $00,$F0,$A0,$A8
 ; Used by the routine at #R$81AE.
 c$F10E LD A,$04        ; { Touching the jumping jack drops endurance by 4.
  $F110 LD ($F26E),A    ; }
- $F113 LD IX,$F104     ;
- $F117 LD BC,$F10A     ;
- $F11A CALL $EF35      ;
+ $F113 LD IX,$F104     ; Point #REGix at the movement table.
+ $F117 LD BC,$F10A     ; Point #REGbc at the bounds.
+ $F11A CALL $EF35      ; Update the object positions.
  $F11D LD A,(IX-$04)   ;
  $F120 OR A            ;
  $F121 JR NZ,$F13F     ;
@@ -10506,12 +10645,12 @@ c$F10E LD A,$04        ; { Touching the jumping jack drops endurance by 4.
  $F145 RET NZ          ;
  $F146 LD A,(IX-$03)   ;
  $F149 CP $A8          ;
- $F14B LD A,$48        ;
- $F14D JR NZ,$F151     ;
- $F14F LD A,$4A        ;
-*$F151 CALL $A8A0      ;
- $F154 CALL $E329      ;
- $F157 RET             ;
+ $F14B LD A,$48        ; { Set #REGa to the first jumping jack graphic
+ $F14D JR NZ,$F151     ; }
+ $F14F LD A,$4A        ; Set #REGa to the second jumping jack graphic
+*$F151 CALL $A8A0      ; Put the object in the sprite buffer.
+ $F154 CALL $E329      ; Check for collision detection.
+ $F157 RET             ; Return.
 
 ; Initial co-ordinate moving to a room with more miles.
 b$F158 DEFB $00
@@ -10552,7 +10691,7 @@ c$F177 LD A,(IY+$05)   ; Put the X co-ordinate in #REGa.
  $F19B LD HL,$F15D     ; Point #REGhl to the graphics data.
  $F19E CALL $B969      ; Draw it.
  $F1A1 JR $F1D2        ; Enter the room.
-*$F1A3 CALL $EEA2      ; Update the sprite buffers.
+*$F1A3 CALL $EEA2      ; Initialize the sprite buffers.
  $F1A6 CALL $F202      ; Print the number of miles out of town
  $F1A9 LD A,$04        ; { Touching an arrow drops the endurance by 4.
  $F1AB LD ($F26E),A    ; }
@@ -10601,7 +10740,7 @@ c$F177 LD A,(IY+$05)   ; Put the X co-ordinate in #REGa.
 ;
 ; Used by the routine at #R$F177.
 c$F202 LD HL,($F15B) ; Put the number of miles in #REGhl.
- $F205 LD BC,$DFDC   ; { Set the drawing routine at #R$B7BA to use #R$DFDC as a base address.
+ $F205 LD BC,$DFDC   ; { Set the drawing routine at #R$B7BA to use the character set (#R$DFDC) as a base address.
  $F208 LD ($B7E9),BC ; }
  $F20C LD DE,$1208   ; Set the position.
  $F20F LD A,$2F      ; Set #REGa just before ASCII '0' so the correct digits are printed.
@@ -10638,7 +10777,10 @@ c$F233 INC A         ; Increment the current character.
  $F242 RET           ; Return.
 
 ; Movement table : The Post Office
-b$F243 DEFB $20,$44,$04,$02,$98,$A0,$FC,$02
+g$F243 DEFB $20,$44,$04,$02
+
+; Bounds table : The Post Office
+b$F247 DEFB $98,$A0,$FC,$02
 
 ; Room logic : The Post Office.
 c$F24B LD A,$04      ; { Touching a stamp drops the endurance by 4.
@@ -10662,16 +10804,16 @@ g$F26E DEFB $00
 b$F26F DEFB $43
 
 ; Movement table : Herbert
-b$F270 DEFB $5A,$A8,$01,$00,$00,$03,$40
+g$F270 DEFB $5A,$A8,$01,$00,$00,$03,$40
 
 ; Move Herbert
 ;
 ; Used by the routine at #R$81AE.
 c$F277 LD A,$02      ; { Touching Herbert reduces endurance by 2.
  $F279 LD ($F26E),A  ; }
- $F27C LD IX,$F270   ;
- $F280 LD BC,$F2F7   ;
- $F283 CALL $EF35    ;
+ $F27C LD IX,$F270   ; Point #REGix at the movement table.
+ $F280 LD BC,$F2F7   ; Point #REGbc at the bounds.
+ $F283 CALL $EF35    ; Update object position.
  $F286 LD A,(IX+$00) ;
  $F289 CALL $AC69    ; Get the "next rooms" table for this room.
  $F28C INC HL        ;
@@ -10731,18 +10873,18 @@ b$F2F7 DEFB $00,$F0,$40,$A8
 b$F2FB DEFB $20,$D8
 
 ; Movement table : The Pub
-b$F2FD DEFB $22,$90,$02,$00,$D6,$90,$FE,$00
+g$F2FD DEFB $22,$90,$02,$00,$D6,$90,$FE,$00
  $F305 DEFB $78,$90,$04,$00
 
 ; Room logic : The Pub
 c$F309 LD A,$06      ; { Touching a mug drops endurance by 6.
  $F30B LD ($F26E),A  ; }
- $F30E LD IX,$F2FD   ;
+ $F30E LD IX,$F2FD   ; Point #REGix at the data for this room..
  $F312 LD B,$03      ;
 *$F314 PUSH BC       ;
  $F315 LD A,$29      ;
- $F317 LD BC,$F2FB   ;
- $F31A CALL $EF35    ;
+ $F317 LD BC,$F2FB   ; Set the bounds.
+ $F31A CALL $EF35    ; Update object positions.
  $F31D CALL $A8A0    ;
  $F320 CALL $E329    ;
  $F323 POP BC        ;
@@ -10750,7 +10892,7 @@ c$F309 LD A,$06      ; { Touching a mug drops endurance by 6.
  $F326 RET           ;
 
 ; Movement table : The Zoo
-b$F327 DEFB $32,$64,$FE,$00,$60,$32,$6E,$00
+g$F327 DEFB $32,$64,$FE,$00,$60,$32,$6E,$00
  $F32F DEFB $02
 
 ; Bounds table : The Zoo
@@ -10759,23 +10901,23 @@ b$F330 DEFB $08,$60,$00,$A8
 ; Room logic : The Zoo
 c$F334 LD A,$08        ; { Touching a banana drops endurance by 8.
  $F336 LD ($F26E),A    ; }
- $F339 LD IX,$F327     ;
- $F33D LD BC,$F330     ;
- $F340 CALL $EF35      ;
- $F343 LD A,(IX+$00)   ;
- $F346 INC A           ;
- $F347 CP $64          ;
- $F349 JR NZ,$F34D     ;
- $F34B LD A,$60        ;
-*$F34D LD (IX+$00),A   ;
- $F350 CALL $A83D      ;
- $F353 INC IX          ;
- $F355 CALL $EF35      ;
- $F358 LD A,$64        ;
- $F35A CALL $A83D      ;
- $F35D CALL $E329      ;
- $F360 LD A,(IX-$01)   ;
- $F363 CP $FE          ;
+ $F339 LD IX,$F327     ; Point #REGix at the data for this room.
+ $F33D LD BC,$F330     ; Set the bounds.
+ $F340 CALL $EF35      ; Update moving objects.
+ $F343 LD A,(IX+$00)   ; Get the current object ID. (#R$8F78)
+ $F346 INC A           ; Increment it.
+ $F347 CP $64          ; Is it now #N64?
+ $F349 JR NZ,$F34D     ; Skip the next bit if not.
+ $F34B LD A,$60        ; Otherwise reset to ID #N$60.
+*$F34D LD (IX+$00),A   ; Set the new object ID.
+ $F350 CALL $A83D      ; Draw the object.
+ $F353 INC IX          ; Move to the next position in the buffer.
+ $F355 CALL $EF35      ; Update moving objects.
+ $F358 LD A,$64        ; Point #REGa at the object ID for the banana. (#R$8FF8)
+ $F35A CALL $A83D      ; Draw the object.
+ $F35D CALL $E329      ; Check for collision detection.
+ $F360 LD A,(IX-$01)   ; 
+ $F363 CP $FE          ; 
  $F365 RET NZ          ;
  $F366 LD (IX-$03),$6E ;
  $F36A LD (IX-$01),$02 ;
@@ -10784,7 +10926,7 @@ c$F334 LD A,$08        ; { Touching a banana drops endurance by 8.
  $F374 RET             ;
 
 ; Movement table : The Docks
-b$F375 DEFB $78,$A8,$02,$00,$78,$A8,$FE,$00
+g$F375 DEFB $78,$A8,$02,$00,$78,$A8,$FE,$00
 
 ; Room logic : The Docks
 c$F37D LD A,$04      ; { Touching a moving object drops endurance by 4.
@@ -10808,49 +10950,57 @@ b$F3A0 DEFB $2C
 b$F3A1 DEFB $00,$50
 
 ; Movement table : The Sewer
-b$F3A3 DEFB $0A,$98,$02,$00,$0A,$A8,$02,$00
+g$F3A3 DEFB $0A,$98,$02,$00
+ $F3A7 DEFB $0A,$A8,$02,$00
 
 ; Room logic : The Sewer
-c$F3AB LD A,$40      ; { Touching the shark drops endurance by #N$40,
+c$F3AB LD A,$40      ; { Touching the shark drops endurance by 64,
  $F3AD LD ($F26E),A  ; which can kill a player pretty quickly. }
- $F3B0 LD IX,$F3A3   ;
- $F3B4 LD A,(IX+$02) ;
- $F3B7 CP $02        ;
- $F3B9 LD A,($F046)  ;
- $F3BC JR Z,$F3C4    ;
- $F3BE OR A          ;
- $F3BF CALL NZ,$F047 ;
- $F3C2 JR $F3C8      ;
-*$F3C4 OR A          ;
- $F3C5 CALL Z,$F047  ;
-*$F3C8 LD A,$30      ;
- $F3CA LD BC,$F3A1   ;
- $F3CD CALL $EF35    ;
- $F3D0 CALL $A8A0    ;
- $F3D3 LD A,($F3A0)  ;
- $F3D6 XOR $02       ;
- $F3D8 LD ($F3A0),A  ;
- $F3DB CALL $EF35    ;
- $F3DE CALL $A8A0    ;
- $F3E1 LD A,($BD78)  ;
- $F3E4 CP $17        ;
- $F3E6 RET Z         ;
- $F3E7 LD A,$17      ;
- $F3E9 CP (IY+$50)   ;
- $F3EC RET Z         ;
- $F3ED CP (IY+$55)   ;
- $F3F0 RET Z         ;
- $F3F1 LD A,($A839)  ;
+ $F3B0 LD IX,$F3A3   ; Point #REGix to the movement table. (#R$F3A3)
+; Make sure the shark is facing the right way.
+ $F3B4 LD A,(IX+$02) ; Get the distance to move in X.
+ $F3B7 CP $02        ; Compare it to +2 ie: moving right.
+ $F3B9 LD A,($F046)  ; Get the shark's direction.
+ $F3BC JR Z,$F3C4    ; If the distance is positive, nothing to do.
+; Shark should be facing left.
+ $F3BE OR A          ; Is the direction 0? (left)
+ $F3BF CALL NZ,$F047 ; { If not, need to flip the shark the other way round.
+ $F3C2 JR $F3C8      ; }
+; Shark should be facing right.
+*$F3C4 OR A          ; Is the direction 0? (left)
+ $F3C5 CALL Z,$F047  ; If so, need to flip the shark the other way round.
+; Now draw the shark.
+*$F3C8 LD A,$30      ; Set the object ID to be the shark's head.
+ $F3CA LD BC,$F3A1   ; Point #REGbc to the bounds table. (#R$F3A1)
+ $F3CD CALL $EF35    ; Update the position.
+ $F3D0 CALL $A8A0    ; Draw the graphic.
+ $F3D3 LD A,($F3A0)  ; Get the next ID for the shark's body.
+ $F3D6 XOR $02       ; { Cycle bit 2 so it changes between #N$2D and #N$2F.
+ $F3D8 LD ($F3A0),A  ; }
+ $F3DB CALL $EF35    ; Update the position.
+ $F3DE CALL $A8A0    ; Draw the graphic.
+; Check to see if the player has the meat.
+ $F3E1 LD A,($BD78)  ; Get the item in the sewer.
+ $F3E4 CP $17        ; Is it the meat?
+ $F3E6 RET Z         ; If so, the shark won't harm the player, so return.
+ $F3E7 LD A,$17      ; { Otherwise, is the player's first item the meat?
+ $F3E9 CP (IY+$50)   ; }
+ $F3EC RET Z         ; Return if it is.
+ $F3ED CP (IY+$55)   ; therwise, is the player's second item the meat?
+ $F3F0 RET Z         ; Return if it is.
+; The player doesn't have the meat, if they touch the shark it's bad news.
+ $F3F1 LD A,($A839)  ; { Move up two rows and check collision detection.
  $F3F4 SUB $10       ;
  $F3F6 LD ($A839),A  ;
- $F3F9 CALL $E329    ;
- $F3FC RET           ;
+ $F3F9 CALL $E329    ; }
+ $F3FC RET           ; Return.
 
 ; Bounds table : The Bakers
 b$F3FD DEFB $00,$F0,$78,$A8
 
 ; Movement table : The Bakers
-b$F401 DEFB $00,$80,$02,$FC,$64,$8C,$02,$04
+g$F401 DEFB $00,$80,$02,$FC
+ $F405 DEFB $64,$8C,$02,$04
 
 ; Room logic : The Bakers
 c$F409 LD A,$06        ; { Touching a moving object drops endurance by 6.
@@ -10915,7 +11065,8 @@ c$F43C LD A,$09      ;
  $F490 RET           ;
 
 ; Movement table : The Work Shed
-b$F491 DEFB $40,$64,$00,$02,$64,$40,$00,$02
+g$F491 DEFB $40,$64,$00,$02
+ $F495 DEFB $64,$40,$00,$02
  $F499 DEFB $DC,$78,$00,$02
 
 ; Room logic : The Work Shed
@@ -11078,7 +11229,8 @@ c$F572 LD A,$08      ; { Is flag 08 (fountain repaired) set?
  $F5BD RET           ; }
 
 ; Movement table : School Lane
-b$F5BE DEFB $28,$46,$02,$02,$3C,$78,$FE,$02
+g$F5BE DEFB $28,$46,$02,$02
+ $F5BE DEFB $3C,$78,$FE,$02
  $F5C6 DEFB $20,$64,$02,$FE
 
 ; Bounds table : Multiple purpose
@@ -11141,20 +11293,25 @@ c$F5F1 LD HL,$5DE7   ;
 b$F64B DEFB $01,$01,$FF,$01,$FF,$FF,$01,$FF
 
 ; Movement table : The Park
-b$F653 DEFB $28,$46,$01,$01,$05,$04,$C8,$78
+g$F653 DEFB $28,$46,$01,$01,$05,$04,$C8,$78
  $F65B DEFB $FF,$01,$23,$02,$26,$64,$01,$FF
  $F663 DEFB $26,$00,$C8,$78,$FF,$01,$23,$02
- $F66B DEFB $26,$64,$01,$FF,$26,$00,$3C,$00
- $F673 DEFB $00
+ $F66B DEFB $26,$64,$01,$FF,$26,$00,$3C
+ 
+; Game status buffer entry at F672
+g$F672 DEFB $00
+
+; Game status buffer entry at F673
+g$F673 DEFB $00
 
 ; Room logic : The Park
 c$F674 LD A,$04      ; { Moving objects decrease endurance by 4.
  $F676 LD ($F26E),A  ; }
  $F679 LD B,$05      ;
- $F67B LD IX,$F653   ;
+ $F67B LD IX,$F653   ; Point #REGix at the movement table.
 *$F67F PUSH BC       ;
- $F680 LD BC,$F5CA   ;
- $F683 CALL $EF35    ;
+ $F680 LD BC,$F5CA   ; Point #REGbc at the bounds table.
+ $F683 CALL $EF35    ; Update moving objects.
  $F686 DEC (IX+$00)  ;
  $F689 JR NZ,$F6BB   ;
  $F68B LD A,($F673)  ;
@@ -11193,14 +11350,17 @@ c$F674 LD A,$04      ; { Moving objects decrease endurance by 4.
  $F6D0 RET           ;
 
 ; Table containing x position and item number to print for bank letters
-b$F6D1 DEFB $40,$13,$60,$1E,$80,$1A,$A0,$01
- $F6D9 DEFB $C0,$05
+b$F6D1 DEFB $40,$13 ; B
+ $F6D3 DEFB $60,$1E ; R
+ $F6D5 DEFB $80,$1A ; E
+ $F6D7 DEFB $A0,$01 ; A
+ $F6D9 DEFB $C0,$05 ; K
 
 ; Flag set if letters need to be printed in the bank
 b$F6DB DEFB $00
 
 ; Movement table : The Bank
-b$F6DC DEFB $40,$64,$02,$04,$B4,$98,$02,$FC
+g$F6DC DEFB $40,$64,$02,$04,$B4,$98,$02,$FC
  $F6E4 DEFB $20,$44,$02,$04,$C8,$78,$02,$FC
 
 ; Room logic : The Bank
@@ -11242,7 +11402,7 @@ c$F6EC LD A,($EDC5)  ;
  $F739 RET           ;
 
 ; Movement table : Wally's House
-b$F73A DEFB $34,$40,$00,$02,$74,$6C,$00,$02
+g$F73A DEFB $34,$40,$00,$02,$74,$6C,$00,$02
  $F742 DEFB $B4,$A0,$00,$02
 
 ; Room logic : Wally's House
@@ -11751,11 +11911,19 @@ c$FAF0 PUSH IX       ;
  $FB27 POP IX        ;
  $FB29 RET           ;
 
-; Unused
-s$FB2A DEFS $1D6
+; Spare space for the stack
+s$FB2A DEFS $D6
 
-; Copy of attribute buffer for additional graphics.
-g$FD00 DEFS $100
+; Copy of attribute buffer for sprites
+;
+; The data is written to the screen by the routine at #R$B9FB.
+; It is initialised as a copy of the main screen at #R$5B00
+; by the routine at #R$EEA2. 
+; Sprites are then drawn on top by the routine at #R$A83D.
+g$FC00 DEFS $200
  
 ; Copy of attribute buffer for main play area
+;
+; The buffer is initialised by the routine at #R$B9AC
+; when all the background graphics are drawn.
 g$FE00 DEFS $200
