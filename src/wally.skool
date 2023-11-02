@@ -4664,16 +4664,16 @@ c$B197 LD A,(IY+$0A) ; Get the Y co-ordinate.
 ; Make the current character jump
 ;
 ; Used by the routines at #R$AB60, #R$AB9B and #R$B09F.
-c$B1A6 LD A,(IY+$3C)   ; { Is the character jumping? (#R$BCA3)
+c$B1A6 LD A,(IY+$3C)   ; { Is the character moving? (#R$BCA3)
  $B1A9 OR A            ; }
  $B1AA JR NZ,$B1B2     ; Move forward if they are.
  $B1AC LD A,(IY+$41)   ; { Copy the current direction (#R$BCA8)
- $B1AF LD (IY+$3C),A   ; to the jump flag. }
-*$B1B2 LD (IY+$46),A   ; Copy this to (?) #R$BCAD
+ $B1AF LD (IY+$3C),A   ; to the movement flag. }
+*$B1B2 LD (IY+$46),A   ; Copy this to the jump flag. #R$BCAD
  $B1B5 LD (IY+$4B),$00 ; Set the jump table index to 0. #R$BCB2
 ; This entry point is used by the routines at #R$A92C and #R$B09F.
-*$B1B9 LD A,(IY+$3C)   ; Get the jump flag.
- $B1BC CP $01          ; Is the character jumping right?
+*$B1B9 LD A,(IY+$3C)   ; Get the direction.
+ $B1BC CP $01          ; Is the character facing right?
  $B1BE JR Z,$B21C      ; Move to handle that if so.
 ; Character is jumping left.
  $B1C0 LD A,(IY+$4B)   ; Get the jump table index.
@@ -4799,34 +4799,37 @@ c$B288 CALL $A921    ; Is this character the active one?
  $B298 XOR $01       ;
  $B29A LD (IY+$5F),A ; }
  $B29D RET Z         ; Return if this is zero.
-; Do the update.
-*$B29E LD A,(IY+$00) ;
- $B2A1 INC A         ;
- $B2A2 CP $06        ;
+; Update the frame number.
+*$B29E LD A,(IY+$00) ; { Get the frame number and increment it.
+ $B2A1 INC A         ; }
+ $B2A2 CP $06        ; { If the frame is greater than 5, reset it to 0.
  $B2A4 JR C,$B2A7    ;
- $B2A6 XOR A         ;
-*$B2A7 LD (IY+$00),A ;
- $B2AA LD A,(IY+$3C) ;
- $B2AD CP $01        ;
- $B2AF JR NZ,$B2C6   ;
- $B2B1 LD A,(IY-$3C) ;
- $B2B4 OR A          ;
+ $B2A6 XOR A         ; }
+*$B2A7 LD (IY+$00),A ; Store the new frame number.
+; Check for any movement.
+ $B2AA LD A,(IY+$3C) ; Get the movement flag. (#R$BCA3)
+ $B2AD CP $01        ; Is the character facing right?
+ $B2AF JR NZ,$B2C6   ; Move forward if not.
+; Move right.
+ $B2B1 LD A,(IY-$3C) ; Get the current direction of the sprite.
+ $B2B4 OR A          ; Is it 0 (left)?
  $B2B5 CALL Z,$81D4  ; If so, need to change direction.
  $B2B8 LD A,(IY+$05) ; Get the X co-ordinate.
- $B2BB ADD A,$02     ;
- $B2BD CP $F0        ;
- $B2BF JR C,$B2D5    ;
- $B2C1 LD A,$F0      ;
- $B2C3 JP $B2D5      ;
-*$B2C6 LD A,(IY-$3C) ;
- $B2C9 OR A          ;
- $B2CA CALL NZ,$81D4 ;
+ $B2BB ADD A,$02     ; Add 2.
+ $B2BD CP $F0        ; { If it's greater than #N$F0, set it to that.
+ $B2BF JR C,$B2D5    ; 
+ $B2C1 LD A,$F0      ; 
+ $B2C3 JP $B2D5      ; }
+; Move left.
+*$B2C6 LD A,(IY-$3C) ; Get the direction flag. (#R$BCA3)
+ $B2C9 OR A          ; Is it 0?
+ $B2CA CALL NZ,$81D4 ; If it isn't, it must be facing left, so change direction.
  $B2CD LD A,(IY+$05) ; Get the X co-ordinate.
- $B2D0 SUB $02       ;
- $B2D2 JR NC,$B2D5   ;
- $B2D4 XOR A         ;
-*$B2D5 LD (IY+$05),A ;
- $B2D8 JP $E2FC      ;
+ $B2D0 SUB $02       ; Subtract 2.
+ $B2D2 JR NC,$B2D5   ; { If it's less than 0, set it to that.
+ $B2D4 XOR A         ; }
+*$B2D5 LD (IY+$05),A ; Set the new X co-ordinate
+ $B2D8 JP $E2FC      ; Play a footstep and return.
 
 ; The current control mechanism (0 - Keyboard, 1 - Kempston, 2 - Sinclair)
 b$B2DB DEFB $00
@@ -6250,10 +6253,10 @@ g$BCA3 DEFB $00,$00,$00,$00,$00
 ; Character direction (01 = right, FF = left)
 g$BCA8 DEFB $01,$01,$01,$01,$01
 
-; If jumping, holds the frame number in the animation sequence
+; Character jump direction (01 = right, FF = left)
 g$BCAD DEFB $00,$00,$00,$00,$00
 
-; Game status buffer at BCB2
+; If jumping, holds the frame number in the animation sequence
 g$BCB2 DEFB $00,$00,$00,$00,$00
 
 ; First item of each character
@@ -11005,7 +11008,7 @@ g$F401 DEFB $00,$80,$02,$FC
 ; Room logic : The Bakers
 c$F409 LD A,$06        ; { Touching a moving object drops endurance by 6.
  $F40B LD ($F26E),A    ; }
- $F40E LD IX,$F401     ;
+ $F40E LD IX,$F401     ; Point #REGix at the movement table. (#R$F401)
  $F412 LD B,$02        ;
 *$F414 PUSH BC         ;
  $F415 LD BC,$F3FD     ;
@@ -11025,16 +11028,16 @@ c$F409 LD A,$06        ; { Touching a moving object drops endurance by 6.
  $F43B RET             ;
 
 ; Room logic : Wall Street
-c$F43C LD A,$09      ;
- $F43E CALL $EC1D    ;
- $F441 JR Z,$F479    ;
- $F443 LD A,$06      ;
- $F445 CALL $EC1D    ;
- $F448 JR Z,$F479    ;
- $F44A LD A,($BD01)  ;
- $F44D CP $04        ;
- $F44F JR NZ,$F479   ;
- $F451 LD A,(IY+$05) ;
+c$F43C LD A,$09      ; { Is flag 9 (wall built) set?
+ $F43E CALL $EC1D    ; }
+ $F441 JR Z,$F479    ; Jump forward if it is.
+ $F443 LD A,$06      ; { Is flag 6 (battery charged) set?
+ $F445 CALL $EC1D    ; }
+ $F448 JR Z,$F479    ; Jump forward if it is.
+ $F44A LD A,($BD01)  ; { Is the battery the first item in the room?
+ $F44D CP $04        ; }
+ $F44F JR NZ,$F479   ; Jump forward if it isn't.
+ $F451 LD A,(IY+$05) ; Get the x co-ordinate.
  $F454 SUB $42       ;
  $F456 CP $FC        ;
  $F458 JR C,$F479    ;
@@ -11072,11 +11075,11 @@ g$F491 DEFB $40,$64,$00,$02
 ; Room logic : The Work Shed
 c$F49D LD A,$06        ; { Touching a moving object drops endurance by 6.
  $F49F LD ($F26E),A    ; }
- $F4A2 LD IX,$F491     ;
+ $F4A2 LD IX,$F491     ; Point #REGix at the movement table. (#R$F491)
  $F4A6 LD B,$03        ;
 *$F4A8 PUSH BC         ;
- $F4A9 LD BC,$F2F7     ;
- $F4AC CALL $EF35      ;
+ $F4A9 LD BC,$F2F7     ; Point #REGbc at the bounds table. (#R$F2F7)
+ $F4AC CALL $EF35      ; Update moving objects.
  $F4AF LD A,D          ;
  $F4B0 CP $FE          ;
  $F4B2 JR NZ,$F4C6     ;
@@ -11100,61 +11103,70 @@ b$F4D2 DEFB $4C
 ; Room logic : Motor Way
 ;
 ; Check the pipe is patched, and display the flame if not
-c$F4D3 LD A,($BD7D)  ;
- $F4D6 CP $1D        ;
- $F4D8 JR NZ,$F4E0   ;
- $F4DA LD A,$05      ;
- $F4DC CALL $EC1D    ;
- $F4DF RET NZ        ;
-*$F4E0 LD HL,$A880   ;
- $F4E3 LD ($A838),HL ;
+c$F4D3 LD A,($BD7D)  ; { Is the pipe in the cave?
+ $F4D6 CP $1D        ; }
+ $F4D8 JR NZ,$F4E0   ; Jump forward if it isn't.
+ $F4DA LD A,$05      ; { Is flag 5 (pipe patched) set?
+ $F4DC CALL $EC1D    ; }
+ $F4DF RET NZ        ; Return if it is.
+; The pipe is either leaking or not in the cave, so the
+; gas leak means there's a fire here that needs drawing.
+*$F4E0 LD HL,$A880   ; { Set the location of the flame.
+ $F4E3 LD ($A838),HL ; }
  $F4E6 LD A,$04      ; { Touching the flame (if it's there)
  $F4E8 LD ($F26E),A  ; drops endurance by 4. }
- $F4EB LD A,($F4D2)  ;
- $F4EE INC A         ;
- $F4EF CP $50        ;
- $F4F1 JR NZ,$F4F5   ;
- $F4F3 LD A,$4C      ;
-*$F4F5 LD ($F4D2),A  ;
- $F4F8 CALL $A83D    ;
- $F4FB CALL $E329    ;
- $F4FE RET           ;
+ $F4EB LD A,($F4D2)  ; Get the current frame ID. (#R$F4D2)
+ $F4EE INC A         ; Increment it.
+ $F4EF CP $50        ; Does it equal #N$50?
+ $F4F1 JR NZ,$F4F5   ; Skip the next bit if it doesn't.
+ $F4F3 LD A,$4C      ; Otherwise reset it back to #N$4C.
+*$F4F5 LD ($F4D2),A  ; Set the new frame ID.
+ $F4F8 CALL $A83D    ; Draw the object.
+ $F4FB CALL $E329    ; Check for collision detection.
+ $F4FE RET           ; Return.
 
 ; Movement table : The Super Market
-b$F4FF DEFB $F0,$A8,$FE,$00
+g$F4FF DEFB $F0,$A8,$FE,$00
 
 ; Room logic : The Super Market
-c$F503 LD A,$FF      ;
- $F505 LD ($AF80),A  ;
- $F508 LD A,$0C      ;
- $F50A CALL $EC1D    ;
- $F50D JR Z,$F543    ;
+c$F503 LD A,$FF      ; { Turn off the second platform, active when the trolley
+ $F505 LD ($AF80),A  ; is moving. (#R$AF7C) }
+ $F508 LD A,$0C      ; { Is flag #N$C (trolley oiled) set?
+ $F50A CALL $EC1D    ; }
+ $F50D JR Z,$F543    ; Jump forward if it isn't.
  $F50F LD A,$06      ; { Touching a moving object drops endurance by 6.
  $F511 LD ($F26E),A  ; }
- $F514 LD IX,$F4FF   ;
- $F518 LD BC,$F2F7   ;
- $F51B CALL $EF35    ;
- $F51E LD A,$36      ;
- $F520 CALL $A8A0    ;
- $F523 CALL $E329    ;
- $F526 LD A,(IY+$0A) ;
- $F529 CP $88        ;
- $F52B RET NZ        ;
- $F52C LD A,(IY+$05) ;
- $F52F SUB (IX-$04)  ;
+; If the trolley is oiled, it needs moving.
+ $F514 LD IX,$F4FF   ; Point #REGix at the movement table.
+ $F518 LD BC,$F2F7   ; Point #REGde at the bounds table.
+ $F51B CALL $EF35    ; Update moving objects.
+ $F51E LD A,$36      ; Set the ID to the trolley graphic. (#R$8A38)
+ $F520 CALL $A8A0    ; Draw the graphic.
+ $F523 CALL $E329    ; Check for collision detection.
+; See if we have jumped onto the trolley.
+ $F526 LD A,(IY+$0A) ; Get the Y co-ordinate?
+ $F529 CP $88        ; Is it #N$88 ie: jumped to the height of the trolley?
+ $F52B RET NZ        ; Return if it hasn't.
+; The Y co-ordinate is correct, check the X co-ordinate.
+ $F52C LD A,(IY+$05) ; Get the current X co-ordinate.
+ $F52F SUB (IX-$04)  ; { Is it close enough to the X co-ordinate of the trolley?
  $F532 SUB $04       ;
- $F534 CP $F8        ;
- $F536 RET C         ;
- $F537 LD A,(IX-$04) ;
- $F53A LD (IY+$05),A ;
- $F53D LD A,$A8      ;
- $F53F LD ($AF80),A  ;
- $F542 RET           ;
-*$F543 LD HL,$A8F0   ;
- $F546 LD ($A838),HL ;
- $F549 LD A,$36      ;
- $F54B CALL $A8A0    ;
- $F54E RET           ;
+ $F534 CP $F8        ; }
+ $F536 RET C         ; Return if it isn't.
+; The character has landed on top of a moving trolley. Switch on a byte in the
+; platform table (#R$AF7C) that will treat this as a temporary platform and
+; allow them to jump higher.
+ $F537 LD A,(IX-$04) ; { Set the X co-ordinate to match that of the trolley.
+ $F53A LD (IY+$05),A ; }
+ $F53D LD A,$A8      ; { Set the top of the trolley as an active platform. 
+ $F53F LD ($AF80),A  ; }
+ $F542 RET           ; Return.
+; The trolley's not oiled, so just draw it.
+*$F543 LD HL,$A8F0   ; { Set the position.
+ $F546 LD ($A838),HL ; }
+ $F549 LD A,$36      ; Set the ID to the trolley graphic.
+ $F54B CALL $A8A0    ; { Draw it and return.
+ $F54E RET           ; }
 
 ; Room logic : The Cave
 ;
@@ -11271,23 +11283,23 @@ c$F5F1 LD HL,$5DE7   ;
  $F61B JR $F5FA      ;
 *$F61D LD A,$06      ; { Moving objects decrease endurance by 6.
  $F61F LD ($F26E),A  ; }
- $F622 LD IX,$F5BE   ;
- $F626 LD B,$03      ;
-*$F628 PUSH BC       ;
- $F629 LD A,$0D      ;
- $F62B CALL $EC1D    ;
- $F62E LD BC,$F5CA   ;
- $F631 JR NZ,$F636   ;
- $F633 LD BC,$F5CE   ;
-*$F636 CALL $EF35    ;
+ $F622 LD IX,$F5BE   ; Point #REGix at the movement table.
+ $F626 LD B,$03      ; 3 lightning bolts to draw.
+*$F628 PUSH BC       ; Store #REGbc.
+ $F629 LD A,$0D      ; {Is flag #N$D (Asteroids game won) set?
+ $F62B CALL $EC1D    ; }
+ $F62E LD BC,$F5CA   ; Point #REGbc at the first bounds table. (#R$F5CA)
+ $F631 JR NZ,$F636   ; If the flag is set, skip the next bit.
+ $F633 LD BC,$F5CE   ; Otherwise point #REGbc at the second bounds table. (#R$F5CE)
+*$F636 CALL $EF35    ; Update moving objects.
  $F639 LD A,($F5D2)  ;
  $F63C XOR $02       ;
  $F63E LD ($F5D2),A  ;
- $F641 CALL $A8A0    ;
- $F644 CALL $E329    ;
- $F647 POP BC        ;
- $F648 DJNZ $F628    ;
- $F64A RET           ;
+ $F641 CALL $A8A0    ; Draw moving objects.
+ $F644 CALL $E329    ; Check for collision detection.
+ $F647 POP BC        ; Restore #REGbc.
+ $F648 DJNZ $F628    ; Loop while there are more lighting bolts to draw.
+ $F64A RET           ; Return.
 
 ; Table of direction to switch to in The Park
 b$F64B DEFB $01,$01,$FF,$01,$FF,$FF,$01,$FF
@@ -11408,22 +11420,25 @@ g$F73A DEFB $34,$40,$00,$02,$74,$6C,$00,$02
 ; Room logic : Wally's House
 c$F746 LD A,$08        ; { Moving objects decrease endurance by 8.
  $F748 LD ($F26E),A    ; }
- $F74B LD IX,$F73A     ;
- $F74F LD B,$03        ;
-*$F751 PUSH BC         ;
- $F752 LD BC,$F2F7     ;
- $F755 CALL $EF35      ;
- $F758 LD A,(IX-$01)   ;
- $F75B CP $02          ;
- $F75D JR Z,$F767      ;
- $F75F LD (IX-$01),$02 ;
- $F763 LD (IX-$03),$40 ;
-*$F767 LD A,$56        ;
- $F769 CALL $A83D      ;
- $F76C CALL $E329      ;
- $F76F POP BC          ;
- $F770 DJNZ $F751      ;
- $F772 RET             ;
+ $F74B LD IX,$F73A     ; Point #REGix at the movement table. (#R$F73A)
+ $F74F LD B,$03        ; 3 bulbs to draw.
+*$F751 PUSH BC         ; Store #REGbc.
+ $F752 LD BC,$F2F7     ; Point #REGbc at the bounds table. (#R$F2F7)
+ $F755 CALL $EF35      ; Update moving objects.
+ $F758 LD A,(IX-$01)   ; Check the direction of the bulbs.
+ $F75B CP $02          ; Is it still +2 ie: hasn't hit bounds?
+ $F75D JR Z,$F767      ; Jump forward if it has.
+; The bulb has moved to the edge of the boundary. Rather than
+; reversing direction as per usual, just reset the co-ordinates.
+ $F75F LD (IX-$01),$02 ; Set the amount to change as 2 again.
+ $F763 LD (IX-$03),$40 ; Set the Y co-ordinate to #N$40.
+; Now draw the lightbulb.
+*$F767 LD A,$56        ; Set the ID to be the lightbulb. (#R$8E38)
+ $F769 CALL $A83D      ; Draw the object.
+ $F76C CALL $E329      ; Check for collision detection.
+ $F76F POP BC          ; Restore #REGbc.
+ $F770 DJNZ $F751      ; Loop until all the bulbs are updated.
+ $F772 RET             ; Return.
 
 ; Room logic : The School
 c$F773 LD A,$02        ; { Moving objects decrease endurance by 2.
