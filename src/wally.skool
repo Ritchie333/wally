@@ -2618,8 +2618,8 @@ b$9438 DEFB $F0,$00,$00,$00,$E0,$00,$07,$3E
 
 ; Wilma
 ;
-; #CALL:print_mask(#PC,$wilmaM)
-; #CALL:print_player(#PC,$wilma)
+; #CALL:print_mask(#PC,wilmaM)
+; #CALL:print_player(#PC,wilma)
 b$9838 DEFB $E0,$0F,$07,$C0,$C0,$07,$0D,$60
  $9840 DEFB $C0,$07,$1F,$B0,$C0,$03,$19,$D0
  $9848 DEFB $C0,$03,$16,$F8,$C0,$03,$06,$D0
@@ -7696,14 +7696,14 @@ w$CDB5 DEFW $CDF7
 
 ; Room data : The Town Square
 ;
-; #CALL:print_room_data(#PC, room_00)
+; #CALL:print_room_data(#PC,room_00)
 ; #CALL:print_room_stats(#PC)
 b$CDF7 DEFB $80,$07,$86,$B0,$84,$4B,$85,$AF
  $CDFF DEFB $7F,$00
 
 ; Room data : Stamp Street
 ;
-; #CALL:print_room_data(#PC, room_01)
+; #CALL:print_room_data(#PC,room_01)
 ; #CALL:print_room_stats(#PC)
 b$CE01 DEFB $80,$07,$08,$E7,$30,$DE,$8A,$87
  $CE09 DEFB $8A,$9F,$0C,$03,$0D,$01,$8F,$03
@@ -7713,7 +7713,7 @@ b$CE01 DEFB $80,$07,$08,$E7,$30,$DE,$8A,$87
 
 ; Room data : The Post Office
 ;
-; #CALL:print_room_data(#PC, room_02)
+; #CALL:print_room_data(#PC,room_02)
 ; #CALL:print_room_stats(#PC)
 b$CE25 DEFB $A0,$07,$49,$00,$EA,$04,$EB,$0E
  $CE2D DEFB $6B,$0F,$C7,$20,$C7,$D8,$C6,$60
@@ -7721,7 +7721,7 @@ b$CE25 DEFB $A0,$07,$49,$00,$EA,$04,$EB,$0E
 
 ; Room data : Market Street
 ;
-; #CALL:print_room_data(#PC, room_03)
+; #CALL:print_room_data(#PC,room_03)
 ; #CALL:print_room_stats(#PC)
 b$CE37 DEFB $80,$07,$0D,$20,$8F,$22,$0C,$23
  $CE3F DEFB $0C,$25,$0C,$27,$2A,$A0,$29,$A3
@@ -7733,7 +7733,7 @@ b$CE37 DEFB $80,$07,$0D,$20,$8F,$22,$0C,$23
 
 ; Room data : The Super Market
 ;
-; #CALL:print_room_data(#PC, room_04)
+; #CALL:print_room_data(#PC,room_04)
 ; #CALL:print_room_stats(#PC)
 b$CE69 DEFB $A0,$07,$48,$0F,$E8,$57,$E8,$55
  $CE71 DEFB $49,$00,$C7,$28,$C7,$80,$C7,$D0
@@ -7741,14 +7741,14 @@ b$CE69 DEFB $A0,$07,$48,$0F,$E8,$57,$E8,$55
 
 ; Room data : The Park
 ;
-; #CALL:print_room_data(#PC, room_05)
+; #CALL:print_room_data(#PC,room_05)
 ; #CALL:print_room_stats(#PC)
 b$CE7B DEFB $80,$07,$83,$2F,$86,$20,$12,$6D
  $CE83 DEFB $86,$C8,$85,$1F,$7F,$00
 
 ; Room data : Wobbly Walk
 ;
-; #CALL:print_room_data(#PC, room_06)
+; #CALL:print_room_data(#PC,room_06)
 ; #CALL:print_room_stats(#PC)
 b$CE89 DEFB $80,$07,$0D,$80,$8F,$82,$0C,$83
  $CE91 DEFB $0C,$85,$0C,$87,$11,$1A,$89,$07
@@ -7758,7 +7758,7 @@ b$CE89 DEFB $80,$07,$0D,$80,$8F,$82,$0C,$83
 
 ; Room data : Rubble Road
 ;
-; #CALL:print_room_data(#PC, room_07)
+; #CALL:print_room_data(#PC,room_07)
 ; #CALL:print_room_stats(#PC)
 b$CEAD DEFB $80,$07,$18,$85,$18,$87,$4B,$82
  $CEB5 DEFB $8F,$84,$89,$07,$08,$4F,$08,$67
@@ -7767,7 +7767,7 @@ b$CEAD DEFB $80,$07,$18,$85,$18,$87,$4B,$82
 
 ; Room data : Wall Street
 ;
-; #CALL:print_room_data(#PC, room_08)
+; #CALL:print_room_data(#PC,room_08)
 ; #CALL:print_room_stats(#PC)
 b$CEC9 DEFB $80,$07,$D0,$3C,$15,$C5,$15,$C7
  $CED1 DEFB $66,$67,$66,$A7,$66,$87,$7E,$09
@@ -7775,7 +7775,7 @@ b$CEC9 DEFB $80,$07,$D0,$3C,$15,$C5,$15,$C7
 
 ; Room data : Pete Street
 ;
-; #CALL:print_room_data(#PC, room_09)
+; #CALL:print_room_data(#PC,room_09)
 ; #CALL:print_room_stats(#PC)
 b$CEE1 DEFB $80,$07,$4F,$5F,$18,$85,$18,$87
  $CEE9 DEFB $4B,$82,$8F,$84,$A2,$BE,$14,$C7
@@ -7783,14 +7783,14 @@ b$CEE1 DEFB $80,$07,$4F,$5F,$18,$85,$18,$87
 
 ; Room data : The Work Shed
 ;
-; #CALL:print_room_data(#PC, room_0A)
+; #CALL:print_room_data(#PC,room_0A)
 ; #CALL:print_room_stats(#PC)
 b$CEF9 DEFB $80,$07,$A4,$2E,$BF,$5F,$BF,$B7
  $CF01 DEFB $70,$7F,$E8,$1A,$68,$45,$7F,$00
 
 ; Room data : School Lane
 ;
-; #CALL:print_room_data(#PC, room_0B)
+; #CALL:print_room_data(#PC,room_0B)
 ; #CALL:print_room_stats(#PC)
 b$CF09 DEFB $80,$07,$64,$62,$1B,$64,$18,$64
  $CF11 DEFB $18,$65,$18,$67,$8A,$E7,$A4,$76
@@ -7799,7 +7799,7 @@ b$CF09 DEFB $80,$07,$64,$62,$1B,$64,$18,$64
 
 ; Room data : The School
 ;
-; #CALL:print_room_data(#PC, room_0C)
+; #CALL:print_room_data(#PC,room_0C)
 ; #CALL:print_room_stats(#PC)
 b$CF29 DEFB $A0,$07,$A1,$37,$A1,$5F,$A1,$87
  $CF31 DEFB $A1,$AF,$A1,$D7,$49,$00,$C6,$60
@@ -7808,7 +7808,7 @@ b$CF29 DEFB $A0,$07,$A1,$37,$A1,$5F,$A1,$87
 
 ; Room data : Baker Street
 ;
-; #CALL:print_room_data(#PC, room_0D)
+; #CALL:print_room_data(#PC,room_0D)
 ; #CALL:print_room_stats(#PC)
 b$CF49 DEFB $80,$07,$08,$07,$89,$DF,$0D,$20
  $CF51 DEFB $08,$9F,$2C,$23,$2C,$25,$2C,$27
@@ -7818,7 +7818,7 @@ b$CF49 DEFB $80,$07,$08,$07,$89,$DF,$0D,$20
 
 ; Room data : The Bakers
 ;
-; #CALL:print_room_data(#PC, room_0E)
+; #CALL:print_room_data(#PC,room_0E)
 ; #CALL:print_room_stats(#PC)
 b$CF71 DEFB $A0,$07,$48,$07,$48,$47,$48,$87
  $CF79 DEFB $48,$C7,$C6,$18,$C7,$A0,$C7,$D0
@@ -7828,7 +7828,7 @@ b$CF71 DEFB $A0,$07,$48,$07,$48,$47,$48,$87
 
 ; Room data : The Pub
 ;
-; #CALL:print_room_data(#PC, room_10)
+; #CALL:print_room_data(#PC,room_0F)
 ; #CALL:print_room_stats(#PC)
 b$CF97 DEFB $A0,$07,$D7,$27,$DA,$3E,$DA,$7E
  $CF9F DEFB $DA,$BE,$D8,$23,$D8,$4B,$D9,$7B
@@ -7837,7 +7837,7 @@ b$CF97 DEFB $A0,$07,$D7,$27,$DA,$3E,$DA,$7E
 
 ; Room data : Motor Way
 ;
-; #CALL:print_room_data(#PC, room_11)
+; #CALL:print_room_data(#PC,room_10)
 ; #CALL:print_room_stats(#PC)
 b$CFB5 DEFB $80,$07,$6C,$9B,$6C,$EB,$2C,$03
  $CFBD DEFB $2C,$05,$2C,$07,$8D,$00,$0F,$03
@@ -7847,7 +7847,7 @@ b$CFB5 DEFB $80,$07,$6C,$9B,$6C,$EB,$2C,$03
 
 ; Room data : The Laboratory
 ;
-; #CALL:print_room_data(#PC, room_12)
+; #CALL:print_room_data(#PC,room_11)
 ; #CALL:print_room_stats(#PC)
 b$CFD9 DEFB $A0,$07,$AB,$5F,$AB,$B7,$A4,$2E
  $CFE1 DEFB $69,$6B,$49,$00,$C6,$18,$C6,$A0
@@ -7855,7 +7855,7 @@ b$CFD9 DEFB $A0,$07,$AB,$5F,$AB,$B7,$A4,$2E
 
 ; Room data : The Garage
 ;
-; #CALL:print_room_data(#PC, room_13)
+; #CALL:print_room_data(#PC,room_12)
 ; #CALL:print_room_stats(#PC)
 b$CFEF DEFB $80,$07,$C2,$16,$C2,$5E,$6C,$03
  $CFF7 DEFB $6C,$E3,$6C,$53,$6C,$9B,$C2,$A6
@@ -7864,7 +7864,7 @@ b$CFEF DEFB $80,$07,$C2,$16,$C2,$5E,$6C,$03
 
 ; Room data : Reference Road
 ;
-; #CALL:print_room_data(#PC, room_14)
+; #CALL:print_room_data(#PC,room_13)
 ; #CALL:print_room_stats(#PC)
 b$D009 DEFB $80,$07,$8D,$48,$AA,$B8,$1C,$4B
  $D011 DEFB $1C,$4D,$1C,$4F,$1C,$7B,$1C,$7D
@@ -7875,7 +7875,7 @@ b$D009 DEFB $80,$07,$8D,$48,$AA,$B8,$1C,$4B
 
 ; Room data : The Library
 ;
-; #CALL:print_room_data(#PC, room_15)
+; #CALL:print_room_data(#PC,room_14)
 ; #CALL:print_room_stats(#PC)
 b$D039 DEFB $A0,$07,$AB,$27,$AB,$6F,$AB,$B7
  $D041 DEFB $2D,$11,$2D,$13,$2D,$15,$2D,$61
@@ -7884,7 +7884,7 @@ b$D039 DEFB $A0,$07,$AB,$27,$AB,$6F,$AB,$B7
 
 ; Room data : Penny Lane
 ;
-; #CALL:print_room_data(#PC, room_16)
+; #CALL:print_room_data(#PC,room_15)
 ; #CALL:print_room_stats(#PC)
 b$D057 DEFB $80,$07,$16,$03,$16,$05,$16,$07
  $D05F DEFB $B6,$04,$90,$7A,$0D,$80,$0C,$83
@@ -7896,7 +7896,7 @@ b$D057 DEFB $80,$07,$16,$03,$16,$05,$16,$07
 
 ; Room data : The Bank
 ;
-; #CALL:print_room_data(#PC, room_17)
+; #CALL:print_room_data(#PC,room_16)
 ; #CALL:print_room_stats(#PC)
 b$D08B DEFB $80,$07,$BC,$44,$3D,$4D,$3D,$7D
  $D093 DEFB $3D,$AD,$40,$5F,$40,$8F,$40,$BF
@@ -7906,7 +7906,7 @@ b$D08B DEFB $80,$07,$BC,$44,$3D,$4D,$3D,$7D
 
 ; Room data : Wally's House
 ;
-; #CALL:print_room_data(#PC, room_18)
+; #CALL:print_room_data(#PC,room_17)
 ; #CALL:print_room_stats(#PC)
 b$D0AF DEFB $A0,$07,$C4,$07,$AB,$1F,$C4,$67
  $D0B7 DEFB $C3,$97,$C7,$38,$C7,$78,$C7,$B8
@@ -7914,7 +7914,7 @@ b$D0AF DEFB $A0,$07,$C4,$07,$AB,$1F,$C4,$67
 
 ; Room data : Meat Street
 ;
-; #CALL:print_room_data(#PC, room_19)
+; #CALL:print_room_data(#PC,room_18)
 ; #CALL:print_room_stats(#PC)
 b$D0C3 DEFB $80,$07,$0D,$20,$8F,$22,$1C,$25
  $D0CB DEFB $8A,$9F,$1C,$27,$07,$DF,$08,$07
@@ -7924,7 +7924,7 @@ b$D0C3 DEFB $80,$07,$0D,$20,$8F,$22,$1C,$25
 
 ; Room data : The Butcher's
 ;
-; #CALL:print_room_data(#PC, room_1A)
+; #CALL:print_room_data(#PC,room_19)
 ; #CALL:print_room_stats(#PC)
 b$D0E7 DEFB $A0,$07,$48,$2F,$48,$6F,$48,$AF
  $D0EF DEFB $C5,$02,$C6,$18,$C6,$A0,$2E,$23
@@ -7934,7 +7934,7 @@ b$D0E7 DEFB $A0,$07,$48,$2F,$48,$6F,$48,$AF
 
 ; Room data : Trunk Road
 ;
-; #CALL:print_room_data(#PC, room_1B)
+; #CALL:print_room_data(#PC,room_1A)
 ; #CALL:print_room_stats(#PC)
 b$D109 DEFB $80,$07,$63,$05,$07,$DF,$8B,$06
  $D111 DEFB $A3,$46,$A3,$66,$64,$03,$9E,$2E
@@ -7943,14 +7943,14 @@ b$D109 DEFB $80,$07,$63,$05,$07,$DF,$8B,$06
 
 ; Room data : The Zoo
 ;
-; #CALL:print_room_data(#PC, room_1C)
+; #CALL:print_room_data(#PC,room_1B)
 ; #CALL:print_room_stats(#PC)
 b$D125 DEFB $80,$07,$64,$83,$63,$85,$63,$87
  $D12D DEFB $0E,$96,$0E,$DE,$E5,$03,$7F,$00
 
 ; Room data : Rail Road
 ;
-; #CALL:print_room_data(#PC, room_1D)
+; #CALL:print_room_data(#PC,room_1C)
 ; #CALL:print_room_stats(#PC)
 b$D135 DEFB $80,$07,$A3,$06,$A3,$26,$0C,$47
  $D13D DEFB $0C,$45,$0C,$43,$9B,$42,$0D,$40
@@ -7959,7 +7959,7 @@ b$D135 DEFB $80,$07,$A3,$06,$A3,$26,$0C,$47
 
 ; Room data : The Station
 ;
-; #CALL:print_room_data(#PC, room_1E)
+; #CALL:print_room_data(#PC,room_1D)
 ; #CALL:print_room_stats(#PC)
 b$D153 DEFB $80,$07,$0D,$00,$0D,$80,$9B,$02
  $D15B DEFB $9B,$82,$1F,$13,$1F,$7B,$1F,$E3
@@ -7968,14 +7968,14 @@ b$D153 DEFB $80,$07,$0D,$00,$0D,$80,$9B,$02
 
 ; Room data : The Docks
 ;
-; #CALL:print_room_data(#PC, room_1F)
+; #CALL:print_room_data(#PC,room_1E)
 ; #CALL:print_room_stats(#PC)
 b$D16D DEFB $A0,$07,$83,$77,$D5,$0C,$07,$9F
  $D175 DEFB $08,$C7,$08,$E7,$D6,$C0,$7F,$00
 
 ; Room data : The Sewer
 ;
-; #CALL:print_room_data(#PC, room_20)
+; #CALL:print_room_data(#PC,room_1F)
 ; #CALL:print_room_stats(#PC)
 b$D17D DEFB $80,$07,$01,$04,$02,$D4,$ED,$31
  $D185 DEFB $ED,$82,$ED,$75,$6D,$B1,$ED,$16
@@ -7983,7 +7983,7 @@ b$D17D DEFB $80,$07,$01,$04,$02,$D4,$ED,$31
 
 ; Room data : The Cave
 ;
-; #CALL:print_room_data(#PC, room_21)
+; #CALL:print_room_data(#PC,room_20)
 ; #CALL:print_room_stats(#PC)
 b$D191 DEFB $80,$07,$52,$00,$52,$18,$52,$58
  $D199 DEFB $52,$88,$52,$98,$52,$C8,$53,$30

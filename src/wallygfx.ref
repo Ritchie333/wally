@@ -1,0 +1,113 @@
+[Characters:Wally]
+#HTML( #R$9438<br><img src="images/wally.png"/>)
+
+[Characters:Wilma]
+#HTML( #R$9838<br><img src="images/wilma.png"/>)
+
+[Characters:Tom]
+#HTML( #R$9C38<br><img src="images/tom.png"/>)
+
+[Characters:Dick]
+#HTML( #R$A038<br><img src="images/dick.png"/>)
+
+[Characters:Harry]
+#HTML( #R$A438<br><img src="images/harry.png"/>)
+
+[Rooms:Room 00 - The Town Square]
+#HTML( #R$CDF7<br><img src="images/room_00.png"/>)
+
+[Rooms:Room 01 - Stamp Street]
+#HTML( #R$CE01<br><img src="images/room_01.png"/>)
+
+[Rooms:Room 02 - The Post Office]
+#HTML( #R$CE25<br><img src="images/room_02.png"/>)
+
+[Rooms:Room 03 - Market Street]
+#HTML( #R$CE37<br><img src="images/room_03.png"/>)
+
+[Rooms:Room 04 - The Super Market]
+#HTML( #R$CE69<br><img src="images/room_04.png"/>)
+
+[Rooms:Room 05 - The Park]
+#HTML( #R$CE7B<br><img src="images/room_05.png"/>)
+
+[Rooms:Room 06 - Wobbly Walk]
+#HTML( #R$CE89<br><img src="images/room_06.png"/>)
+
+[Rooms:Room 07 - Rubble Road]
+#HTML( #R$CEAD<br><img src="images/room_07.png"/>)
+
+[Rooms:Room 08 - Wall Street]
+#HTML( #R$CEC9<br><img src="images/room_08.png"/>)
+
+[Rooms:Room 09 - Pete Street]
+#HTML( #R$CEE1<br><img src="images/room_09.png"/>)
+
+[Rooms:Room 0A - The Work Shed]
+#HTML( #R$CEF9<br><img src="images/room_0a.png"/>)
+
+[Rooms:Room 0B - School Lane]
+#HTML( #R$CF09<br><img src="images/room_0b.png"/>)
+
+[Rooms:Room 0C - The School]
+#HTML( #R$CF29<br><img src="images/room_0c.png"/>)
+
+[Rooms:Room 0D - Baker Street]
+#HTML( #R$CF49<br><img src="images/room_0d.png"/>)
+
+[Rooms:Room 0E - The Bakers]
+#HTML( #R$CF71<br><img src="images/room_0e.png"/>)
+
+[Rooms:Room 0F - The Pub]
+#HTML( #R$CF97<br><img src="images/room_0f.png"/>)
+
+[Rooms:Room 10 - Motor Way]
+#HTML( #R$CFB5<br><img src="images/room_10.png"/>)
+
+[Rooms:Room 11 - The Laboratory]
+#HTML( #R$CFD9<br><img src="images/room_11.png"/>)
+
+[Rooms:Room 12 - The Garage]
+#HTML( #R$CFEF<br><img src="images/room_12.png"/>)
+
+[Rooms:Room 13 - Reference Road]
+#HTML( #R$D009<br><img src="images/room_13.png"/>)
+
+[Rooms:Room 14 - The Library]
+#HTML( #R$D039<br><img src="images/room_14.png"/>)
+
+[Rooms:Room 15 - Penny Lane]
+#HTML( #R$D057<br><img src="images/room_15.png"/>)
+
+[Rooms:Room 16 - The Bank]
+#HTML( #R$D08B<br><img src="images/room_16.png"/>)
+
+[Rooms:Room 17 - Wally's House]
+#HTML( #R$D0AF<br><img src="images/room_17.png"/>)
+
+[Rooms:Room 18 - Meat Street]
+#HTML( #R$D0C3<br><img src="images/room_18.png"/>)
+
+[Rooms:Room 19 - The Butchers]
+#HTML( #R$D0E7<br><img src="images/room_19.png"/>)
+
+[Rooms:Room 1A - Trunk Road]
+#HTML( #R$D109<br><img src="images/room_1a.png"/>)
+
+[Rooms:Room 1B - The Zoo]
+#HTML( #R$D125<br><img src="images/room_1b.png"/>)
+
+[Rooms:Room 1C - Rail Road]
+#HTML( #R$D135<br><img src="images/room_1c.png"/>)
+
+[Rooms:Room 1D - The Station]
+#HTML( #R$D153<br><img src="images/room_1d.png"/>)
+
+[Rooms:Room 1E - The Docks]
+#HTML( #R$D16D<br><img src="images/room_1e.png"/>)
+
+[Rooms:Room 1F - The Sewer]
+#HTML( #R$D17D<br><img src="images/room_1f.png"/>)
+
+[Rooms:Room 20 - The Cave]
+#HTML( #R$D191<br><img src="images/room_20.png"/>)
