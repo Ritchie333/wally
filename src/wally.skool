@@ -3159,7 +3159,7 @@ s$A83A DEFS $01
 ; Temporary store for the stack pointer for putting static objects on screen
 g$A83B DEFW $0000
 
-; Put a static object on screen
+; Put a static object on screen, without a mask
 ;
 ; Used by the routines at #R$EEC1, #R$F334, #R$F43C, #R$F4D3, #R$F572, #R$F6EC,
 ; #R$F746, #R$F773, #R$F814, #R$F93A and #R$F9F5.
@@ -3187,17 +3187,17 @@ c$A83D DI            ; Disable interrupts.
  $A850 LD SP,HL      ; }
  $A851 LD A,($A838)  ; Get the x co-ordinate.
  $A854 LD B,A        ; Set this in #REGb.
- $A855 AND $07       ;
- $A857 INC A         ;
- $A858 LD ($A87B),A  ;
- $A85B LD A,B        ;
+ $A855 AND $07       ; Get the bottom 3 bits, which are the frame ID.
+ $A857 INC A         ; { Add 1 to this and modifiy #N$A87B, which is executed later.
+ $A858 LD ($A87B),A  ; }
+ $A85B LD A,B        ; { Get the top 5 bits of the x co-ordinate, which are the byte.
  $A85C AND $F8       ;
  $A85E RRCA          ;
  $A85F RRCA          ;
- $A860 RRCA          ;
+ $A860 RRCA          ; }
  $A861 LD ($EFAF),A  ; Change the routine at #R$EF91 to use a different pointer in the buffer.
- $A864 ADD A,$02     ;
- $A866 LD E,A        ;
+ $A864 ADD A,$02     ; { Move forward two columns and store this in #REGe.
+ $A866 LD E,A        ; }
  $A867 LD A,($A839)  ; Get the Y co-ordinate.
  $A86A SUB $40       ; Subtract #N$40 to get an offset on screen.
  $A86C LD L,A        ; { Put this in #REGhl.
@@ -3211,25 +3211,25 @@ c$A83D DI            ; Disable interrupts.
  $A876 ADD HL,DE     ; Add this to the offset so #REGhl points to the correct row.
  $A877 LD C,$10      ; 16 rows to copy.
 *$A879 POP DE        ; Put the next graphic data in #REGde.
- $A87A LD B,$00      ; 
- $A87C DEC B         ; 
- $A87D JR Z,$A889    ; 
- $A87F XOR A         ;
-*$A880 SRL E         ;
- $A882 RR D          ;
- $A884 RRA           ;
- $A885 DJNZ $A880    ;
- $A887 OR (HL)       ;
- $A888 LD (HL),A     ;
-*$A889 DEC HL        ;
- $A88A LD A,(HL)     ;
+ $A87A LD B,$00      ; Skip a number of frames. (This code was modified earlier in the routine)
+ $A87C DEC B         ; { If this is frame 0, it sits on a byte boundary and there is one less byte to update.
+ $A87D JR Z,$A889    ; }
+ $A87F XOR A         ; Start with a value of 0 ie: all bits off.
+*$A880 SRL E         ; Shift #REGe, putting 0 in bit 7.
+ $A882 RR D          ; Rotate #REGd, respecting carry.
+ $A884 RRA           ; Rotate #REGa, respecting carry.
+ $A885 DJNZ $A880    ; Loop until we get the right frame.
+ $A887 OR (HL)       ; { Do a logical OR of the byte with the data in #REGa.
+ $A888 LD (HL),A     ; }
+*$A889 DEC HL        ; Move back a byte.
+ $A88A LD A,(HL)     ; { Do a logical OR of the byte with the data in #REGd.
  $A88B OR D          ;
- $A88C LD (HL),A     ;
- $A88D DEC HL        ;
- $A88E LD A,(HL)     ;
+ $A88C LD (HL),A     ; }
+ $A88D DEC HL        ; Move back a byte.
+ $A88E LD A,(HL)     ; { Do a logical OR of the byte with the data in #REGd.
  $A88F OR E          ;
- $A890 LD (HL),A     ;
- $A891 LD DE,$0022   ; { Move to the next row (?) 
+ $A890 LD (HL),A     ; }
+ $A891 LD DE,$0022   ; { Move to the next row
  $A894 ADD HL,DE     ; }
  $A895 DEC C         ; Decrement the number of rows to copy.
  $A896 JP NZ,$A879   ; Loop while there is more to draw.
@@ -3238,7 +3238,7 @@ c$A83D DI            ; Disable interrupts.
  $A89E EXX           ; { Swap back all main registers and return.
  $A89F RET           ; }
 
-; Draw an object in the sprite buffer
+; Draw a masked object in the sprite buffer
 ;
 ; Used by the routines at #R$ED2A, #R$ED8A, #R$F057, #R$F10E, #R$F24B, #R$F277,
 ; #R$F309, #R$F37D, #R$F3AB, #R$F409, #R$F49D, #R$F503, #R$F5F1, #R$F674,
@@ -3263,19 +3263,19 @@ c$A8A0 EXX           ; Exchange main registers.
  $A8B2 LD SP,HL      ; }
  $A8B3 LD A,($A838)  ; { Put the X co-ordinate in #REGb.
  $A8B6 LD B,A        ; }
- $A8B7 AND $07       ;
- $A8B9 INC A         ;
+ $A8B7 AND $07       ; Get the bottom 3 bytes, which represents the frame number.
+ $A8B9 INC A         ; { Add 1, and set this in #N$A8E0 and #N$A8FC which modifies later routines.
  $A8BA LD ($A8E0),A  ;
- $A8BD LD ($A8FC),A  ;
- $A8C0 LD A,B        ;
- $A8C1 AND $F8       ;
- $A8C3 RRCA          ;
+ $A8BD LD ($A8FC),A  ; }
+ $A8C0 LD A,B        ; { Put the bottom 5 bits, which represents the byte, in #N$EFAF.
+ $A8C1 AND $F8       ; This changes the logic in the routine to draw the fountain in the
+ $A8C3 RRCA          ; town square at #R$EF91.
  $A8C4 RRCA          ;
  $A8C5 RRCA          ;
- $A8C6 LD ($EFAF),A  ;
- $A8C9 ADD A,$02     ;
- $A8CB LD E,A        ;
- $A8CC LD C,$10      ;
+ $A8C6 LD ($EFAF),A  ; }
+ $A8C9 ADD A,$02     ; { Add 2 to the byte and store it in #REGe.
+ $A8CB LD E,A        ; }
+ $A8CC LD C,$10      ; #N$10 rows to update.
  $A8CE LD A,($A839)  ; Get the Y co-ordinate.
  $A8D1 SUB $40       ; Subtract #N$40 to get an offset in the sprite buffer.
  $A8D3 LD L,A        ; { Put this in #REGhl.
@@ -3287,51 +3287,52 @@ c$A8A0 EXX           ; Exchange main registers.
  $A8DA ADD HL,HL     ; }
  $A8DB LD D,$6B      ; Set the high byte of #REGde to an offset in the sprite buffer. (#R$6B00)
  $A8DD ADD HL,DE     ; Add this.
-*$A8DE POP DE        ; Restore #REGde.
- $A8DF LD B,$00      ;
- $A8E1 DEC B         ;
- $A8E2 JR Z,$A8F0    ;
- $A8E4 SCF           ;
- $A8E5 LD A,$FF      ;
-*$A8E7 RR E          ;
- $A8E9 RR D          ;
- $A8EB RRA           ;
- $A8EC DJNZ $A8E7    ;
- $A8EE AND (HL)      ;
- $A8EF LD (HL),A     ;
-*$A8F0 DEC HL        ;
- $A8F1 LD A,(HL)     ;
+*$A8DE POP DE        ; Get the next value (the mask) in #REGde.
+; If this is not frame 0, it doesn't sit on a byte boundary and bits need shifting forwards.
+ $A8DF LD B,$00      ; Set #REGb to the number of frames to loop around. (This code is modified earlier)
+ $A8E1 DEC B         ; { If this is frame 0, there is one less byte to update.
+ $A8E2 JR Z,$A8F0    ; }
+ $A8E4 SCF           ; Set the carry flag, to use in rotating bits.
+ $A8E5 LD A,$FF      ; Start with a mask of #N$FF ie: all bits on.
+*$A8E7 RR E          ; { Rotate #REGe and #REGd, respecting carry.
+ $A8E9 RR D          ; }
+ $A8EB RRA           ; Rotate #REGa, respecting carry.
+ $A8EC DJNZ $A8E7    ; Loop until we get to the right frame number.
+ $A8EE AND (HL)      ; { Do a logical AND of the mask in #REGa against the byte in the sprite buffer.
+ $A8EF LD (HL),A     ; }
+*$A8F0 DEC HL        ; Move back a byte.
+ $A8F1 LD A,(HL)     ; { Do a logical AND of the mask in #REGd against the byte in the sprite buffer.
  $A8F2 AND D         ;
- $A8F3 LD (HL),A     ;
- $A8F4 DEC HL        ;
- $A8F5 LD A,(HL)     ;
+ $A8F3 LD (HL),A     ; }
+ $A8F4 DEC HL        ; Move back a byte.
+ $A8F5 LD A,(HL)     ; { Do a logical AND of the mask in #REGe against the byte in the sprite buffer.
  $A8F6 AND E         ;
- $A8F7 LD (HL),A     ;
- $A8F8 INC HL        ;
- $A8F9 INC HL        ;
- $A8FA POP DE        ;
- $A8FB LD B,$00      ;
- $A8FD DEC B         ;
- $A8FE JR Z,$A90A    ;
- $A900 XOR A         ;
-*$A901 SRL E         ;
- $A903 RR D          ;
- $A905 RRA           ;
- $A906 DJNZ $A901    ;
- $A908 OR (HL)       ;
- $A909 LD (HL),A     ;
-*$A90A DEC HL        ;
- $A90B LD A,(HL)     ;
+ $A8F7 LD (HL),A     ; }
+ $A8F8 INC HL        ; { Move forward to the next byte in the buffer.
+ $A8F9 INC HL        ; }
+ $A8FA POP DE        ; Get the next value (the data) in #REGde.
+ $A8FB LD B,$00      ; Set #REGb to the number of frames to loop around. (This code is modified earlier)
+ $A8FD DEC B         ; { If this is frame 0, there is one less byte to update.
+ $A8FE JR Z,$A90A    ; }
+ $A900 XOR A         ; Start with data of 0 ie: all bits off
+*$A901 SRL E         ; Shift #REGe to the right, putting 0 on bit 7.
+ $A903 RR D          ; Rotate #REGd respecting carry.
+ $A905 RRA           ; Rotate #REGa repsecting carry.
+ $A906 DJNZ $A901    ; Loop until we get to the right frame number.
+ $A908 OR (HL)       ; { Do a logical OR of the data in #REGa against the byte in the sprite buffer.
+ $A909 LD (HL),A     ; }
+*$A90A DEC HL        ; Move back a byte.
+ $A90B LD A,(HL)     ; { Do a logical OR of the data in #REGd against the byte in the sprite buffer.
  $A90C OR D          ;
- $A90D LD (HL),A     ;
- $A90E DEC HL        ;
- $A90F LD A,(HL)     ;
+ $A90D LD (HL),A     ; }
+ $A90E DEC HL        ; Move back a byte.
+ $A90F LD A,(HL)     ; { Do a logical OR of the data in #REGd against the byte in the sprite buffer.
  $A910 OR E          ;
- $A911 LD (HL),A     ;
- $A912 LD DE,$0022   ;
- $A915 ADD HL,DE     ;
- $A916 DEC C         ;
- $A917 JP NZ,$A8DE   ;
+ $A911 LD (HL),A     ; }
+ $A912 LD DE,$0022   ; { Move forward a row and two columns.
+ $A915 ADD HL,DE     ; }
+ $A916 DEC C         ; Decrement the row count.
+ $A917 JP NZ,$A8DE   ; Loop while there are more rows to draw.
  $A91A EXX           ; Restore main registers.
  $A91B LD SP,($A83B) ; Restore the stack pointer.
  $A91F POP AF        ; { Restore #REGaf and return.
@@ -5398,8 +5399,8 @@ b$B560 DEFB $FF,$03,$07,$03,$07,$02,$07,$01
 ;
 ; Used by the routines at #R$B34C and #R$B8C4.
 ;
+; A The ID of the object
 ; C The attribute to display
-; HL The address of the character to print
 ; D The y co-ordinate
 ; E The x co-ordinate
 c$B715 PUSH AF       ; { Store main registers.
@@ -5441,36 +5442,36 @@ c$B715 PUSH AF       ; { Store main registers.
  $B73F ADD HL,DE     ; }
  $B740 PUSH HL       ; { Put this in #REGix.
  $B741 POP IX        ; }
- $B743 LD L,A        ; 
- $B744 LD H,$00      ;
- $B746 ADD HL,HL     ;
+ $B743 LD L,A        ; { Put the object ID in #REGhl.
+ $B744 LD H,$00      ; }
+ $B746 ADD HL,HL     ; { Multiply it by 8 to get a suitable offset.
  $B747 ADD HL,HL     ;
- $B748 ADD HL,HL     ;
+ $B748 ADD HL,HL     ; }
  $B749 LD DE,$DFDC   ; { Add the base address for the character set. (#R$DFDC)
  $B74C ADD HL,DE     ; }
- $B74D EX DE,HL      ;
- $B74E LD A,$08      ;
-*$B750 LD L,(IX+$00) ;
- $B753 LD H,(IX+$01) ;
- $B756 ADD HL,BC     ;
- $B757 INC IX        ;
- $B759 INC IX        ;
- $B75B EX DE,HL      ;
- $B75C LDI           ;
- $B75E EX DE,HL      ;
- $B75F INC BC        ;
- $B760 LD L,(IX+$00) ;
- $B763 LD H,(IX+$01) ;
- $B766 ADD HL,BC     ;
- $B767 INC IX        ;
- $B769 INC IX        ;
- $B76B DEC DE        ;
- $B76C EX DE,HL      ;
- $B76D LDI           ;
- $B76F EX DE,HL      ;
- $B770 INC BC        ;
- $B771 DEC A         ;
- $B772 JR NZ,$B750   ;
+ $B74D EX DE,HL      ; Swap #REGde and #REGhl.
+ $B74E LD A,$08      ; 8 rows to update.
+*$B750 LD L,(IX+$00) ; { Get the screen offset for the start of the row in #REGhl.
+ $B753 LD H,(IX+$01) ; }
+ $B756 ADD HL,BC     ; Add the offset for the current column and row.
+ $B757 INC IX        ; { Point to the next entry in the screen offsets table.
+ $B759 INC IX        ; }
+ $B75B EX DE,HL      ; Swap #REGhl and #REGde, as the copying is done that way round.
+ $B75C LDI           ; Copy from #REGhl (buffer) to #REGde (screen).
+ $B75E EX DE,HL      ; Swap #REGhl and #REGde back again.
+ $B75F INC BC        ; Move forward a column .
+ $B760 LD L,(IX+$00) ; { Get the screen offset for the start of the row in #REGhl.
+ $B763 LD H,(IX+$01) ; }
+ $B766 ADD HL,BC     ; Add the offset for the current column and row.
+ $B767 INC IX        ; { Point to the next entry in the screen offsets table.
+ $B769 INC IX        ; }
+ $B76B DEC DE        ; Move back a column.
+ $B76C EX DE,HL      ; Swap #REGhl and #REGde, as the copying is done that way round.
+ $B76D LDI           ; Copy from #REGhl (buffer) to #REGde (screen).
+ $B76F EX DE,HL      ; Swap #REGhl and #REGde back again.
+ $B770 INC BC        ; Move forward a column .
+ $B771 DEC A         ; { Loop while there are more rows to draw.
+ $B772 JR NZ,$B750   ; }
  $B774 POP DE        ; { Restore main registers and return.
  $B775 POP BC        ;
  $B776 POP HL        ;
@@ -10177,18 +10178,18 @@ c$ED2A LD A,($ECF5)  ; Get the index of the next reward screen. (#R$ECF5)
 ; Set up moving objects in the Laboratory
 ;
 ; Used by the routines at #R$ED13 and #R$F177.
-c$ED8A LD IX,$ED06   ;
- $ED8E LD B,$03      ;
-*$ED90 PUSH BC       ;
- $ED91 LD BC,$F5CA   ;
- $ED94 CALL $EF35    ;
+c$ED8A LD IX,$ED06   ; Point #REGix at the movement table. (#R$ED06)
+ $ED8E LD B,$03      ; 3 objects to update.
+*$ED90 PUSH BC       ; Remember the count in #REGbc.
+ $ED91 LD BC,$F5CA   ; Point #REGbc at the bounds table. (#R$F5CA)
+ $ED94 CALL $EF35    ; Update the next moving object.
  $ED97 CALL $A8A0    ; Put the object in the sprite buffer.
- $ED9A PUSH AF       ;
+ $ED9A PUSH AF       ; { Check for collision detection.
  $ED9B CALL $E329    ;
- $ED9E POP AF        ;
- $ED9F POP BC        ;
- $EDA0 DJNZ $ED90    ;
- $EDA2 RET           ;
+ $ED9E POP AF        ; }
+ $ED9F POP BC        ; Restore the count in #REGbc.
+ $EDA0 DJNZ $ED90    ; Loop until all objects are drawn.
+ $EDA2 RET           ; Return.
 
 ; Action 2 SET(x) : Set flag xx
 c$EDA3 LD A,$01      ;
