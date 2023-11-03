@@ -5873,7 +5873,7 @@ c$B931 PUSH HL       ; { Preserve main registers.
 ; The current room number
 g$B951 DEFB $00
 
-; Draw a room's graphics
+; Draw a room's background graphics
 ;
 ; Used by the routines at #R$813B, #R$8155, #R$AC06, #R$ED2A and #R$EDF7.
 c$B952 LD A,$B8      ;
@@ -10577,11 +10577,11 @@ c$EFC7 LD A,(IY+$05)   ; Get the X co-ordinate.
  $EFFD LD A,(IY-$3C)   ; Get the current direction of the sprite. (#R$BC2B)
  $F000 OR A            ; Is it 0 (left)?
  $F001 CALL NZ,$81D4   ; If not, need to flip the sprite around to be left-facing.
- $F004 LD A,$F0        ;
- $F006 LD ($F0BD),A    ;
- $F009 LD HL,$F0B7     ;
+ $F004 LD A,$F0        ; { Set the shark's X co-ordinate to #N$F0.
+ $F006 LD ($F0BD),A    ; }
+ $F009 LD HL,$F0B7     ; Point #REGhl directly at the background graphics. (#R$F0B7)
  $F00C CALL $B902      ; Clear the playing area.
- $F00F CALL $B969      ;
+ $F00F CALL $B969      ; Draw the background graphics.
  $F012 LD (IY+$05),$DA ; Set the X co-ordinate to #N$DA.
  $F016 LD (IY+$0A),$3C ; Set the Y co-ordinate to #N$3C.
 *$F01A LD A,(IY+$0A)   ; Get the Y co-ordinate.
@@ -10642,32 +10642,37 @@ c$F057 LD A,($F046)  ; Get the shark's direction.
  $F088 RET NZ        ; Return if it is, chase hasn't started.
 ; The chase is on.
  $F089 LD HL,$F0BD   ; Point #REGhl to the shark's x co-ordinate.
- $F08C LD A,(HL)     ; Get the value in #REGa.
+ $F08C LD A,(HL)     ; { Has the shark caught up with the player?
  $F08D SUB (IY+$05)  ; 
  $F090 SUB $01       ;
- $F092 CP $FE        ;
- $F094 JR NC,$F09A   ;
- $F096 LD A,(HL)     ;
+ $F092 CP $FE        ; }
+ $F094 JR NC,$F09A   ; Jump forward if it has, it doesn't need to chase any more.
+ $F096 LD A,(HL)     ; { Otherwise decrement the X co-ordinate by 2.
  $F097 SUB $02       ;
- $F099 LD (HL),A     ;
-*$F09A LD A,(HL)     ;
+ $F099 LD (HL),A     ; }
+*$F09A LD A,(HL)     ; { Is the shark close enough to the player to attack?
  $F09B SUB (IY+$05)  ;
  $F09E SUB $0C       ;
- $F0A0 CP $E0        ;
- $F0A2 JR C,$F0AE    ;
- $F0A4 INC (HL)      ;
- $F0A5 LD A,($F0E4)  ;
- $F0A8 INC A         ;
- $F0A9 CP $05        ;
- $F0AB RET Z         ;
- $F0AC JR $F0B3      ;
-*$F0AE LD A,($F0E4)  ;
- $F0B1 DEC A         ;
- $F0B2 RET Z         ;
-*$F0B3 LD ($F0E4),A  ;
- $F0B6 RET           ;
+ $F0A0 CP $E0        ; }
+ $F0A2 JR C,$F0AE    ; Jump forward if it isn't.
+; The shark is close enough to attack the player, so don't make them advance
+; otherwise they'll overtake and not attack anymore.
+ $F0A4 INC (HL)      ; Increment the X co-ordinate.
+ $F0A5 LD A,($F0E4)  ; Get the number of ticks in this run.
+ $F0A8 INC A         ; Increment it.
+ $F0A9 CP $05        ; { Return if it doesn't equal 5 yet.
+ $F0AB RET Z         ; }
+ $F0AC JR $F0B3      ; Otherwise set it to that value.
+; The shark isn't close enough yet.
+*$F0AE LD A,($F0E4)  ; Get the number of ticks in this run.
+ $F0B1 DEC A         ; Decrement it.
+ $F0B2 RET Z         ; Return if it doesn't equal 0 yet.
+*$F0B3 LD ($F0E4),A  ; { Otherwise set it to that value and return.
+ $F0B6 RET           ; }
 
 ; Chase : Room data
+;
+; #CALL:print_room_data(#PC,chase)
 b$F0B7 DEFB $80,$07,$75,$03,$7F,$00
 
 ; Chase : Current x co-ordinate of the shark
@@ -11476,6 +11481,8 @@ c$F674 LD A,$04      ; { Moving objects decrease endurance by 4.
  $F6D0 RET           ;
 
 ; Table containing x position and item number to print for bank letters
+;
+; Used by the routine in #R$F6EC
 b$F6D1 DEFB $40,$13 ; B
  $F6D3 DEFB $60,$1E ; R
  $F6D5 DEFB $80,$1A ; E
@@ -11490,42 +11497,45 @@ g$F6DC DEFB $40,$64,$02,$04,$B4,$98,$02,$FC
  $F6E4 DEFB $20,$44,$02,$04,$C8,$78,$02,$FC
 
 ; Room logic : The Bank
-c$F6EC LD A,($EDC5)  ;
- $F6EF CP $06        ;
- $F6F1 JR NZ,$F6FF   ;
- $F6F3 LD A,($F6DB)  ;
- $F6F6 XOR $01       ;
- $F6F8 LD ($F6DB),A  ;
- $F6FB JR Z,$F716    ;
- $F6FD LD A,$06      ;
-*$F6FF DEC A         ;
- $F700 JR Z,$F716    ;
- $F702 LD B,A        ;
- $F703 LD HL,$F6D1   ;
- $F706 LD DE,$4800   ;
-*$F709 LD E,(HL)     ;
- $F70A INC HL        ;
- $F70B LD ($A838),DE ;
- $F70F LD A,(HL)     ;
- $F710 INC HL        ;
- $F711 CALL $A83D    ;
- $F714 DJNZ $F709    ;
-*$F716 LD A,($EDC5)  ;
- $F719 CP $06        ;
- $F71B RET Z         ;
+c$F6EC LD A,($EDC5)  ; Get the number of letters put in the safe + 1
+ $F6EF CP $06        ; Are all letters there?
+ $F6F1 JR NZ,$F6FF   ; Jump forward if not.
+; If we've got all 5 letters, flash them.
+ $F6F3 LD A,($F6DB)  ; { Toggle the display state
+ $F6F6 XOR $01       ; between 0 and 1.
+ $F6F8 LD ($F6DB),A  ; }
+ $F6FB JR Z,$F716    ; If the display state is 0, there's nothing to do here.
+ $F6FD LD A,$06      ; Set the number of letters + 1 back to 6.
+*$F6FF DEC A         ; Decrement by 1 to get the actual number of letters.
+ $F700 JR Z,$F716    ; If there are no letters to draw, then there's
+                     ; nothing to do here.
+ $F702 LD B,A        ; Put the number of letters to draw in #REGb.
+ $F703 LD HL,$F6D1   ; Point #REGhl at the first letter.
+ $F706 LD DE,$4800   ; Set the initial position on row #N$48.
+*$F709 LD E,(HL)     ; Get the column from the buffer.
+ $F70A INC HL        ; Move to the next position in the buffer.
+ $F70B LD ($A838),DE ; Set the position for the drawing routine.
+ $F70F LD A,(HL)     ; Get the object ID to print.
+ $F710 INC HL        ; Move to the next position in the buffer.
+ $F711 CALL $A83D    ; Draw the graphic.
+ $F714 DJNZ $F709    ; Loop while there are more letters.
+*$F716 LD A,($EDC5)  ; Get the number of letters + 1.
+ $F719 CP $06        ; Have we got all six.
+ $F71B RET Z         ; If so, there's nothing to do here.
+; As long as the safe isn't cracked yet, put the moving objects on screen.
  $F71C LD A,$06      ; { Moving objects decrease endurance by 6.
  $F71E LD ($F26E),A  ; }
- $F721 LD IX,$F6DC   ;
- $F725 LD B,$04      ;
-*$F727 PUSH BC       ;
- $F728 LD BC,$F2F7   ;
- $F72B CALL $EF35    ;
- $F72E LD A,$76      ;
- $F730 CALL $A8A0    ;
- $F733 CALL $E329    ;
- $F736 POP BC        ;
- $F737 DJNZ $F727    ;
- $F739 RET           ;
+ $F721 LD IX,$F6DC   ; Point #REGix at the movement table. (#R$F6DC)
+ $F725 LD B,$04      ; 4 objects to draw.
+*$F727 PUSH BC       ; Remember the object count in #REGbc.
+ $F728 LD BC,$F2F7   ; Point #REGde at the bounds table. (#R$F2F7)
+ $F72B CALL $EF35    ; Update the next moving object.
+ $F72E LD A,$76      ; Set the object ID to the pound symbol.
+ $F730 CALL $A8A0    ; Put the object in the sprite buffer.
+ $F733 CALL $E329    ; Check for collision detection.
+ $F736 POP BC        ; Restore the object count in #REGbc.
+ $F737 DJNZ $F727    ; Loop while there are more objects to draw.
+ $F739 RET           ; Return.
 
 ; Movement table : Wally's House
 g$F73A DEFB $34,$40,$00,$02,$74,$6C,$00,$02
