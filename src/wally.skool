@@ -4032,7 +4032,7 @@ b$AD6A DEFB $05,$05,$03,$1E,$06,$02,$20,$00
 ; #CALL:print_next_rooms(#PC)
 b$AD74 DEFB $1F,$01,$00,$FF
 
-; Table for next room to visi by a computer player
+; Table for next room to visit by a computer player
 ;
 ; Used by the routine in #R$ADBA.
 b$AD78 DEFB $0C,$10     ; 00 : The Town Square
