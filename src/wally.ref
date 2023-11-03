@@ -130,6 +130,37 @@ stairs in the sewer are the most complex definition.
 The specific table used by each room is defined as a table in #R$AFA3. Most rooms use ID 0,
 which has no additional platforms.
 
+[DataStructures:Food]
+Food is stored in a table at #R$F7E9. The structure is:
+
+#TABLE(default, center)
+{ =h Byte | =h Description }
+{ 0 | ID of the room the food appears in }
+{ 1 | X co-ordinate }
+{ 2 | Y co-ordinate }
+{ 3 | ID of the graphic for the food (#N$5B - #N$5F) }
+TABLE#
+
+The last entry holds #N$FF instead.
+
+When an item of food is picked up, the game switches to the next entry in the table,
+then cycles back round to the start.
+
+Each character has a favourite food defined in #R$BC80. If they pick up this,
+their endurance will be restored to the full value, otherwise other foods
+just increment it slightly.
+
+The favourite foods are:
+
+#TABLE(default, center)
+{ =h Character | =h Food }
+{ Wally | Burger }
+{ Wilma | Iced bun }
+{ Tom | Fiz }
+{ Dick | Bottle }
+{ Harry | Pear }
+TABLE#
+
 [Logic:Introduction]
 The game includes a simple compiled programming language, conceptually similar to
 #HTML(<a href="https://en.wikipedia.org/wiki/AWK">AWK</a> ). Each entry includes a number of

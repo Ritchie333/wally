@@ -6323,7 +6323,7 @@ g$BC76 DEFB $00,$00,$00,$00,$00
 ; Runs from #N$BC7B (Wally) to #N$BC7F (Harry).
 g$BC7B DEFB $80,$80,$80,$80,$80
 
-; Game status buffer at BC80
+; ID of the favourite food item that restores endurance to maximum.
 g$BC80 DEFB $5B,$5C,$5D,$5E,$5F
 
 ; Mask offset for a character
@@ -11605,27 +11605,24 @@ g$F7DF DEFB $38
 b$F7E0 DEFB $29,$60,$21,$88,$19,$B0,$11,$D8
  $F7E8 DEFB $09
 
-; The food table (not current room). Format is room, x co-ord, y co-ord, object
-; number
-b$F7E9 DEFB $0E,$90,$A0
- $F7EC DEFB $5B,$0A,$08
- $F7EF DEFB $A8,$5C,$0F
- $F7E2 DEFB $F0,$A8,$5E
- $F7E5 DEFB $19,$90,$A0
- $F7E8 DEFB $5D,$17,$20
- $F7EB DEFB $90,$5F,$FF
+; The food table.
+;
+; Used by the routine in #R$F814.
+;
+; Format is room, x co-ord, y co-ord, object number
+b$F7E9 DEFB $0E,$90,$A0,$5B
+ $F7ED DEFB $0A,$08,$A8,$5C
+ $F7F1 DEFB $0F,$F0,$A8,$5E
+ $F7F5 DEFB $19,$90,$A0,$5D
+ $F7F9 DEFB $17,$20,$90,$5F
+ $F7FD DEFB $FF
 
-; The food table (current room). Format is room, x co-ord, y co-ord, object
-; number
-b$F7FE DEFB $0F,$F0,$A8
- $F801 DEFB $5E,$19,$90
- $F804 DEFB $A0,$5D,$17
- $F807 DEFB $20,$90,$5F
- $F80A DEFB $0E,$90,$A0
- $F80D DEFB $5B,$0A,$08
-
-; Game status buffer entry at F810
-g$F810 DEFB $A8,$5C
+; Copy of the food table (not used)
+u$F7FE DEFB $0F,$F0,$A8,$5E
+ $F802 DEFB $19,$90,$A0,$5D
+ $F806 DEFB $17,$20,$90,$5F
+ $F80A DEFB $0E,$90,$A0,$5B
+ $F80E DEFB $0A,$08,$A8,$5C
 
 ; Pointer to the next food table entry
 g$F812 DEFW $F7E9
@@ -11652,40 +11649,41 @@ c$F814 LD HL,($F812) ; Point #REGhl at the next food.
  $F82A LD ($A838),DE ; Copy the position to the scratch buffer at #R$A838.
  $F82E CALL $A83D    ; Draw the food.
  $F831 LD A,(IY+$05) ; Put the x co-ordinate in #REGa.
- $F834 SUB E         ;
+ $F834 SUB E         ; { Is it near enough the food?
  $F835 SUB $04       ;
- $F837 CP $F8        ;
- $F839 RET C         ;
- $F83A LD A,(IY+$0A) ;
- $F83D SUB D         ;
+ $F837 CP $F8        ; }
+ $F839 RET C         ; Return if not.
+ $F83A LD A,(IY+$0A) ; Get the y co-ordinate.
+ $F83D SUB D         ; { Is it near enough the food?
  $F83E ADD A,$0C     ;
- $F840 CP $F8        ;
- $F842 RET C         ;
- $F843 LD HL,($F812) ;
+ $F840 CP $F8        ; }
+ $F842 RET C         ;  Return if not.
+; There's food here, and the player has picked it up.
+ $F843 LD HL,($F812) ; { Move #REGhl to the next food entry.
  $F846 INC HL        ;
  $F847 INC HL        ;
  $F848 INC HL        ;
- $F849 INC HL        ;
- $F84A LD A,(HL)     ;
- $F84B CP $FF        ;
+ $F849 INC HL        ; }
+ $F84A LD A,(HL)     ; Is this the end of the list?
+ $F84B CP $FF        ; { If so, set it back to the beginning. (#R$F7E9)
  $F84D JR NZ,$F852   ;
- $F84F LD HL,$F7E9   ;
-*$F852 LD ($F812),HL ;
- $F855 LD A,(IY+$19) ;
- $F858 CP B          ;
- $F859 JR Z,$F864    ;
- $F85B LD A,(IY+$14) ;
- $F85E ADD A,$20     ;
+ $F84F LD HL,$F7E9   ; }
+*$F852 LD ($F812),HL ; Store the next location of food back in memory.
+ $F855 LD A,(IY+$19) ; Get the ID of favourite food for this player. (#R$BC80)
+ $F858 CP B          ; Does it match the ID of this food?
+ $F859 JR Z,$F864    ; If so, jump forward to restore endurance to full strength.
+ $F85B LD A,(IY+$14) ; Get the endurance.
+ $F85E ADD A,$20     ; { Add #N$20 to a maximum of #N$80.
  $F860 CP $80        ;
  $F862 JR C,$F866    ;
-*$F864 LD A,$80      ;
-*$F866 LD (IY+$14),A ;
- $F869 CALL $E36D    ;
- $F86C LD BC,$643C   ;
+*$F864 LD A,$80      ; }
+*$F866 LD (IY+$14),A ; Store this new endurance value.
+ $F869 CALL $E36D    ; Update the endurance and lives display.
+ $F86C LD BC,$643C   ; { Play a "picked up food" sound effect.
  $F86F LD DE,$0128   ;
  $F872 LD HL,$0103   ;
- $F875 CALL $E3D3    ;
- $F878 RET           ;
+ $F875 CALL $E3D3    ; }
+ $F878 RET           ; Return.
 
 ; Initial states of lightning bolts in the "asteroids" game
 b$F879 DEFB $EE,$42,$FE,$02,$38,$EE,$AE,$FE
