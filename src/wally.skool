@@ -3159,7 +3159,7 @@ s$A83A DEFS $01
 ; Temporary store for the stack pointer for putting static objects on screen
 g$A83B DEFW $0000
 
-; Put a static object on screen, without a mask
+; Put a static object in the sprite buffer, without a mask
 ;
 ; Used by the routines at #R$EEC1, #R$F334, #R$F43C, #R$F4D3, #R$F572, #R$F6EC,
 ; #R$F746, #R$F773, #R$F814, #R$F93A and #R$F9F5.
@@ -3424,9 +3424,9 @@ c$A92C PUSH IY         ; Store #REGiy
  $A9AF CP $98          ; Is it on the ground?
  $A9B1 JR Z,$A9CA      ; Jump forward if it is.
  $A9B3 LD A,(IY+$05)   ; Get the X position.
- $A9B6 CP $78          ;
- $A9B8 JR NC,$A9C4     ;
- $A9BA LD (IY+$3C),$01 ;
+ $A9B6 CP $78          ; Is it less than #N$78?
+ $A9B8 JR NC,$A9C4     ; Jump forward if it is.
+ $A9BA LD (IY+$3C),$01 ; Set the character as mid-air.
 *$A9BE CALL $B288      ; Move a character.
  $A9C1 JP $A989        ; Jump back to finish off the routine.
 ; The character is standing next to the wall, and can be built (?)
@@ -4229,11 +4229,11 @@ c$AE5D LD A,(IY+$0F) ; { Set the current room to the most recently visited room.
  $AE78 XOR A         ; { Set the current frame to 0.
  $AE79 LD (IY+$00),A ; }
  $AE7C CALL $ADBA    ; Update the character.
- $AE7F XOR A         ;
- $AE80 LD (IY+$37),A ;
- $AE83 LD (IY+$3C),A ;
- $AE86 LD (IY+$46),A ;
- $AE89 RET           ;
+ $AE7F XOR A         ; Set #REGa to 0 to set some flags.
+ $AE80 LD (IY+$37),A ; Set the character as on the ground (ie: not falling)
+ $AE83 LD (IY+$3C),A ; Set the character to not jumping.
+ $AE86 LD (IY+$46),A ; Set the character to not jumping in any direction.
+ $AE89 RET           ; Return.
 
 ; Find the address of an item with the specified index
 ;
@@ -6345,10 +6345,10 @@ g$BC8F DEFB $94,$98,$9C,$A0,$A4
 ; Lives left for each player
 g$BC94 DEFB $03,$03,$03,$03,$03
 
-; Game status buffer at BC99
+; Unused
 g$BC99 DEFB $00,$00,$00,$00,$00
 
-; Game status buffer at BC9E
+; Set to 1 if a character is in mid-air
 g$BC9E DEFB $00,$00,$00,$00,$00
 
 ; Character jump flag
@@ -9774,9 +9774,9 @@ c$EB0F LD A,$01      ; { Set that the item should be swapped. (#R$EB54)
  $EB3D LD C,A        ; Store this in #REGc.
  $EB3E LD A,(HL)     ; Put the flags in #REGa.
  $EB3F AND $80       ; Clear bit 7.
- $EB41 OR (IY-$37)   ;
- $EB44 LD (HL),A     ;
- $EB45 LD (IY-$37),C ;
+ $EB41 OR (IY-$37)   ; Keep the bits set on the current bit mask.
+ $EB44 LD (HL),A     ; Store this.
+ $EB45 LD (IY-$37),C ; Store the old flags.
  $EB48 POP IY        ; Restore the original value of #REGiy.
  $EB4A CALL $E41D    ; Update the inventory.
  $EB4D CALL $AA7F    ; Play an "item swapped" effect.
@@ -10453,9 +10453,9 @@ c$EF35 LD E,(IX+$02) ; { Put the distance to move in #REGde.
  $EF38 LD D,(IX+$03) ; }
  $EF3B PUSH BC       ; { Store #REGbc and #REGaf.
  $EF3C PUSH AF       ; }
- $EF3D XOR A         ;
- $EF3E LD ($F673),A  ;
- $EF41 LD ($F672),A  ;
+ $EF3D XOR A         ; { Reset flags used in this routine.
+ $EF3E LD ($F673),A  ; 
+ $EF41 LD ($F672),A  ; }
  $EF44 LD A,(IX+$00) ; Get the current x co-ordinate in #REGa.
  $EF47 ADD A,E       ; Add the distance to move by.
  $EF48 LD L,A        ; Put this in #REGl.
@@ -10465,8 +10465,8 @@ c$EF35 LD E,(IX+$02) ; { Put the distance to move in #REGde.
  $EF4B CP L          ; Is our current x co-ordinate the minimum?
  $EF4C JR NZ,$EF59   ; Jump forward if not.
 ; x co-ordinate has reached the minimum or maximum.
-*$EF4E LD A,$01      ;
- $EF50 LD ($F672),A  ;
+*$EF4E LD A,$01      ; { Flag x boundary reached.
+ $EF50 LD ($F672),A  ; }
  $EF53 LD A,E        ; { Flip the distance to change between negative and positive.
  $EF54 NEG           ;
  $EF56 LD E,A        ; 
@@ -11420,10 +11420,14 @@ g$F653 DEFB $28,$46,$01,$01,$05,$04,$C8,$78
  $F663 DEFB $26,$00,$C8,$78,$FF,$01,$23,$02
  $F66B DEFB $26,$64,$01,$FF,$26,$00,$3C
  
-; Game status buffer entry at F672
+; Set to 1 if a moving object hits its boundary in X and needs to move in the other direction.
+;
+; Used by the routine in #R$EF35.
 g$F672 DEFB $00
 
-; Game status buffer entry at F673
+; Set to 1 if a moving object hits its boundary in Y and needs to move in the other direction.
+;
+; Used by the routine in #R$EF35.
 g$F673 DEFB $00
 
 ; Room logic : The Park
@@ -11594,7 +11598,7 @@ c$F773 LD A,$02        ; { Moving objects decrease endurance by 2.
  $F7C5 LD A,(IY+$0A)   ;
  $F7C8 ADD A,$04       ;
  $F7CA LD (IY+$0A),A   ;
- $F7CD LD (IY+$37),$01 ;
+ $F7CD LD (IY+$37),$01 ; Set the character in mid-air.
 *$F7D1 LD A,($F7DE)    ;
  $F7D4 JR $F7D8        ;
 *$F7D6 LD A,$57        ;
@@ -11998,7 +12002,9 @@ c$FAE7 PUSH HL       ; { Store #REGhl and #REGde.
  $FAED POP HL        ; 
  $FAEE RET           ; }
 
-; Game status entry at FAEF
+; Asteroids : flag
+;
+; Alternates between 0 and 1.
 g$FAEF DEFB $00
 
 ; Asteroids : Move the lightning bolts around
