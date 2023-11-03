@@ -2485,8 +2485,8 @@ b$93F8 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
 
 ; Wally
 ;
-; #CALL:print_player(#PC,$46,wally)
-; #CALL:print_mask(#PC,$46,wallyM)
+; #CALL:print_mask(#PC,$wallyM)
+; #CALL:print_player(#PC,wally)
 b$9438 DEFB $F0,$00,$00,$00,$E0,$00,$07,$3E
  $9440 DEFB $E0,$00,$0F,$FF,$80,$00,$07,$FE
  $9448 DEFB $80,$00,$3C,$3C,$80,$01,$01,$80
@@ -2618,8 +2618,8 @@ b$9438 DEFB $F0,$00,$00,$00,$E0,$00,$07,$3E
 
 ; Wilma
 ;
-; #CALL:print_player(#PC,$45,wilma)
-; #CALL:print_mask(#PC,$45,wilmaM)
+; #CALL:print_mask(#PC,$wilmaM)
+; #CALL:print_player(#PC,$wilma)
 b$9838 DEFB $E0,$0F,$07,$C0,$C0,$07,$0D,$60
  $9840 DEFB $C0,$07,$1F,$B0,$C0,$03,$19,$D0
  $9848 DEFB $C0,$03,$16,$F8,$C0,$03,$06,$D0
@@ -2751,8 +2751,8 @@ b$9838 DEFB $E0,$0F,$07,$C0,$C0,$07,$0D,$60
 
 ; Tom
 ;
-; #CALL:print_player(#PC,$44,tom)
-; #CALL:print_mask(#PC,$44,tomM)
+; #CALL:print_mask(#PC,tomM)
+; #CALL:print_player(#PC,tom)
 b$9C38 DEFB $01,$FF,$00,$00,$00,$FF,$54,$00
  $9C40 DEFB $00,$7F,$7E,$00,$00,$7F,$C3,$00
  $9C48 DEFB $00,$3F,$3D,$00,$00,$3F,$7E,$80
@@ -2884,8 +2884,8 @@ b$9C38 DEFB $01,$FF,$00,$00,$00,$FF,$54,$00
 
 ; Dick
 ;
-; #CALL:print_player(#PC,$43,dick)
-; #CALL:print_mask(#PC,$43,dickM)
+; #CALL:print_mask(#PC,dickM)
+; #CALL:print_player(#PC,dick)
 b$A038 DEFB $FC,$3F,$00,$00,$FC,$3F,$01,$80
  $A040 DEFB $F8,$0F,$00,$00,$F0,$07,$03,$E0
  $A048 DEFB $E0,$07,$04,$10,$E0,$07,$0F,$F0
@@ -3017,8 +3017,8 @@ b$A038 DEFB $FC,$3F,$00,$00,$FC,$3F,$01,$80
 
 ; Harry
 ;
-; #CALL:print_player(#PC,$47,harry)
-; #CALL:print_mask(#PC,$47,harryM)
+; #CALL:print_mask(#PC,harryM)
+; #CALL:print_player(#PC,harry)
 b$A438 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
  $A440 DEFB $FF,$FF,$00,$00,$E0,$FF,$00,$00
  $A448 DEFB $C0,$7F,$0A,$00,$80,$3F,$15,$00
@@ -4641,12 +4641,12 @@ c$B0E6 EXX           ; Exchange main registers.
  $B0FB LD SP,HL      ; Point the stack at the graphic to draw.
  $B0FC LD A,(IY+$05) ; Get the X co-ordinate.
  $B0FF LD B,A        ; Store this in #REGb.
- $B100 AND $07       ; { Put the bottom 3 bits in #N$B189, 
+ $B100 AND $07       ; { Put the bottom 3 bits (as the frame number) in #N$B189, 
  $B102 LD ($B189),A  ; which modifies later code. }
- $B105 INC A         ;
- $B106 LD ($B129),A  ;
- $B109 LD ($B145),A  ;
- $B10C LD A,B        ; { Put the top 5 bits as a value
+ $B105 INC A         ; {Add 1 and store in #N$B129 and #N$B145, which
+ $B106 LD ($B129),A  ; modifies later code.
+ $B109 LD ($B145),A  ; }
+ $B10C LD A,B        ; { Put the top 5 bits (as the byte) as a value
  $B10D AND $F8       ; in #N$B17B, which modifies later code.
  $B10F RRCA          ;
  $B110 RRCA          ;
@@ -4654,7 +4654,7 @@ c$B0E6 EXX           ; Exchange main registers.
  $B112 LD ($B17B),A  ; }
  $B115 ADD A,$02     ; { Add 2 and put this in #REGe. 
  $B117 LD E,A        ; }
- $B118 LD C,$20      ; #N20 columns to draw.
+ $B118 LD C,$20      ; #N20 rows to draw.
  $B11A LD L,(IY+$0A) ; { Put the Y co-ordinate in #REGhl.
  $B11D LD H,$00      ; }
  $B11F ADD HL,HL     ; { Multiply by 16 to get a suitable offset.
@@ -4664,79 +4664,85 @@ c$B0E6 EXX           ; Exchange main registers.
  $B123 ADD HL,HL     ; }
  $B124 LD D,$63      ; Set the high byte of #REGde to the sprite buffer.
  $B126 ADD HL,DE     ; Add the offset.
-*$B127 POP DE        ; Move forward a column.
- $B128 LD B,$00      ; Set #REGb to the number of times to rotate bits.
-                     ; (was modified earlier in the code)
- $B12A DEC B         ; { Loop while there is more to draw.
- $B12B JR Z,$B139    ; }
- $B12D SCF           ; Set the carry flag.
- $B12E LD A,$FF      ;
-*$B130 RR E          ;
- $B132 RR D          ;
- $B134 RRA           ;
+*$B127 POP DE        ; Put the next byte (mask) in #REGde.
+ $B128 LD B,$00      ; { Set #REGb to the number of times to loop.
+                     ; (was modified earlier in the code) }
+ $B12A DEC B         ; { If this is frame 0, nothing else is needed here,
+ $B12B JR Z,$B139    ; and only two bytes need updating instead of three. }
+; If this isn't frame 0, everything needs shifting to the right to be in sync.
+ $B12D SCF           ; Set the carry flag, so the following RR instructions
+                     ; put it in bit 7.
+ $B12E LD A,$FF      ; Set the initial mask as #N$FF (all bits).
+*$B130 RR E          ; { Rotate the mask in #REGe, then through #REGd,
+ $B132 RR D          ; taking the carry flag through each time. }
+ $B134 RRA           ; Shift the mask by one pixel.
  $B135 DJNZ $B130    ; Loop while there is more to do.
 ; At this point, #REGhl points to the address in the sprite buffer to update.
- $B137 AND (HL)      ;
- $B138 LD (HL),A     ;
-*$B139 DEC HL        ;
- $B13A LD A,(HL)     ;
- $B13B AND D         ;
- $B13C LD (HL),A     ;
- $B13D DEC HL        ;
- $B13E LD A,(HL)     ;
+ $B137 AND (HL)      ; { Do a logical AND of the byte against the mask in #REGa.
+ $B138 LD (HL),A     ; }
+*$B139 DEC HL        ; Move back an entry in the sprite buffer.
+ $B13A LD A,(HL)     ; { Do a logical AND of the byte against the mask in #REGd.
+ $B13B AND D         ; 
+ $B13C LD (HL),A     ; }
+ $B13D DEC HL        ; Move back an entry in the sprite buffer.
+ $B13E LD A,(HL)     ; { Do a logical AND of the byte against the mask in #REGe.
  $B13F AND E         ;
- $B140 LD (HL),A     ;
- $B141 INC HL        ;
- $B142 INC HL        ;
- $B143 POP DE        ;
- $B144 LD B,$00      ;
- $B146 DEC B         ;
- $B147 JR Z,$B153    ;
- $B149 XOR A         ;
-*$B14A SRL E         ;
- $B14C RR D          ;
- $B14E RRA           ;
- $B14F DJNZ $B14A    ;
- $B151 OR (HL)       ;
- $B152 LD (HL),A     ;
-*$B153 DEC HL        ;
- $B154 LD A,(HL)     ;
- $B155 OR D          ;
- $B156 LD (HL),A     ;
- $B157 DEC HL        ;
- $B158 LD A,(HL)     ;
+ $B140 LD (HL),A     ; }
+ $B141 INC HL        ; { Move forward to the next position in the buffer.
+ $B142 INC HL        ; }
+ $B143 POP DE        ; Put the next byte (data) in #REGde.
+ $B144 LD B,$00      ; { Set #REGb to the number of times to loop.
+                     ; (Was modified in earlier code) }
+ $B146 DEC B         ; { If this is frame 0, nothing else is needed here,
+ $B147 JR Z,$B153    ; and two bytes need updating instead of three. }
+ ; If this isn't frame 0, everything needs shifting to the right to be in sync.
+ $B149 XOR A         ; Set the initial data as 0 (no bits).
+*$B14A SRL E         ; Rotate the byte in #REGe, putting 0 in bit 7.
+ $B14C RR D          ; Rotate the byte in #REGd, using the carry.
+ $B14E RRA           ; Shift the data by one pixel.
+ $B14F DJNZ $B14A    ; Loop while there is more to do.
+ $B151 OR (HL)       ; { Do a logical OR of the byte against the data in #REGa.
+ $B152 LD (HL),A     ; }
+*$B153 DEC HL        ; Move back an entry in the sprite buffer.
+ $B154 LD A,(HL)     ; { Do a logical OR of the byte against the data in #REGd.
+ $B155 OR D          ; 
+ $B156 LD (HL),A     ; }
+ $B157 DEC HL        ; Move back an entry in the sprite buffer.
+ $B158 LD A,(HL)     ; { Do a logical OR of the byte against the data in #REGe.
  $B159 OR E          ;
- $B15A LD (HL),A     ;
- $B15B LD DE,$0022   ;
- $B15E ADD HL,DE     ;
- $B15F DEC C         ;
- $B160 JP NZ,$B127   ;
- $B163 LD A,(IY+$0A) ;
- $B166 AND $07       ;
- $B168 JR Z,$B16E    ;
- $B16A LD B,$05      ;
+ $B15A LD (HL),A     ; }
+ $B15B LD DE,$0022   ; { Move to the next row.
+ $B15E ADD HL,DE     ; }
+ $B15F DEC C         ; Decrement the number of rows left.
+ $B160 JP NZ,$B127   ; Jump back if there are more rows to draw. 
+; Now handle the attributes.
+ $B163 LD A,(IY+$0A) ; { Get the bottom 3 bits of the Y co-ordinate, as the sub-component.
+ $B166 AND $07       ; }
+ $B168 JR Z,$B16E    ; { If this equals 0, set 4 rows to draw, otherwise 45.
+ $B16A LD B,$05      ; 
  $B16C JR $B170      ;
-*$B16E LD B,$04      ;
-*$B170 LD A,(IY+$0A) ;
- $B173 AND $F8       ;
- $B175 LD H,$00      ;
- $B177 LD L,A        ;
- $B178 ADD HL,HL     ;
- $B179 ADD HL,HL     ;
- $B17A LD DE,$FB00   ;
- $B17D ADD HL,DE     ;
- $B17E LD DE,$001E   ;
- $B181 LD C,(IY+$1E) ;
-*$B184 LD (HL),C     ;
+*$B16E LD B,$04      ; }
+*$B170 LD A,(IY+$0A) ; { Get the top 5 bits of the Y co-ordinate, as the byte.
+ $B173 AND $F8       ; }
+ $B175 LD H,$00      ; { Put this in #REGhl.
+ $B177 LD L,A        ; }
+ $B178 ADD HL,HL     ; { Multiply by 4.
+ $B179 ADD HL,HL     ; }
+ $B17A LD DE,$FB00   ; { Add the base address to get a location in the attribute buffer. (#R$FC00)
+ $B17D ADD HL,DE     ; }
+ $B17E LD DE,$001E   ; Set #REGde as the offset to move between rows.
+ $B181 LD C,(IY+$1E) ; Put the attribute to use in #REGc. (#R$BC85)
+*$B184 LD (HL),C     ; { Set the attribute for the next two bytes.
  $B185 INC HL        ;
  $B186 LD (HL),C     ;
- $B187 INC HL        ;
- $B188 LD A,$FF      ;
- $B18A OR A          ;
- $B18B JR Z,$B18E    ;
- $B18D LD (HL),C     ;
-*$B18E ADD HL,DE     ;
- $B18F DJNZ $B184    ;
+ $B187 INC HL        ; }
+ $B188 LD A,$FF      ; Put the X offset in #REGa. (This is modified by earlier code)
+ $B18A OR A          ; Is the offset zero?
+ $B18B JR Z,$B18E    ; If it is, jump forward, no more calculations needed.
+ $B18D LD (HL),C     ; Otherwise set the attribute for the third byte.
+                     ; which is needed on frames other than 0 that span a byte boundary.
+*$B18E ADD HL,DE     ; Move forward a row and back two columns.
+ $B18F DJNZ $B184    ; Loop while there is more to draw.
  $B191 EXX           ; Exchange main registers.
  $B192 LD SP,($A83B) ; { Restore the stack and return.
  $B196 RET           ; }
@@ -6326,7 +6332,7 @@ g$BC7B DEFB $80,$80,$80,$80,$80
 ; ID of the favourite food item that restores endurance to maximum.
 g$BC80 DEFB $5B,$5C,$5D,$5E,$5F
 
-; Mask offset for a character
+; Attribute to draw the character
 g$BC85 DEFB $46,$45,$44,$43,$07
 
 ; Low byte of the character's graphic

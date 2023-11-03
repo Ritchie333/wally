@@ -291,6 +291,11 @@ at #R$A83D also uses the stack for copying data. This is a
 #HTML(<a href="https://chuntey.wordpress.com/2013/10/02/how-to-write-zx-spectrum-games-chapter-13/">well-known trick</a>)
 to make graphics updating faster.
 
+[Fact:Colours]
+The attributes for each playable character are stored in #R$BC85.
+
+If you fancy drawing Wally in flashing cyan on mangenta, now you can!
+
 [Fact:Miles out of town]
 The "out of town" screen at #R$F177 uses a simple 16-bit word at #R$F15B to store the number of miles walked.
 Therefore if you've walked 65,535 miles and walk one more, the counter will reset to 0 and you'll be able

@@ -441,13 +441,18 @@ class WallyHtmlWriter(HtmlWriter):
             print( 'b $' + f'{ptr:x}'.upper() + ' Room block data ' + f'{i:x}'.upper() )
             print( 'D $' + f'{ptr:x}'.upper() + ' #CALL:print_block_data(#PC,block_data_' + f'{i:x}'.upper() + ')' )
 
-    def print_player( self, cwd, addr, attr, fName ):
-        return self.print_player_or_mask( cwd, addr, attr, fName, 2 )
+    def print_player( self, cwd, addr, fName ):
+        return self.print_player_or_mask( cwd, addr, fName, 2 )
     
-    def print_mask( self, cwd, addr, attr, fName ):
-        return self.print_player_or_mask( cwd, addr, attr, fName, 0 )
+    def print_mask( self, cwd, addr, fName ):
+        return self.print_player_or_mask( cwd, addr, fName, 0 )
 
-    def print_player_or_mask( self, cwd, addr, attr, fName, offset ):
+    def get_player_attr( self, addr ):
+        id = int( ( addr - 0x9438 ) / 0x400 )
+        return self.snapshot[ 0xBC85 + id ]
+
+    def print_player_or_mask( self, cwd, addr, fName, offset ):
+        attr = self.get_player_attr( addr )
         frames = []
         for f in range( 0, 8 ):
             ptr = addr + ( 0x80 * f )
