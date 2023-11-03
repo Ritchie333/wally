@@ -119,6 +119,7 @@ b $AD63 Next rooms : The Docks
 b $AD6A Next rooms : The Sewer
 b $AD74 Next rooms : The Cave
 b $AD78 Table for next action to perform by a computer player
+B $AD78,$42,2
 c $ADBA A character can perform an action here. Do it if necessary
 c $AE30 Get a flag to specify if a room can only be reached via the "in" key
 R $AE30 A Holds the room number, returns with the appropriate flag

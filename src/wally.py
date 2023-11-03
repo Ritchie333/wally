@@ -466,3 +466,12 @@ class WallyHtmlWriter(HtmlWriter):
             frame = Frame( udgs, 2 )
             frames.append( frame )
         return self.handle_image( frames, fName, cwd )
+    
+    def print_next_room_table( self, cwd, addr ):
+        text = ''
+        id = self.snapshot[ addr ]
+        while id != 0xff:       
+            text += self.get_room_name( id ) + '<br/>'
+            addr += 1
+            id = self.snapshot[ addr ]
+        return self.expand( text, cwd )

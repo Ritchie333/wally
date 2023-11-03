@@ -228,6 +228,23 @@ TABLE#
 
 The index of the next index into the buffer is stored in #R$ECF5.
 
+[Logic:Computer characters]
+The computer character run off a list defined at #R$AEEA, which contains a target room for
+them to move to, where they will swap with the first item in the room. The list is terminated
+by #N$FF.
+
+Whenever a computer character has swapped with an item, it picks the next entry off the table
+to decide where it's going to move to. As different characters swap at different times,
+always taking the next room ID in the table, it looks pseudo-random to the end user.
+
+The table at #R$AD78 explains how the computer character needs to move between the current
+and the target room. Each entry contains a pair of bytes. The routine at #R$ADBA, called
+when a character enters a new room, takes
+the cumulative difference between the two pairs of bytes (in the next room and the
+target room) and assigns it a "score". It compares it against a running "best score"
+(initialised to #N$FF so the first entry will always return a better result), and picks
+the room with the lowest score, which moves the character towards the intended room.
+
 [Fact:Screen updates]
 There are two copies of the screen, one with the background graphics (stored at #R$5B00) and one
 with moving objects and characters overlaid (#R$6B00).
@@ -263,6 +280,9 @@ SectionType=ListItems
 [Poke:Pokes]
 Immunity
  #N$E343 , #N$C9
+
+Stop computer players moving
+ #N$A92C , #N$C9
 
 [OtherCode:Loading system]
 Source=wally_loader.skool
