@@ -238,10 +238,9 @@ TABLE#
 
 Money is always given in multiples of £10.
 
-The high byte is the hundreds part of the money.
+The high byte is the hundreds part of the money. The low byte is the tens part of the money.
 
-The low byte is the tens part of the money, but only the top nybble is used (as a
-decimal digit can be represented as four bytes).
+In both cases, only the top nybble is used (as a decimal digit can be represented as four bytes).
 
 Example : $00, $50, $01 = Entry 1, £150.
 
@@ -252,8 +251,8 @@ of money has been earned, defined in entries at #R$ECF6. These are:
 #TABLE( default, center )
 { =h Byte | =h Character }
 { £600 | Morning tea break }
-{ £1,700 | Lunch time }
-{ £3,300 | Tea time }
+{ £1,300 | Lunch time }
+{ £2,100 | Tea time }
 { £4,000 | End of game }
 TABLE#
 

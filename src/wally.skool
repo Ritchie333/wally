@@ -10080,7 +10080,7 @@ b$ECF5 DEFB $00
 
 ; Table of amount of money needed to get morning, lunch and tea breaks
 ;
-; £600 - morning tea, £1700 - lunch, £3300 - tea
+; £600 - morning tea, £1300 - lunch, £2100 - tea
 b$ECF6 DEFB $00,$06
  $ECF8 DEFB $00,$13
  $ECFA DEFB $00,$21
