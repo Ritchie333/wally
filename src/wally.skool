@@ -3560,15 +3560,20 @@ c$AA8C LD A,(IY+$0F) ; Get the current room.
 ; Jump table of movement actions
 ;
 ; Used by the routine at #R$A92C.
-w$AAA0 DEFW $AAB2
- $AAA2 DEFW $AADD
- $AAA4 DEFW $AB09
- $AAA6 DEFW $AB26
- $AAA8 DEFW $AB43
- $AAAA DEFW $AB60
- $AAAC DEFW $AB9B
- $AAAE DEFW $AADD
- $AAB0 DEFW $AAB2
+;
+; .
+;
+; These entries are analagous to the co-ordinate table at #R$AF10, and show how
+; a computer controlled character can get to a target co-ordinate.
+w$AAA0 DEFW $AAB2   ; 0 : Far left of a room
+ $AAA2 DEFW $AADD   ; 1 : Far right of a room
+ $AAA4 DEFW $AB09   ; 2 : #N$78 , #N$98
+ $AAA6 DEFW $AB26   ; 3 : #N$30 , #N$98
+ $AAA8 DEFW $AB43   ; 4 : #N$C0 , #N$98
+ $AAAA DEFW $AB60   ; 5 : #N$00 , #N$58 (The sewer, L)
+ $AAAC DEFW $AB9B   ; 6 : #N$F0 , #N$58 (The sewer, R)
+ $AAAE DEFW $AADD   ; 7 : Far right of a room (duplicate of 1)
+ $AAB0 DEFW $AAB2   ; 8 : Far left of a room (duplicate of 0)
 
 ; Movement routine 0. Check a character can be moved left, and do so if
 ; possible
@@ -3580,13 +3585,13 @@ c$AAB2 LD A,(IY+$0A)   ; Get the Y co-ordinate.
  $AAB9 LD A,(IY+$0F)   ; Get the room number.
  $AABC CP $1F          ; Is it the sewer?
  $AABE JR NZ,$AACE     ; Jump forward if not.
-; The sewer requires computer characters to jump to get out of it.
+ ; The sewer requires additional logic with computer characters.
  $AAC0 LD A,(IY+$05)   ; Get the X co-ordinate.
- $AAC3 CP $78          ; Is it greater than #N$78?
+ $AAC3 CP $78          ; Is it less than #N$78?
  $AAC5 JR NC,$AACE     ; Jump forward if so.
- $AAC7 LD (IY+$3C),$01 ; Set to jump right.
+ $AAC7 LD (IY+$3C),$01 ; Set to move right.
  $AACB JP $B288        ; Move the character.
-*$AACE LD (IY+$3C),$FF ; Set to jump left.
+*$AACE LD (IY+$3C),$FF ; Set to move left.
  $AAD2 CALL $B288      ; Move the character.
  $AAD5 LD A,(IY+$05)   ; Get the X co-ordinate.
  $AAD8 OR A            ; Is it zero?
@@ -3603,117 +3608,119 @@ c$AADD LD A,(IY+$0A)   ; Get the Y co-ordinate.
  $AAE4 LD A,(IY+$0F)   ; Get the room number.
  $AAE7 CP $1F          ; Is it the sewer?
  $AAE9 JR NZ,$AAF9     ; Jump forward if not.
- ; The sewer requires computer characters to jump to get out of it.
+ ; The sewer requires additional logic with computer characters.
  $AAEB LD A,(IY+$05)   ; Get the X co-ordinate.
  $AAEE CP $78          ; Is it greater than #N$78?
- $AAF0 JR C,$AAF9      ; Jump forward if not.
- $AAF2 LD (IY+$3C),$FF ; Set to jump left.
+ $AAF0 JR C,$AAF9      ; Jump forward if so.
+ $AAF2 LD (IY+$3C),$FF ; Set to move left.
  $AAF6 JP $B288        ; Move the character
-*$AAF9 LD (IY+$3C),$01 ; Set to jump right.
+*$AAF9 LD (IY+$3C),$01 ; Set to move right.
  $AAFD CALL $B288      ; Move the character
  $AB00 LD A,(IY+$05)   ; Get the X co-ordinate.
  $AB03 CP $F0          ; Is it at the right edge?
- $AB05 JP Z,$AE5D      ; If so,signal this is the end of the room.
+ $AB05 JP Z,$AE5D      ; If so, signal this is the end of the room.
  $AB08 RET             ; Otherwise return.
 
-; Movement routine 2.
+; Movement routine 2. Move to #N$78 , #N$98
 ;
 ; Used by the routine at #R$A92C.
-c$AB09 LD A,(IY+$05)   ;
- $AB0C CP $78          ;
- $AB0E JR NC,$AB16     ;
+c$AB09 LD A,(IY+$05)   ; Get the X co-ordinate.
+ $AB0C CP $78          ; { If it less than #N$78, move left, otherwise move right.
+ $AB0E JR NC,$AB16     ; 
  $AB10 LD (IY+$3C),$01 ;
  $AB14 JR $AB1A        ;
-*$AB16 LD (IY+$3C),$FF ;
-*$AB1A CALL $B288      ;
- $AB1D LD A,(IY+$05)   ;
- $AB20 CP $78          ;
- $AB22 JP Z,$AE5D      ;
- $AB25 RET             ;
+*$AB16 LD (IY+$3C),$FF ; }
+*$AB1A CALL $B288      ; Move the character.
+ $AB1D LD A,(IY+$05)   ; Get the X co-ordinate.
+ $AB20 CP $78          ; Is it now #N$78?
+ $AB22 JP Z,$AE5D      ; If so, move to the next room.
+ $AB25 RET             ; Otherwise return.
 
-; Movement routine 3.
+; Movement routine 3. Move to #N$30 , #N$98
 ;
 ; Used by the routine at #R$A92C.
-c$AB26 LD A,(IY+$05)   ;
- $AB29 CP $30          ;
+c$AB26 LD A,(IY+$05)   ; Get the X co-ordinate.
+ $AB29 CP $30          ; { If it less than #N$30, move left, otherwise move right.
  $AB2B JR NC,$AB33     ;
  $AB2D LD (IY+$3C),$01 ;
  $AB31 JR $AB37        ;
-*$AB33 LD (IY+$3C),$FF ;
-*$AB37 CALL $B288      ;
- $AB3A LD A,(IY+$05)   ;
- $AB3D CP $30          ;
- $AB3F JP Z,$AE5D      ;
- $AB42 RET             ;
+*$AB33 LD (IY+$3C),$FF ; }
+*$AB37 CALL $B288      ; Move the character.
+ $AB3A LD A,(IY+$05)   ; Get the X co-ordinate.
+ $AB3D CP $30          ; Is it now #N$30?
+ $AB3F JP Z,$AE5D      ; If so, move to the next room.
+ $AB42 RET             ; Otherwise return.
 
-; Movement routine 4.
+; Movement routine 4. Move to #N$C0 , #N$98
 ;
 ; Used by the routine at #R$A92C.
-c$AB43 LD A,(IY+$05)   ;
- $AB46 CP $C0          ;
+c$AB43 LD A,(IY+$05)   ; Get the X co-ordinate.
+ $AB46 CP $C0          ; { If it less than #N$C0, move left, otherwise move right.
  $AB48 JR NC,$AB50     ;
  $AB4A LD (IY+$3C),$01 ;
  $AB4E JR $AB54        ;
-*$AB50 LD (IY+$3C),$FF ;
-*$AB54 CALL $B288      ;
- $AB57 LD A,(IY+$05)   ;
- $AB5A CP $C0          ;
- $AB5C JP Z,$AE5D      ;
- $AB5F RET             ;
+*$AB50 LD (IY+$3C),$FF ; }
+*$AB54 CALL $B288      ; Move the character.
+ $AB57 LD A,(IY+$05)   ; Get the X co-ordinate.
+ $AB5A CP $C0          ; Is it now #N$C0?
+ $AB5C JP Z,$AE5D      ; If so, move to the next room.
+ $AB5F RET             ; Otherwise return.
 
-; Movement routine 5.
+; Movement routine 5. Move to 00, #N$58 (Sewer left)
 ;
 ; Used by the routine at #R$A92C.
-c$AB60 LD A,(IY+$0A)   ;
- $AB63 CP $98          ;
- $AB65 JR NZ,$AB88     ;
- $AB67 LD A,(IY+$05)   ;
- $AB6A CP $66          ;
+c$AB60 LD A,(IY+$0A)   ; Get the Y co-ordinate.
+ $AB63 CP $98          ; Is it #N$98 (ie: floor level).
+ $AB65 JR NZ,$AB88     ; Jump forward if it isn't.
+ $AB67 LD A,(IY+$05)   ; Get the X co-ordinate.
+ $AB6A CP $66          ; { If it less than #N$66, move left, otherwise move right.
  $AB6C JR NC,$AB74     ;
  $AB6E LD (IY+$3C),$01 ;
  $AB72 JR $AB78        ;
-*$AB74 LD (IY+$3C),$FF ;
-*$AB78 CALL $B288      ;
- $AB7B LD A,(IY+$05)   ;
- $AB7E CP $66          ;
- $AB80 RET NZ          ;
-*$AB81 LD (IY+$3C),$FF ;
- $AB85 JP $B1A6        ;
-*$AB88 CP $58          ;
- $AB8A JR NZ,$AB81     ;
- $AB8C LD (IY+$3C),$FF ;
- $AB90 CALL $B288      ;
- $AB93 LD A,(IY+$05)   ;
- $AB96 OR A            ;
- $AB97 JP Z,$AE5D      ;
- $AB9A RET             ;
+*$AB74 LD (IY+$3C),$FF ; }
+*$AB78 CALL $B288      ; Move the character.
+ $AB7B LD A,(IY+$05)   ; Get the X co-ordinate.
+ $AB7E CP $66          ; Is it now #N$66?
+ $AB80 RET NZ          ; Return if it isn't.
+*$AB81 LD (IY+$3C),$FF ; Otherwise set to move left.
+ $AB85 JP $B1A6        ; Make the character jump.
+; The character is not at ground level.
+*$AB88 CP $58          ; Is the Y co-ordinate now #N$58?
+ $AB8A JR NZ,$AB81     ; Move back if it isn't, to jump.
+ $AB8C LD (IY+$3C),$FF ; Otherwise set to move left.
+ $AB90 CALL $B288      ; Move the character.
+ $AB93 LD A,(IY+$05)   ; Get the X co-ordinate.
+ $AB96 OR A            ; Is it 0?
+ $AB97 JP Z,$AE5D      ; If it is, move to a new room.
+ $AB9A RET             ; Otherwise return.
 
-; Movement routine 6.
+; Movement routine 6. Move to #N$F0 , #N$58 (Sewer right)
 ;
 ; Used by the routine at #R$A92C.
-c$AB9B LD A,(IY+$0A)   ;
- $AB9E CP $98          ;
- $ABA0 JR NZ,$ABC3     ;
- $ABA2 LD A,(IY+$05)   ;
- $ABA5 CP $8A          ;
+c$AB9B LD A,(IY+$0A)   ; Get the Y co-ordinate.
+ $AB9E CP $98          ; Is it #N$98 (ie: floor level).
+ $ABA0 JR NZ,$ABC3     ; Jump forward if it isn't.
+ $ABA2 LD A,(IY+$05)   ; Get the X co-ordinate.
+ $ABA5 CP $8A          ; { If it less than #N$8A, move left, otherwise move right.
  $ABA7 JR NC,$ABAF     ;
  $ABA9 LD (IY+$3C),$01 ;
  $ABAD JR $ABB3        ;
-*$ABAF LD (IY+$3C),$FF ;
-*$ABB3 CALL $B288      ;
- $ABB6 LD A,(IY+$05)   ;
- $ABB9 CP $8A          ;
- $ABBB RET NZ          ;
-*$ABBC LD (IY+$3C),$01 ;
- $ABC0 JP $B1A6        ;
-*$ABC3 CP $58          ;
- $ABC5 JR NZ,$ABBC     ;
- $ABC7 LD (IY+$3C),$01 ;
- $ABCB CALL $B288      ;
- $ABCE LD A,(IY+$05)   ;
- $ABD1 CP $F0          ;
- $ABD3 JP Z,$AE5D      ;
- $ABD6 RET             ;
+*$ABAF LD (IY+$3C),$FF ; }
+*$ABB3 CALL $B288      ; Move the charcter.
+ $ABB6 LD A,(IY+$05)   ; Get the X co-ordinate.
+ $ABB9 CP $8A          ; Is it now #N$8A?
+ $ABBB RET NZ          ; Return if it isn't.
+*$ABBC LD (IY+$3C),$01 ; Otherwise set to move right.
+ $ABC0 JP $B1A6        ; Make the character jump.
+; The character is not at ground level.
+*$ABC3 CP $58          ; Is the Y co-ordinate now #N$58?
+ $ABC5 JR NZ,$ABBC     ; Move back if it isn't, to jump.
+ $ABC7 LD (IY+$3C),$01 ; Otherwise set to move right.
+ $ABCB CALL $B288      ; Move the character.
+ $ABCE LD A,(IY+$05)   ; Get the X co-ordinate.
+ $ABD1 CP $F0          ; Is it #N$F0?
+ $ABD3 JP Z,$AE5D      ; If it is, move to a new room.
+ $ABD6 RET             ; Otherwise return.
 
 ; See if the 'in' key was pressed and set A to 1 if it was
 ;
@@ -4339,8 +4346,8 @@ b$AF10 DEFB $00,$98     ; 0 : Far left of a room.
  $AF14 DEFB $78,$98     ; 2
  $AF16 DEFB $30,$98     ; 3
  $AF18 DEFB $C0,$98     ; 4
- $AF1A DEFB $00,$58     ; 5
- $AF1C DEFB $F0,$58     ; 6
+ $AF1A DEFB $00,$58     ; 5 : The sewer (left)
+ $AF1C DEFB $F0,$58     ; 6 : The sewer (right)
  $AF1E DEFB $F0,$98     ; 7
  $AF20 DEFB $00,$98     ; 8
 
