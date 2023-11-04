@@ -867,6 +867,7 @@ R $EC3D HL Buffer containing the nth object number and the target ID
 c $EC4A Set a game flag to a value
 R $EC4A HL Points to the value to use and the flag to set
 b $EC5C Lookup table for how much money stuff earns. ID, amount % 100, amount / 100
+B $EC5C,$60,3
 c $ECBC Action 5 EARN(x). Pay the current character amount in offset xx
 b $ECF5 The next "reward" screen to print, 0 = morning, 1 = lunch, 2 = tea
 b $ECF6 Table of amount of money needed to get morning, lunch and tea breaks

@@ -10037,18 +10037,38 @@ c$EC4A LD E,(HL)     ;
  $EC59 JP $EAEB      ; Continue to any further actions to process.
 
 ; Lookup table for how much money stuff earns. ID, amount % 100, amount / 100
-b$EC5C DEFB $00,$50,$01,$01,$00,$01,$02,$20
- $EC64 DEFB $00,$03,$50,$01,$04,$50,$01,$05
- $EC6C DEFB $50,$00,$06,$50,$00,$07,$40,$00
- $EC74 DEFB $08,$50,$00,$09,$20,$00,$0A,$50
- $EC7C DEFB $01,$0B,$50,$00,$0C,$50,$00,$0D
- $EC84 DEFB $50,$01,$0E,$50,$00,$0F,$20,$01
- $EC8C DEFB $10,$50,$00,$11,$00,$01,$12,$00
- $EC94 DEFB $02,$13,$00,$02,$14,$00,$02,$15
- $EC9C DEFB $00,$02,$16,$00,$02,$17,$20,$00
- $ECA4 DEFB $18,$50,$00,$19,$70,$00,$1A,$40
- $ECAC DEFB $00,$1B,$50,$00,$1C,$60,$00,$1D
- $ECB4 DEFB $00,$01,$1E,$60,$00,$1F,$50,$00
+b$EC5C DEFB $00,$50,$01
+ $EC5F DEFB $01,$00,$01
+ $EC62 DEFB $02,$20,$00
+ $EC65 DEFB $03,$50,$01
+ $EC68 DEFB $04,$50,$01
+ $EC6B DEFB $05,$50,$00
+ $EC6E DEFB $06,$50,$00
+ $EC71 DEFB $07,$40,$00
+ $EC74 DEFB $08,$50,$00
+ $EC77 DEFB $09,$20,$00
+ $EC7A DEFB $0A,$50,$01
+ $EC7D DEFB $0B,$50,$00
+ $EC80 DEFB $0C,$50,$00
+ $EC83 DEFB $0D,$50,$01
+ $EC86 DEFB $0E,$50,$00
+ $EC89 DEFB $0F,$20,$01
+ $EC8C DEFB $10,$50,$00
+ $EC8F DEFB $11,$00,$01
+ $EC92 DEFB $12,$00,$02
+ $EC95 DEFB $13,$00,$02
+ $EC98 DEFB $14,$00,$02
+ $EC9B DEFB $15,$00,$02
+ $EC9E DEFB $16,$00,$02
+ $ECA1 DEFB $17,$20,$00
+ $ECA4 DEFB $18,$50,$00
+ $ECA7 DEFB $19,$70,$00
+ $ECAA DEFB $1A,$40,$00
+ $ECAD DEFB $1B,$50,$00
+ $ECB0 DEFB $1C,$60,$00
+ $ECB3 DEFB $1D,$00,$01
+ $ECB6 DEFB $1E,$60,$00
+ $ECB9 DEFB $1F,$50,$00
 
 ; Action 5 EARN(x). Pay the current character amount in offset xx
 ;
@@ -10062,30 +10082,32 @@ c$ECBC LD E,(HL)     ; { Get the next byte as the ID for earnings and put it in 
  $ECC5 ADD HL,DE     ;
  $ECC6 ADD HL,DE     ; }
  $ECC7 LD A,(HL)     ; Get the ID.
- $ECC8 OR A          ; Is it zero?
+ $ECC8 OR A          ; Is it zero? ie: money not collected
  $ECC9 JR NZ,$ECF1   ; Jump forward if not.
 ; Allocate the money to the current character.
- $ECCB LD (HL),$01   ; 
- $ECCD INC HL        ;
- $ECCE LD A,(IY-$0A) ;
- $ECD1 ADD A,(HL)    ;
- $ECD2 DAA           ;
- $ECD3 LD (IY-$0A),A ;
- $ECD6 INC HL        ;
- $ECD7 LD A,(IY-$1E) ;
- $ECDA ADC A,(HL)    ;
- $ECDB DAA           ;
- $ECDC LD (IY-$1E),A ;
- $ECDF DEC HL        ;
- $ECE0 LD A,($ECFF)  ;
- $ECE3 ADD A,(HL)    ;
- $ECE4 DAA           ;
- $ECE5 LD ($ECFF),A  ;
- $ECE8 INC HL        ;
- $ECE9 LD A,($ECFE)  ;
- $ECEC ADC A,(HL)    ;
- $ECED DAA           ;
- $ECEE LD ($ECFE),A  ;
+ $ECCB LD (HL),$01   ; Set the money as collected.
+ $ECCD INC HL        ; Move to the next position in the buffer.
+ $ECCE LD A,(IY-$0A) ; Get the current player's earnings (tens portion).
+ $ECD1 ADD A,(HL)    ; Add the next tens value to the current player's total.
+ $ECD2 DAA           ; Adjust to give an appropriate value in decimal.
+ $ECD3 LD (IY-$0A),A ; Set that as the new tens value.
+ $ECD6 INC HL        ; Move to the next position in the buffer.
+ $ECD7 LD A,(IY-$1E) ; Get the current player's earnings (hundreds portion).
+ $ECDA ADC A,(HL)    ; Add the next hundreds value to the current player's total,
+                     ; including any overflow from the tens portion.
+ $ECDB DAA           ; Adjust to give an appropriate value in decimal.
+ $ECDC LD (IY-$1E),A ; Set that as the new hundreds value.
+; Now update the grand total for all players.
+ $ECDF DEC HL        ; Move back to point at the tens portion.
+ $ECE0 LD A,($ECFF)  ; Get the tens portion for the current total.
+ $ECE3 ADD A,(HL)    ; Add the next tens value.
+ $ECE4 DAA           ; Adjust for decimal.
+ $ECE5 LD ($ECFF),A  ; Set the new tens portion.
+ $ECE8 INC HL        ; Move to point at the hundreds portion.
+ $ECE9 LD A,($ECFE)  ; Get the hundreds portion for the current total.
+ $ECEC ADC A,(HL)    ; Add the next hundreds total.
+ $ECED DAA           ; Adjust for decimal.
+ $ECEE LD ($ECFE),A  ; Set the new hunderds portion.
 *$ECF1 POP HL        ; Restore the current position in the buffer.
  $ECF2 JP $EAEB      ; Jump forward to execute more actions.
 
@@ -11985,8 +12007,8 @@ c$F9F5 LD IX,$F9F0     ;
  $FAA6 JR Z,$FAE3      ;
  $FAA8 DEC (HL)        ;
  $FAA9 JR NZ,$FAE3     ;
- $FAAB LD A,$01        ;
- $FAAD LD ($EC1C),A    ;
+ $FAAB LD A,$01        ; { Set the asteroids game as completed.
+ $FAAD LD ($EC1C),A    ; }
  $FAB0 LD ($ECB3),A    ;
  $FAB3 LD A,(IY-$1E)   ;
  $FAB6 ADD A,$01       ;
