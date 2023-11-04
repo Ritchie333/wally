@@ -3374,9 +3374,9 @@ c$A92C PUSH IY         ; Store #REGiy
 *$A94C LD A,(IY+$0F)   ; Get the room for the current character.
  $A94F CP (IY+$5A)     ; Does it equal the target room?
  $A952 JR NZ,$A95B     ; Jump forward if it doesn't.
- $A954 LD A,(IY-$14)   ; Get #R$BC53 (?)
- $A957 OR A            ;
- $A958 JP NZ,$A991     ;
+ $A954 LD A,(IY-$14)   ; { Is the character in the room it wants to get to? (#R$BC53)
+ $A957 OR A            ; }
+ $A958 JP NZ,$A991     ; Jump forward if not.
 *$A95B CALL $AFC4      ; If the character is in mid-air, drop them to the ground or a platform.
  $A95E LD A,(IY+$46)   ; { Is the character in mid-jump?
  $A961 OR A            ; }
@@ -3450,7 +3450,7 @@ c$A92C PUSH IY         ; Store #REGiy
  $A9EA JP NZ,$A989     ; Jump back if it isn't.
  $A9ED LD B,(IY-$0F)   ; Otherwise get the ID of the object to swap with.
  $A9F0 CALL $AA30      ; Swap an item.
- $A9F3 LD (IY-$14),$00 ;
+ $A9F3 LD (IY-$14),$00 ; Mark the character as not in the target room. (#R$BC53)
  $A9F7 LD E,(IY+$78)   ; { Put the address of the character's swap buffer in #REGde.
  $A9FA LD D,(IY+$7D)   ; }
  $A9FD LD H,$00        ; Set #REGh to 0.
@@ -4076,7 +4076,7 @@ b$AD78 DEFB $0C,$10     ; 00 : The Town Square
 c$ADBA LD A,(IY+$0F)   ; Get the current room.
  $ADBD CP (IY+$5A)     ; Does it equal the target room? (#R$BCC1)
  $ADC0 JR NZ,$ADC7     ; Jump forward if not.
- $ADC2 LD (IY-$14),$01 ; { Otherwise signal an update needed and return.
+ $ADC2 LD (IY-$14),$01 ; { Otherwise signal character is in the target room and return.
  $ADC6 RET             ; }
 ; Move the character towards the target room.
 *$ADC7 LD D,$FF        ; Set D as "no match".
@@ -6274,7 +6274,7 @@ g$BC30 DEFB $1F,$1F,$1F,$1F,$1F
 ; Flags for objects (?)
 g$BC35 DEFB $1F,$1F,$1F,$1F,$1F
 
-; ID of the object a player is standing near and could potentially pick up.
+; ID of the object a player is standing near and could potentially pick up
 g$BC3A DEFB $00,$00,$00,$00,$00
 
 ; Character ID (1 = Wally, 2 = Wilma, 4 = Tom, 8 = Dick, 10 = Harry)
@@ -6289,10 +6289,10 @@ g$BC49 DEFB $00,$00,$00,$00,$00
 ; Set to 1 to trigger a footstep sound for each character
 g$BC4E DEFB $00,$00,$00,$00,$00
 
-; Set to 1 if a computer controlled character needs updating
+; Set to 1 if a computer controlled character is in the room it wanted to get to
 g$BC53 DEFB $00,$00,$00,$00,$00
 
-; ID of the next object in a room that a computer player can swap with.
+; ID of the next object in a room that a computer player can swap with
 g$BC58 DEFB $00,$00,$00,$00,$00
 
 ; Earnings % 100
@@ -9413,15 +9413,15 @@ c$E79B LD A,$F7        ; { Get keyboard input from 1 - 5.
  $E7C9 POP IY          ; Clear up the stack.
  $E7CB LD A,B          ; Put the room in #REGa.
  $E7CC CALL $AC69      ; Get the "next rooms" table for this room.
- $E7CF LD A,(HL)       ;
- $E7D0 LD (IY+$69),A   ; (#R$BCD0)
- $E7D3 INC HL          ;
+ $E7CF LD A,(HL)       ; { Put the first byte (room) in the buffer at #R$BCD0.
+ $E7D0 LD (IY+$69),A   ; }
+ $E7D3 INC HL          ; { Put the second byte (destination co-ordinate) at #R$BCCB.
  $E7D4 LD A,(HL)       ;
- $E7D5 LD (IY+$64),A   ; (#R$BCCB)
- $E7D8 INC HL          ;
- $E7D9 LD A,(HL)       ;
- $E7DA LD (IY+$73),A   ; (#R$BCDA)
- $E7DD LD (IY+$6E),$05 ; 
+ $E7D5 LD (IY+$64),A   ; }
+ $E7D8 INC HL          ; { Put the third byte (target co-ordinate) at #R$BCDA
+ $E7D9 LD A,(HL)       ; 
+ $E7DA LD (IY+$73),A   ; }
+ $E7DD LD (IY+$6E),$05 ; Set the previous room to 5 (?)
  $E7E1 LD IY,($B09D)   ; Point #REGiy to the selected character.
  $E7E5 CALL $E3FD      ; Refresh the status bar to reflect the new current character.
  $E7E8 RET             ; Return.
