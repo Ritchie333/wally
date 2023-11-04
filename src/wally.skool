@@ -5901,8 +5901,8 @@ g$B951 DEFB $00
 ; Draw a room's background graphics
 ;
 ; Used by the routines at #R$813B, #R$8155, #R$AC06, #R$ED2A and #R$EDF7.
-c$B952 LD A,$B8      ;
- $B954 LD ($AF88),A  ;
+c$B952 LD A,$B8      ; { Set the fork lift's position on the ground.
+ $B954 LD ($AF88),A  ; }
  $B957 CALL $B902    ; Clear the playing area.
  $B95A LD A,(IY+$0F) ; Get the current room in #REGa.
  $B95D ADD A,A       ; Double it to get a word offset.
@@ -11055,16 +11055,16 @@ g$F2FD DEFB $22,$90,$02,$00,$D6,$90,$FE,$00
 c$F309 LD A,$06      ; { Touching a mug drops endurance by 6.
  $F30B LD ($F26E),A  ; }
  $F30E LD IX,$F2FD   ; Point #REGix at the data for this room..
- $F312 LD B,$03      ;
-*$F314 PUSH BC       ;
- $F315 LD A,$29      ;
+ $F312 LD B,$03      ; 3 objects to draw.
+*$F314 PUSH BC       ; Remember the count in #REGbc.
+ $F315 LD A,$29      ; Use object ID 29 (pint glass) (#R$8898)
  $F317 LD BC,$F2FB   ; Set the bounds.
  $F31A CALL $EF35    ; Update object positions.
- $F31D CALL $A8A0    ;
- $F320 CALL $E329    ;
- $F323 POP BC        ;
- $F324 DJNZ $F314    ;
- $F326 RET           ;
+ $F31D CALL $A8A0    ; Draw the object.
+ $F320 CALL $E329    ; Check for collision detection.
+ $F323 POP BC        ; Restore the count in #REGbc.
+ $F324 DJNZ $F314    ; Loop while there are more objects to draw.
+ $F326 RET           ; Otherwise return.
 
 ; Movement table : The Zoo
 g$F327 DEFB $32,$64,$FE,$00,$60,$32,$6E,$00
@@ -11188,13 +11188,15 @@ c$F409 LD A,$06        ; { Touching a moving object drops endurance by 6.
 *$F414 PUSH BC         ; Store #REGbc.
  $F415 LD BC,$F3FD     ; Point #REGbc at the boundary table.
  $F418 CALL $EF35      ; Update the moving object.
- $F41B LD A,E          ; 
- $F41C CP $FE          ;
- $F41E JR NZ,$F430     ;
- $F420 LD (IX-$01),$FC ;
- $F424 LD (IX-$02),$02 ;
- $F428 LD (IX-$03),$80 ;
- $F42C LD (IX-$04),$00 ;
+ $F41B LD A,E          ; Get the x co-ordinate.
+ $F41C CP $FE          ; Is it #N$FE?
+ $F41E JR NZ,$F430     ; Jump forward if it isn't.
+; The toast is off-screen, so redraw it back at the other end.
+ $F420 LD (IX-$01),$FC ; Set the y difference as -4.
+ $F424 LD (IX-$02),$02 ; Set the x difference at +2.
+ $F428 LD (IX-$03),$80 ; Set the y co-ordinate as #N$80.
+ $F42C LD (IX-$04),$00 ; Set the x co-ordinate as 00.
+; Now draw the toast.
 *$F430 LD A,$32        ; Use the ID of the toast. (#R$89B8)
  $F432 CALL $A8A0      ; Draw the object.
  $F435 CALL $E329      ; Check for collision detection.
@@ -11213,34 +11215,37 @@ c$F43C LD A,$09      ; { Is flag 9 (wall built) set?
  $F44D CP $04        ; }
  $F44F JR NZ,$F479   ; Jump forward if it isn't.
  $F451 LD A,(IY+$05) ; Get the x co-ordinate.
- $F454 SUB $42       ;
- $F456 CP $FC        ;
- $F458 JR C,$F479    ;
- $F45A LD A,($AF88)  ;
- $F45D SUB (IY+$0A)  ;
+ $F454 SUB $42       ; { Is it by the fork lift?
+ $F456 CP $FC        ; }
+ $F458 JR C,$F479    ; Jump foward if it isn't.
+; The fork lift truck has a charged battery and the player is standing
+; by the lift, so it can be activated.
+ $F45A LD A,($AF88)  ; Get the fork lift's position.
+ $F45D SUB (IY+$0A)  ; { Is the player standing on it?
  $F460 SUB $22       ;
- $F462 CP $FC        ;
- $F464 JR C,$F479    ;
- $F466 LD A,($AF88)  ;
- $F469 SUB $02       ;
- $F46B CP $78        ;
- $F46D JR NC,$F471   ;
- $F46F LD A,$78      ;
-*$F471 LD ($AF88),A  ;
- $F474 SUB $20       ;
- $F476 LD (IY+$0A),A ;
-*$F479 LD A,($AF88)  ;
- $F47C LD B,$10      ;
+ $F462 CP $FC        ; }
+ $F464 JR C,$F479    ; Jump forward if they aren't.
+; The player is standing on the fork lift, so move it.
+ $F466 LD A,($AF88)  ; Get the fork lift's position.
+ $F469 SUB $02       ; Move it up two positions.
+ $F46B CP $78        ; { Restrict the height to #N$78, 
+ $F46D JR NC,$F471   ; 
+ $F46F LD A,$78      ; } 
+*$F471 LD ($AF88),A  ; Set the new height.
+ $F474 SUB $20       ; { Set the player's y co-ordinate above the lift.
+ $F476 LD (IY+$0A),A ; }
+*$F479 LD A,($AF88)  ; Get the fork lift's position.
+ $F47C LD B,$10      ; { Invert it to get a y co-ordinate on screen.
  $F47E CP $B8        ;
  $F480 JR Z,$F484    ;
  $F482 LD B,$0E      ;
-*$F484 SUB B         ;
- $F485 LD H,A        ;
- $F486 LD L,$40      ;
- $F488 LD ($A838),HL ;
- $F48B LD A,$2B      ;
- $F48D CALL $A83D    ;
- $F490 RET           ;
+*$F484 SUB B         ; }
+ $F485 LD H,A        ; Set the y co-ordinate.
+ $F486 LD L,$40      ; x co-ordinate is always #N$40.
+ $F488 LD ($A838),HL ; Set the position of the fork lift.
+ $F48B LD A,$2B      ; Set the ID of the fork lift. (#R$88D8)
+ $F48D CALL $A83D    ; { Draw the object and return.
+ $F490 RET           ; }
 
 ; Movement table : The Work Shed
 g$F491 DEFB $40,$64,$00,$02
@@ -11251,26 +11256,27 @@ g$F491 DEFB $40,$64,$00,$02
 c$F49D LD A,$06        ; { Touching a moving object drops endurance by 6.
  $F49F LD ($F26E),A    ; }
  $F4A2 LD IX,$F491     ; Point #REGix at the movement table. (#R$F491)
- $F4A6 LD B,$03        ;
-*$F4A8 PUSH BC         ;
+ $F4A6 LD B,$03        ; 3 objects to draw.
+*$F4A8 PUSH BC         ; Store the count in #REGbc.
  $F4A9 LD BC,$F2F7     ; Point #REGbc at the bounds table. (#R$F2F7)
  $F4AC CALL $EF35      ; Update moving objects.
- $F4AF LD A,D          ;
- $F4B0 CP $FE          ;
- $F4B2 JR NZ,$F4C6     ;
- $F4B4 LD (IX-$01),$02 ;
- $F4B8 LD (IX-$03),$40 ;
- $F4BC LD A,R          ;
- $F4BE AND $3F         ;
- $F4C0 ADD A,A         ;
+ $F4AF LD A,D          ; Get the Y co-ordinate.
+ $F4B0 CP $FE          ; Is it #N$FE ie: off screen?
+ $F4B2 JR NZ,$F4C6     ; Jump forward if it isn't.
+; A hammer has moved off screen, so recreate it.
+ $F4B4 LD (IX-$01),$02 ; Set the direction in y to +2.
+ $F4B8 LD (IX-$03),$40 ; Set the y co-ordinate to #N$40 ie: top of screen.
+ $F4BC LD A,R          ; { Set the x co-ordinate to a random location
+ $F4BE AND $3F         ; between #N$38 and #N$B6, rounded to the nearest
+ $F4C0 ADD A,A         ; even number.
  $F4C1 ADD A,$38       ;
- $F4C3 LD (IX-$04),A   ;
-*$F4C6 LD A,$34        ;
- $F4C8 CALL $A8A0      ;
- $F4CB CALL $E329      ;
- $F4CE POP BC          ;
- $F4CF DJNZ $F4A8      ;
- $F4D1 RET             ;
+ $F4C3 LD (IX-$04),A   ; }
+*$F4C6 LD A,$34        ; Use object ID #$34 (hammer) (#R$89F8)
+ $F4C8 CALL $A8A0      ; Draw the object.
+ $F4CB CALL $E329      ; Check for collision detection.
+ $F4CE POP BC          ; Restore #REGbc.
+ $F4CF DJNZ $F4A8      ; Loop while there are more objects to draw.
+ $F4D1 RET             ; Otherwise return.
 
 ; The animation state for the flame in Motor Way
 b$F4D2 DEFB $4C
@@ -11424,38 +11430,52 @@ g$F5BE DEFB $28,$46,$02,$02
 b$F5CA DEFB $10,$E0,$40,$A8
 
 ; Bounds table 2 : School Lane
-b$F5CE DEFB $10,$40,$40,$A8,$38,$01,$01,$01
- $F5D6 DEFB $01,$00,$01,$00,$01,$00,$01,$00
- $F5DE DEFB $01,$00,$00,$00,$00,$00,$02,$00
- $F5E6 DEFB $02,$00,$02,$00,$02,$00,$02,$02
- $F5EE DEFB $02,$02,$FF
+b$F5CE DEFB $10,$40,$40,$A8
+
+; Next object ID for the lighting bolts in School Lane
+;
+; Alternates between #N$38 and #N$3A (#R$8A78)
+g$F5D2 DEFB $38
+
+; School Lane electricity wire data
+;
+; The buffer is defined as the direction in which to move after drawing
+; one 8-bit cell of data. A 1 moves drawing up one row, a 0 moves
+; it down one row, a 2 leaves it unchanged. #N$FF marks the end of the data.
+g$F5D3 DEFB $01,$01,$01,$01,$00,$01,$00,$01
+ $F5DB DEFB $00,$01,$00,$01,$00,$00,$00,$00
+ $F5E3 DEFB $00,$02,$00,$02,$00,$02,$00,$02
+ $F5EB DEFB $00,$02,$02,$02,$02,$FF
 
 ; Room logic : School Lane
-c$F5F1 LD HL,$5DE7   ;
- $F5F4 LD DE,$0020   ;
- $F5F7 LD BC,$F5D3   ;
-*$F5FA LD (HL),$00   ;
- $F5FC ADD HL,DE     ;
- $F5FD LD (HL),$FF   ;
- $F5FF ADD HL,DE     ;
- $F600 LD (HL),$00   ;
- $F602 AND A         ;
+;
+; First, draw the electricity wire.
+c$F5F1 LD HL,$5DE7   ; Point #REGhl to the screen buffer. (#R$5B00)
+ $F5F4 LD DE,$0020   ; Set #REGde to the amount to move forward by for each row.
+ $F5F7 LD BC,$F5D3   ; Set #REGbc to the data table. (#R$F5D3)
+*$F5FA LD (HL),$00   ; Reset all pixels on the first row.
+ $F5FC ADD HL,DE     ; Move to the next row.
+ $F5FD LD (HL),$FF   ; Set all pixels.
+ $F5FF ADD HL,DE     ; Move to the next row.
+ $F600 LD (HL),$00   ; Set all pixels.
+ $F602 AND A         ; { Move back up to the initial row.
  $F603 SBC HL,DE     ;
- $F605 SBC HL,DE     ;
- $F607 LD A,(BC)     ;
- $F608 INC BC        ;
- $F609 CP $FF        ;
- $F60B JR Z,$F61D    ;
- $F60D OR A          ;
- $F60E JR Z,$F61A    ;
- $F610 CP $01        ;
- $F612 JR NZ,$F617   ;
- $F614 ADD HL,DE     ;
- $F615 JR $F61A      ;
-*$F617 AND A         ;
- $F618 SBC HL,DE     ;
-*$F61A INC HL        ;
- $F61B JR $F5FA      ;
+ $F605 SBC HL,DE     ; }
+ $F607 LD A,(BC)     ; Get the next byte.
+ $F608 INC BC        ; Move to the next place in the buffer.
+ $F609 CP $FF        ; Is it an end marker?
+ $F60B JR Z,$F61D    ; Jump foward if it is.
+ $F60D OR A          ; Is the data 0?
+ $F60E JR Z,$F61A    ; Jump forward if it isn't.
+ $F610 CP $01        ; Is the data 1?
+ $F612 JR NZ,$F617   ; Jump forward if it is.
+ $F614 ADD HL,DE     ; { Otherwise move to the next row.
+ $F615 JR $F61A      ; }
+*$F617 AND A         ; { Move up a row.
+ $F618 SBC HL,DE     ; }
+*$F61A INC HL        ; { Move to the next column and repeat.
+ $F61B JR $F5FA      ; }
+; Now set the main data for the room.
 *$F61D LD A,$06      ; { Moving objects decrease endurance by 6.
  $F61F LD ($F26E),A  ; }
  $F622 LD IX,$F5BE   ; Point #REGix at the movement table.
@@ -11467,9 +11487,9 @@ c$F5F1 LD HL,$5DE7   ;
  $F631 JR NZ,$F636   ; If the flag is set, skip the next bit.
  $F633 LD BC,$F5CE   ; Otherwise point #REGbc at the second bounds table. (#R$F5CE)
 *$F636 CALL $EF35    ; Update moving objects.
- $F639 LD A,($F5D2)  ;
- $F63C XOR $02       ;
- $F63E LD ($F5D2),A  ;
+ $F639 LD A,($F5D2)  ; Get the next object ID to print.
+ $F63C XOR $02       ; Invert bit 2, so the ID alternates between #N$38 and #N$3A.
+ $F63E LD ($F5D2),A  ; Set this for the next object ID.
  $F641 CALL $A8A0    ; Draw moving objects.
  $F644 CALL $E329    ; Check for collision detection.
  $F647 POP BC        ; Restore #REGbc.
@@ -11783,7 +11803,7 @@ b$F879 DEFB $EE,$42,$FE,$02,$38
 ; Bounds table : Asteroids missile
 b$F8B5 DEFB $00,$F0,$40,$B0
 
-; Asteroids : Check for collision with lightning.
+; Asteroids : Check for collision with lightning
 ;
 ; Used by the routine at #R$EDF7.
 c$F8B9 LD IX,$80A9   ; Point #REGix at the movement table.
@@ -11900,7 +11920,7 @@ c$F93A CALL $B03C      ; { Was 'left' pressed?
  $F9A0 CALL $A83D      ; { Draw it and return.
  $F9A3 RET             ; }
 
-; Asteroids : Get the change values for the current direction.
+; Asteroids : Get the change values for the current direction
 ;
 ; Used by the routines at #R$F93A and #R$F9F5.
 ;

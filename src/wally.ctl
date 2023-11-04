@@ -952,6 +952,8 @@ D $F572 Check the fountain's repaired
 b $F5BE Movement table : School Lane
 b $F5CA Bounds table : Multiple purpose
 b $F5CE Bounds table 2 : School Lane
+g $F5D2 School Lane data
+g $F5D3 School lane data
 c $F5F1 Room logic : School Lane
 b $F64B Table of direction to switch to in The Park
 b $F653 Movement table : The Park
