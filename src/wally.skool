@@ -1202,14 +1202,32 @@ t$7F1F DEFM "THE TOWN SQUARE"
  $80A8 DEFB $FF
 
 ; Positions of the lightning bolts in the "asteroids" game
-b$80A9 DEFB $FF,$00,$00,$00,$00,$FF,$00,$00
- $80B1 DEFB $00,$00,$FF,$00,$00,$00,$00,$FF
- $80B9 DEFB $00,$00,$00,$00,$FF,$00,$00,$00
- $80C1 DEFB $00,$FF,$00,$00,$00,$00,$FF,$00
- $80C9 DEFB $00,$00,$00,$FF,$00,$00,$00,$00
- $80D1 DEFB $FF,$00,$00,$00,$00,$FF,$00,$00
- $80D9 DEFB $00,$00,$FF,$00,$00,$00,$00,$FF
- $80E1 DEFB $00,$00,$00,$00
+;
+; Used by the routines at #R$EDF7, #R$F8B9, #R$F9F5 and #R$FAF0.
+;
+; .
+; 
+; The format is:
+; #TABLE( default, center )
+; { =h Byte | =h Description }
+; { 0 | x co-ordinate, or #N$FF for no lightning here }
+; { 1 | y co-ordinate }
+; { 2 | change in X (may be negative) }
+; { 3 | change in Y (may be negative) }
+; { 4 | object ID to draw with }
+; TABLE#
+g$80A9 DEFB $FF,$00,$00,$00,$00
+ $80AE DEFB $FF,$00,$00,$00,$00
+ $80B3 DEFB $FF,$00,$00,$00,$00
+ $80B8 DEFB $FF,$00,$00,$00,$00
+ $80BD DEFB $FF,$00,$00,$00,$00
+ $80C2 DEFB $FF,$00,$00,$00,$00
+ $80C7 DEFB $FF,$00,$00,$00,$00
+ $80CC DEFB $FF,$00,$00,$00,$00
+ $80D1 DEFB $FF,$00,$00,$00,$00
+ $80D6 DEFB $FF,$00,$00,$00,$00
+ $80DB DEFB $FF,$00,$00,$00,$00
+ $80E0 DEFB $FF,$00,$00,$00,$00
 
 ; Show title screen
 ;
@@ -2309,9 +2327,9 @@ b$9098 DEFB $FF,$0F,$00,$00,$FF,$03,$00,$60
  $90D0 DEFB $F8,$0F,$00,$C0,$FE,$1F,$00,$00
 
 
-; Object 6A - Asteroids 1
+; Object 6B - Asteroids small lightning
 ;
-; #OBJECTGFXM(#PC)(object6a)
+; #OBJECTGFXM(#PC)(object6b)
 b$90D8 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
  $90E0 DEFB $FE,$0F,$00,$00,$FC,$0F,$00,$E0
  $90E8 DEFB $F8,$0F,$01,$C0,$F0,$0F,$03,$80
@@ -2321,81 +2339,81 @@ b$90D8 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
  $9108 DEFB $F1,$FF,$00,$00,$FF,$FF,$00,$00
  $9110 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
 
-; Object 6C - Asteroids 2
+; Object 6D - Asteroids missile
 ;
-; #OBJECTGFX(#PC)(object6c)
+; #OBJECTGFX(#PC)(object6d)
 b$9118 DEFB $00,$00,$00,$00,$00,$00,$00,$00
  $9120 DEFB $00,$80,$02,$A0,$01,$40,$06,$B0
  $9128 DEFB $01,$40,$02,$A0,$00,$80,$00,$00
  $9130 DEFB $00,$00,$00,$00,$00,$00,$00,$00
 
-; Object 6D - Asteroids 3
+; Object 6E - Asteroids ship 0
 ;
-; #OBJECTGFX(#PC)(object6d)
+; #OBJECTGFX(#PC)(object6e)
 b$9138 DEFB $00,$00,$01,$80,$01,$80,$02,$C0
  $9140 DEFB $03,$40,$02,$C0,$07,$60,$06,$E0
  $9148 DEFB $07,$60,$0F,$F0,$0E,$70,$1C,$38
  $9150 DEFB $18,$18,$00,$00,$00,$00,$00,$00
 
-; Object 6E - Asteroids 4
+; Object 6F - Asteroids ship 1
 ;
-; #OBJECTGFX(#PC)(object6e)
+; #OBJECTGFX(#PC)(object6f)
 b$9158 DEFB $00,$00,$00,$00,$00,$0C,$00,$3C
  $9160 DEFB $00,$F8,$03,$D8,$0F,$B0,$3F,$70
  $9168 DEFB $7E,$E0,$7D,$E0,$07,$C0,$03,$C0
  $9170 DEFB $03,$80,$03,$80,$03,$00,$00,$00
 
-; Object 6F - Asteroids 4
+; Object 70 - Asteroids ship 2
 ;
-; #OBJECTGFX(#PC)(object6f)
+; #OBJECTGFX(#PC)(object70)
 b$9178 DEFB $00,$00,$00,$00,$00,$00,$18,$00
  $9180 DEFB $1E,$00,$0F,$C0,$07,$F8,$03,$56
  $9188 DEFB $02,$AE,$07,$F8,$0F,$C0,$1E,$00
  $9190 DEFB $18,$00,$00,$00,$00,$00,$00,$00
 
-; Object 70 - Asteroids 5
+; Object 71 - Asteroids ship 3
 ;
-; #OBJECTGFX(#PC)(object70)
+; #OBJECTGFX(#PC)(object71)
 b$9198 DEFB $00,$00,$03,$00,$03,$80,$03,$80
  $91A0 DEFB $03,$C0,$07,$C0,$7D,$E0,$7E,$E0
  $91A8 DEFB $3F,$70,$0F,$B0,$03,$D8,$00,$F8
  $91B0 DEFB $00,$3C,$00,$0C,$00,$00,$00,$00
 
-; Object 71 - Asteroids 5
+; Object 72 - Asteroids ship 4
 ;
-; #OBJECTGFX(#PC)(object71)
+; #OBJECTGFX(#PC)(object72)
 b$91B8 DEFB $00,$00,$00,$00,$00,$00,$18,$18
  $91C0 DEFB $1C,$38,$0E,$70,$0F,$F0,$06,$E0
  $91C8 DEFB $07,$60,$06,$E0,$03,$40,$02,$C0
  $91D0 DEFB $03,$40,$01,$80,$01,$80,$00,$00
 
-; Object 72 - Asteroids 6
+; Object 73 - Asteroids ship 5
 ;
-; #OBJECTGFX(#PC)(object72)
+; #OBJECTGFX(#PC)(object73)
 b$91D8 DEFB $00,$00,$00,$C0,$01,$C0,$01,$C0
  $91E0 DEFB $03,$C0,$03,$E0,$07,$BE,$07,$7E
  $91E8 DEFB $0E,$FC,$0D,$F0,$1B,$C0,$1F,$00
  $91F0 DEFB $3C,$00,$30,$00,$00,$00,$00,$00
 
-; Object 73 - Asteroids 7
+; Object 74 - Asteroids ship 6
 ;
-; #OBJECTGFX(#PC)(object73)
+; #OBJECTGFX(#PC)(object74)
 b$91F8 DEFB $00,$00,$00,$00,$00,$00,$00,$18
  $9200 DEFB $00,$78,$03,$F0,$1F,$E0,$75,$40
  $9208 DEFB $6A,$C0,$1F,$E0,$03,$F0,$00,$78
  $9210 DEFB $00,$18,$00,$00,$00,$00,$00,$00
 
-; Object 74 - Asteroids 8
+; Object 75 - Asteroids ship 7
 ;
-; #OBJECTGFX(#PC)(object74)
+; #OBJECTGFX(#PC)(object75)
 b$9218 DEFB $00,$00,$00,$00,$30,$00,$3C,$00
  $9220 DEFB $1F,$00,$1B,$C0,$0D,$F0,$0E,$FC
  $9228 DEFB $07,$7E,$07,$BE,$03,$E0,$03,$C0
  $9230 DEFB $01,$C0,$01,$C0,$00,$C0,$00,$00
 
-; Object 75 - Pound symbol
+; Object 76 - Pound symbol
 ;
-; #OBJECTGFXM(#PC)(object75)
+; #OBJECTGFXM(#PC)(object76)
 b$9238 DEFB $F0,$07,$00,$00,$E0,$03,$07,$F0
  $9240 DEFB $E0,$03,$0F,$F8,$E0,$03,$0E,$38
  $9248 DEFB $E0,$83,$0E,$00,$E0,$FF,$0E,$00
@@ -2405,9 +2423,9 @@ b$9238 DEFB $F0,$07,$00,$00,$E0,$03,$07,$F0
  $9268 DEFB $00,$03,$7F,$88,$00,$03,$4F,$F8
  $9270 DEFB $00,$03,$39,$F0,$80,$07,$00,$00
 
-; Object 77 - Life raft
+; Object 78 - Life raft
 ;
-; #OBJECTGFXM(#PC)(object77)
+; #OBJECTGFXM(#PC)(object78)
 b$9278 DEFB $80,$01,$00,$00,$00,$00,$33,$CC
  $9280 DEFB $00,$00,$4F,$F2,$00,$00,$57,$FA
  $9288 DEFB $00,$00,$3B,$F4,$00,$00,$3C,$2C
@@ -2417,9 +2435,9 @@ b$9278 DEFB $80,$01,$00,$00,$00,$00,$33,$CC
  $92A8 DEFB $00,$00,$5F,$EA,$00,$00,$4F,$F2
  $92B0 DEFB $00,$00,$33,$CC,$80,$01,$00,$00
 
-; Object 79 - Stamp
+; Object 7A - Stamp
 ;
-; #OBJECTGFXM(#PC)(object79)
+; #OBJECTGFXM(#PC)(object7a)
 b$92B8 DEFB $80,$01,$2A,$AA,$80,$01,$7E,$FC
  $92C0 DEFB $80,$01,$3D,$5E,$80,$01,$78,$8C
  $92C8 DEFB $80,$01,$3A,$56,$80,$01,$75,$2C
@@ -2429,9 +2447,9 @@ b$92B8 DEFB $80,$01,$2A,$AA,$80,$01,$7E,$FC
  $92E8 DEFB $80,$01,$33,$CE,$80,$01,$60,$04
  $92F0 DEFB $80,$01,$3F,$FE,$80,$01,$55,$54
 
-; Object 7B - 7F - Gas
+; Object 7C - 80 - Gas
 ;
-; #OBJECTGFXM(#PC)(object7b)
+; #OBJECTGFXM(#PC)(object7c)
 b$92F8 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
  $9300 DEFB $F1,$FF,$00,$00,$E0,$C7,$04,$00
  $9308 DEFB $E0,$C7,$0E,$10,$E0,$C7,$0E,$00
@@ -2440,7 +2458,7 @@ b$92F8 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
  $9320 DEFB $C0,$01,$00,$40,$E0,$00,$04,$04
  $9328 DEFB $E0,$00,$0E,$0E,$E0,$00,$0E,$4E
  $9330 DEFB $E0,$00,$04,$04,$F1,$F1,$00,$00
-; #OBJECTGFXM(#PC)(object7d)
+; #OBJECTGFXM(#PC)(object7e)
  $9338 DEFB $FF,$FF,$00,$00,$FF,$C7,$00,$00
  $9340 DEFB $FF,$83,$00,$10,$F1,$83,$00,$38
  $9348 DEFB $E0,$83,$04,$38,$E0,$83,$0A,$10
@@ -2449,7 +2467,7 @@ b$92F8 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
  $9360 DEFB $83,$11,$38,$00,$80,$09,$10,$40
  $9368 DEFB $C0,$00,$04,$E4,$E0,$00,$0A,$EA 
  $9370 DEFB $E0,$00,$04,$44,$F1,$11,$00,$00
-; #OBJECTGFXM(#PC)(object7f)
+; #OBJECTGFXM(#PC)(object80)
  $9378 DEFB $FF,$FF,$00,$00,$FF,$C7,$00,$00
  $9380 DEFB $FF,$83,$00,$10,$FF,$83,$00,$28
  $9388 DEFB $F1,$83,$00,$10,$F1,$C1,$04,$00
@@ -2459,9 +2477,9 @@ b$92F8 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
  $93A8 DEFB $F0,$01,$00,$40,$F0,$01,$04,$A4
  $93B0 DEFB $F0,$01,$00,$40,$FF,$1F,$00,$00
 
-; Object 81 - Left arrow
+; Object 82 - Left arrow
 ;
-; #OBJECTGFXM(#PC)(object81)
+; #OBJECTGFXM(#PC)(object82)
 b$93B8 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
  $93C0 DEFB $F1,$FF,$00,$00,$E1,$FF,$04,$00
  $93C8 DEFB $C1,$FF,$0C,$00,$80,$00,$1C,$00
@@ -2471,9 +2489,9 @@ b$93B8 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
  $93E8 DEFB $E1,$FF,$04,$00,$F1,$FF,$00,$00
  $93F0 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
 
-; Object 83 - Right arrow
+; Object 84 - Right arrow
 ;
-; #OBJECTGFXM(#PC)(object83)
+; #OBJECTGFXM(#PC)(object84)
 b$93F8 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
  $9400 DEFB $FF,$8F,$00,$00,$FF,$87,$00,$20
  $9408 DEFB $FF,$83,$00,$30,$00,$01,$00,$38
@@ -10036,7 +10054,14 @@ c$EC4A LD E,(HL)     ;
  $EC58 POP HL        ; Restore #REGhl.
  $EC59 JP $EAEB      ; Continue to any further actions to process.
 
-; Lookup table for how much money stuff earns. ID, amount % 100, amount / 100
+; Lookup table for how much money each task earns.
+;
+; Each entry contains the following:
+; #TABLE( default, center)
+; { 0 | Set to 0 if the task is not complete, or 1 if it is }
+; { 1 | Amount to earn, tens part }
+; { 2 | Amount to earn, hundreds part }
+; TABLE#
 b$EC5C DEFB $00,$50,$01
  $EC5F DEFB $01,$00,$01
  $EC62 DEFB $02,$20,$00
@@ -10070,7 +10095,7 @@ b$EC5C DEFB $00,$50,$01
  $ECB6 DEFB $1E,$60,$00
  $ECB9 DEFB $1F,$50,$00
 
-; Action 5 EARN(x). Pay the current character amount in offset xx
+; Action 5 EARN(x). Pay the current character amount in offset x
 ;
 ; HL Pointer to the data for this action.
 c$ECBC LD E,(HL)     ; { Get the next byte as the ID for earnings and put it in #REGde.
@@ -10283,71 +10308,77 @@ c$EDC6 PUSH HL       ; Remember #REGhl.
  $EDF5 JR $EDE5      ; Jump back to return and process more actions.
 
 ; Action 7 SPACE. Play the "asteroids" phone box game
-c$EDF7 XOR A           ;
- $EDF8 LD ($FAEF),A    ;
- $EDFB DEC A           ;
- $EDFC LD ($F9F0),A    ;
- $EDFF LD (IY+$00),$6E ;
- $EE03 LD A,(IY+$05)   ;
- $EE06 CP $80          ;
- $EE08 LD (IY+$05),$C0 ;
+c$EDF7 XOR A           ; { Reset the "create new lightning bolts" flag. (#R$FAEF)
+ $EDF8 LD ($FAEF),A    ; }
+ $EDFB DEC A           ; { Set the missile as inactive. (#R$F9F0) 
+ $EDFC LD ($F9F0),A    ; }
+; Set the starting position as left or right, depending on which phone booth was entered.
+ $EDFF LD (IY+$00),$6E ; Set the current graphic to the space ship. (#R$9158)
+ $EE03 LD A,(IY+$05)   ; Get the x co-ordinate.
+ $EE06 CP $80          ; { If it's less then #N$80, then set to #N$30,
+ $EE08 LD (IY+$05),$C0 ; otherwise set it to #N$C0.
  $EE0C JR NC,$EE12     ;
- $EE0E LD (IY+$05),$30 ;
-*$EE12 LD (IY+$0A),$78 ;
- $EE16 LD HL,$F879     ;
+ $EE0E LD (IY+$05),$30 ; }
+*$EE12 LD (IY+$0A),$78 ; Set the y co-ordinate to #N$78.
+ $EE16 LD HL,$F879     ; { Copy the initial state (#R$F879) to the working state (#R$80A9).
  $EE19 LD DE,$80A9     ;
  $EE1C LD BC,$003C     ;
- $EE1F LDIR            ;
+ $EE1F LDIR            ; }
  $EE21 CALL $B902      ; Clear the playing area.
- $EE24 LD HL,$4800     ;
- $EE27 LD D,$00        ;
- $EE29 LD A,$53        ;
- $EE2B LD R,A          ;
-*$EE2D LD A,R          ;
- $EE2F LD E,A          ;
- $EE30 LD (HL),$20     ;
- $EE32 ADD HL,DE       ;
- $EE33 LD A,H          ;
- $EE34 CP $58          ;
- $EE36 JR NZ,$EE2D     ;
- $EE38 LD HL,$7F02     ;
- $EE3B LD DE,$0F04     ;
- $EE3E CALL $B84B      ;
- $EE41 CALL $B9AC      ;
+; Put stars randomly on-screen.
+ $EE24 LD HL,$4800     ; Point #REGhl at the start of the main playing area.
+ $EE27 LD D,$00        ; Set #REGd to 0.
+ $EE29 LD A,$53        ; { Set #REGr to #N$53, used to generate a random number.
+ $EE2B LD R,A          ; }
+*$EE2D LD A,R          ; { Put the next value of #REGr in #REGe, in ensuring a
+ $EE2F LD E,A          ; pseudo-random offset will be used. }
+ $EE30 LD (HL),$20     ; Set bit 5, to print a dot.
+ $EE32 ADD HL,DE       ; Move to the next random place.
+ $EE33 LD A,H          ; { Continue until we run out of screen and hit
+ $EE34 CP $58          ; the attribute area.
+ $EE36 JR NZ,$EE2D     ; }
+ $EE38 LD HL,$7F02     ; Point #REGal at the background graphic. (#R$7F02)
+ $EE3B LD DE,$0F04     ; Set the position.
+ $EE3E CALL $B84B      ; Draw the graphic.
+ $EE41 CALL $B9AC      ; Copy the screen to the graphic buffer.
+; Run the main loop of the game.
 *$EE44 CALL $BAB4      ; Update the "{character} is in {room}" tick count, if any.
  $EE47 CALL $EEA2      ; Update the sprite buffers.
- $EE4A CALL $F93A      ;
- $EE4D CALL $F9F5      ;
+ $EE4A CALL $F93A      ; Check for player's movement.
+ $EE4D CALL $F9F5      ; { Move the objects around and check for firing.
  $EE50 CALL $F9F5      ;
  $EE53 CALL $F9F5      ;
- $EE56 CALL $F8B9      ;
- $EE59 CALL $B9FB      ;
- $EE5C LD A,(IY+$05)   ;
- $EE5F LD B,A          ;
+ $EE56 CALL $F8B9      ; }
+ $EE59 CALL $B9FB      ; Put sprites on screen.
+; See if the player is near one of the exit portals.
+ $EE5C LD A,(IY+$05)   ; Get the X co-ordinate.
+ $EE5F LD B,A          ; { Is it close enough to the right portal?
  $EE60 SUB $24         ;
- $EE62 CP $F8          ;
- $EE64 JR NC,$EE6D     ;
- $EE66 LD A,B          ;
- $EE67 SUB $D4         ;
- $EE69 CP $F8          ;
- $EE6B JR C,$EE44      ;
-*$EE6D LD A,(IY+$0A)   ;
- $EE70 SUB $7C         ;
- $EE72 CP $F8          ;
- $EE74 JR C,$EE44      ;
- $EE76 LD A,B          ;
- $EE77 CP $80          ;
- $EE79 JR NC,$EE85     ;
- $EE7B LD (IY+$05),$04 ;
- $EE7F LD (IY+$0F),$13 ;
- $EE83 JR $EE8D        ;
+ $EE62 CP $F8          ; }
+ $EE64 JR NC,$EE6D     ; Jump forward if so.
+ $EE66 LD A,B          ; { Is it close enough to the left portal?
+ $EE67 SUB $D4         ; 
+ $EE69 CP $F8          ; }
+ $EE6B JR C,$EE44      ; Jump back if not and run the main loop again.
+; The x co-ordinate lines up with a portal, so check the y co-ordinate.
+*$EE6D LD A,(IY+$0A)   ; Get the Y co-ordinate.
+ $EE70 SUB $7C         ; { Is it close enough to the portal?
+ $EE72 CP $F8          ; }
+ $EE74 JR C,$EE44      ; Jump back if not and run the main loop again.
+; The player is by a portal. Work out which one it was, and drop them back into town.
+ $EE76 LD A,B          ; Get the X co-ordinate previously stored in B.
+ $EE77 CP $80          ; Is it less than #N$80? ie: left hand side
+ $EE79 JR NC,$EE85     ; { If it is, set the x co-ordinates as #N$DC 
+ $EE7B LD (IY+$05),$04 ; and the room as 01 (Stamp Street),
+ $EE7F LD (IY+$0F),$13 ; otherwise, set the x co-ordinate as #N$04 
+ $EE83 JR $EE8D        ; and the room as #N$13 (Reference Road).
 *$EE85 LD (IY+$05),$DC ;
- $EE89 LD (IY+$0F),$01 ;
+ $EE89 LD (IY+$0F),$01 ; }
 ; This entry point is used by the routines at #R$EFC7 and #R$F177.
 *$EE8D CALL $B952      ; Draw the room.
- $EE90 LD (IY+$0A),$98 ;
- $EE94 LD (IY+$46),$00 ;
- $EE98 LD (IY+$00),$00 ;
+ $EE90 LD (IY+$0A),$98 ; Set the y co-ordinate as #N$98 ie: on the floor
+ $EE94 LD (IY+$46),$00 ; Set the character as not jumping.
+ $EE98 LD (IY+$00),$00 ; Set the frame ID back to 0.
  $EE9C LD SP,$FC00     ; Reset the stack to its initial place.
  $EE9F JP $8194        ; Start a new game.
 
@@ -11736,181 +11767,221 @@ c$F814 LD HL,($F812) ; Point #REGhl at the next food.
  $F878 RET           ; Return.
 
 ; Initial states of lightning bolts in the "asteroids" game
-b$F879 DEFB $EE,$42,$FE,$02,$38,$EE,$AE,$FE
- $F881 DEFB $FE,$38,$02,$42,$02,$02,$38,$02
- $F889 DEFB $AE,$02,$FE,$38,$78,$42,$00,$02
- $F891 DEFB $38,$78,$AE,$00,$FE,$38,$FF,$00
- $F899 DEFB $00,$00,$00,$FF,$00,$00,$00,$00
- $F8A1 DEFB $FF,$00,$00,$00,$00,$FF,$00,$00
- $F8A9 DEFB $00,$00,$FF,$00,$00,$00,$00,$FF
- $F8B1 DEFB $00,$00,$00,$00
+b$F879 DEFB $EE,$42,$FE,$02,$38
+ $F87E DEFB $EE,$AE,$FE,$FE,$38
+ $F883 DEFB $02,$42,$02,$02,$38
+ $F888 DEFB $02,$AE,$02,$FE,$38
+ $F88D DEFB $78,$42,$00,$02,$38
+ $F892 DEFB $78,$AE,$00,$FE,$38
+ $F897 DEFB $FF,$00,$00,$00,$00
+ $F89C DEFB $FF,$00,$00,$00,$00
+ $F8A1 DEFB $FF,$00,$00,$00,$00
+ $F8A6 DEFB $FF,$00,$00,$00,$00
+ $F8AB DEFB $FF,$00,$00,$00,$00
+ $F8B0 DEFB $FF,$00,$00,$00,$00
 
-; Bounds table : The School
+; Bounds table : Asteroids missile
 b$F8B5 DEFB $00,$F0,$40,$B0
 
 ; Asteroids : Check for collision with lightning.
 ;
 ; Used by the routine at #R$EDF7.
-c$F8B9 LD IX,$80A9   ;
+c$F8B9 LD IX,$80A9   ; Point #REGix at the movement table.
  $F8BD LD A,$08      ; { Moving objects decrease endurance by 8.
  $F8BF LD ($F26E),A  ; }
- $F8C2 LD B,$0C      ;
-*$F8C4 PUSH BC       ;
- $F8C5 LD BC,$F8B5   ;
- $F8C8 LD A,(IX+$00) ;
- $F8CB CP $FF        ;
- $F8CD JR NZ,$F8D6   ;
- $F8CF CALL $EF88    ;
- $F8D2 INC IX        ;
- $F8D4 JR $F936      ;
-*$F8D6 CALL $EF35    ;
- $F8D9 LD A,(IX+$00) ;
- $F8DC CALL $A8A0    ;
- $F8DF INC IX        ;
- $F8E1 LD A,(IY+$05) ;
- $F8E4 SUB (IX-$05)  ;
+ $F8C2 LD B,$0C      ; #N$C entries to check.
+*$F8C4 PUSH BC       ; Remember the count in #REGbc.
+ $F8C5 LD BC,$F8B5   ; Point #REGbc at the bounds table. (#R$F8B5)
+ $F8C8 LD A,(IX+$00) ; 
+ $F8CB CP $FF        ; 
+ $F8CD JR NZ,$F8D6   ; Jump forward if it isn't.
+ $F8CF CALL $EF88    ; { Move to the next entry and return.
+ $F8D2 INC IX        ; 
+ $F8D4 JR $F936      ; }
+; The lightning bolt is active.
+*$F8D6 CALL $EF35    ; Update the position.
+ $F8D9 LD A,(IX+$00) ; Get the current graphic ID.
+ $F8DC CALL $A8A0    ; Put it in the sprite buffer.
+ $F8DF INC IX        ; Move to the next position in the table.
+ $F8E1 LD A,(IY+$05) ; Get the player's x co-ordinate.
+ $F8E4 SUB (IX-$05)  ; { Is it close enough to the lightning?
  $F8E7 SUB $08       ;
- $F8E9 CP $F0        ;
- $F8EB JR C,$F8FA    ;
- $F8ED LD A,(IY+$0A) ;
- $F8F0 SUB (IX-$04)  ;
+ $F8E9 CP $F0        ; }
+ $F8EB JR C,$F8FA    ; Jump forward if it isn't.
+ $F8ED LD A,(IY+$0A) ; Get the player's y co-ordinate.
+ $F8F0 SUB (IX-$04)  ; { Is it close enough to the lightning?
  $F8F3 SUB $08       ;
- $F8F5 CP $F0        ;
- $F8F7 CALL NC,$E33F ;
-*$F8FA LD A,($F672)  ;
- $F8FD OR A          ;
- $F8FE JR Z,$F918    ;
- $F900 LD A,(IX-$05) ;
- $F903 CP $F0        ;
+ $F8F5 CP $F0        ; }
+ $F8F7 CALL NC,$E33F ; If it is, the player has hit the lightning, so decrease endurance.
+*$F8FA LD A,($F672)  ; { Has the missile hit a boundary in X?
+ $F8FD OR A          ; }
+ $F8FE JR Z,$F918    ; Jump forward if it hasn't.
+; If the missile hits a boundary, the usual logic for moving objects needs changing.
+; Instead of reversing direction, move to the other end of the screen, and keep the existing
+; direction.
+ $F900 LD A,(IX-$05) ; { If the position is #N$F0, set it to #N$02.
+ $F903 CP $F0        ; Otherwise, it must be 0, so set it to #N$EE.
  $F905 JR Z,$F90B    ;
  $F907 LD A,$EE      ;
  $F909 JR $F90D      ;
-*$F90B LD A,$02      ;
-*$F90D LD (IX-$05),A ;
- $F910 LD A,(IX-$03) ;
- $F913 NEG           ;
- $F915 LD (IX-$03),A ;
-*$F918 LD A,($F673)  ;
- $F91B OR A          ;
- $F91C JR Z,$F936    ;
- $F91E LD A,(IX-$04) ;
- $F921 CP $40        ;
+*$F90B LD A,$02      ; }
+*$F90D LD (IX-$05),A ; Set the new x co-ordinate.
+ $F910 LD A,(IX-$03) ; { Restore the sign of the direction, that was changed in
+ $F913 NEG           ; the previous call to #R$EF35.
+ $F915 LD (IX-$03),A ; }
+*$F918 LD A,($F673)  ; { Has the missile hit a boundary in Y?
+ $F91B OR A          ; }
+ $F91C JR Z,$F936    ; Jump forward if it hasn't.
+; Update the boundary logic as earlier.
+ $F91E LD A,(IX-$04) ; { If the position is #N$40, set it to #N$AE.
+ $F921 CP $40        ; Otherwise it must be #N$B0, so set it to #N$42.
  $F923 JR NZ,$F929   ;
  $F925 LD A,$AE      ;
  $F927 JR $F92B      ;
-*$F929 LD A,$42      ;
-*$F92B LD (IX-$04),A ;
- $F92E LD A,(IX-$02) ;
- $F931 NEG           ;
- $F933 LD (IX-$02),A ;
-*$F936 POP BC        ;
- $F937 DJNZ $F8C4    ;
- $F939 RET           ;
+*$F929 LD A,$42      ; }
+*$F92B LD (IX-$04),A ; Set the new y co-ordinate.
+ $F92E LD A,(IX-$02) ; { Restore the sign of the direction, that was changed in
+ $F931 NEG           ; the previous call to #R$EF35.
+ $F933 LD (IX-$02),A ; }
+*$F936 POP BC        ; Restore the count in #REGbc.
+ $F937 DJNZ $F8C4    ; Loop while there is more lightning to draw.
+ $F939 RET           ; Otherwise return.
 
 ; Asteroids : Check for player's movement
 ;
 ; Used by the routine at #R$EDF7.
-c$F93A CALL $B03C      ;
- $F93D OR A            ;
- $F93E JR Z,$F94E      ;
- $F940 DEC (IY+$00)    ;
- $F943 LD A,(IY+$00)   ;
- $F946 CP $6D          ;
+c$F93A CALL $B03C      ; { Was 'left' pressed?
+ $F93D OR A            ; }
+ $F93E JR Z,$F94E      ; Jump forward if it wasn't.
+; 'left' was pressed, so rotate anticlockwise.
+ $F940 DEC (IY+$00)    ; Decrement the graphic used for the player.
+ $F943 LD A,(IY+$00)   ; { If it's now #N$6D, past the end of usable sprites,
+ $F946 CP $6D          ; set it to the maximum of #N$75.
  $F948 JR NZ,$F94E     ;
- $F94A LD (IY+$00),$75 ;
-*$F94E CALL $B00B      ;
- $F951 OR A            ;
- $F952 JR Z,$F962      ;
- $F954 INC (IY+$00)    ;
- $F957 LD A,(IY+$00)   ;
- $F95A CP $76          ;
+ $F94A LD (IY+$00),$75 ; }
+*$F94E CALL $B00B      ; { Was 'right' pressed?
+ $F951 OR A            ; }
+ $F952 JR Z,$F962      ; Jump forward if it wasn't.
+; 'right' was pressed, so rotate clockwise.
+ $F954 INC (IY+$00)    ; Increment the graphic used for the player.
+ $F957 LD A,(IY+$00)   ; { If it's now #N$75, past the end of usable sprites,
+ $F95A CP $76          ; set it to the minimum of #N$6E.
  $F95C JR NZ,$F962     ;
- $F95E LD (IY+$00),$6E ;
-*$F962 CALL $ABD7      ;
- $F965 OR A            ;
- $F966 JR Z,$F994      ;
- $F968 CALL $F9A4      ;
- $F96B LD A,(IY+$05)   ;
- $F96E ADD A,(HL)      ;
- $F96F JR NZ,$F975     ;
+ $F95E LD (IY+$00),$6E ; }
+*$F962 CALL $ABD7      ; { Was 'in' pressed?
+ $F965 OR A            ; }
+ $F966 JR Z,$F994      ; Jump forward if it wasn't.
+; 'in' was pressed, so move forward.
+ $F968 CALL $F9A4      ; Put the change in co-ordinates in #REGhl.
+ $F96B LD A,(IY+$05)   ; Get the x co-ordinate.
+ $F96E ADD A,(HL)      ; Add the offset (may be negative).
+ $F96F JR NZ,$F975     ; { If the x co-ordinate is 0, wrap around to #N$EE.
  $F971 LD A,$EE        ;
- $F973 JR $F97B        ;
-*$F975 CP $F0          ;
+ $F973 JR $F97B        ; }
+*$F975 CP $F0          ; { If the x co-ordinate is #N$F0, wrap around to #N$02.
  $F977 JR NZ,$F97B     ;
- $F979 LD A,$02        ;
-*$F97B LD (IY+$05),A   ;
- $F97E INC HL          ;
- $F97F LD A,(IY+$0A)   ;
- $F982 ADD A,(HL)      ;
- $F983 CP $40          ;
+ $F979 LD A,$02        ; }
+*$F97B LD (IY+$05),A   ; Set the new x co-ordinate.
+ $F97E INC HL          ; Move to the next position in the table.
+ $F97F LD A,(IY+$0A)   ; Get the y co-ordinate
+ $F982 ADD A,(HL)      ; Add the offset (may be negative).
+ $F983 CP $40          ; { If the y co-ordinate is #N$40, wrap around to #N$AC.
  $F985 JR NZ,$F98B     ;
  $F987 LD A,$AC        ;
- $F989 JR $F991        ;
-*$F98B CP $AE          ;
+ $F989 JR $F991        ; }
+*$F98B CP $AE          ; { If the y co-ordinate is #N$AE, wrap around to #N$42.
  $F98D JR NZ,$F991     ;
- $F98F LD A,$42        ;
-*$F991 LD (IY+$0A),A   ;
-*$F994 LD L,(IY+$05)   ;
+ $F98F LD A,$42        ; }
+*$F991 LD (IY+$0A),A   ; Set the new y co-ordinate.
+*$F994 LD L,(IY+$05)   ; { Set the co-ordinates as the location to draw. (#R$A838)
  $F997 LD H,(IY+$0A)   ;
- $F99A LD ($A838),HL   ;
- $F99D LD A,(IY+$00)   ;
- $F9A0 CALL $A83D      ;
- $F9A3 RET             ;
+ $F99A LD ($A838),HL   ; }
+ $F99D LD A,(IY+$00)   ; Use the current sprite ID for the player.
+ $F9A0 CALL $A83D      ; { Draw it and return.
+ $F9A3 RET             ; }
 
-; Asteroids : Calculate player's position on screen
+; Asteroids : Get the change values for the current direction.
 ;
 ; Used by the routines at #R$F93A and #R$F9F5.
 ;
-; HL On exit, holds the address for the player's position
-c$F9A4 LD A,(IY+$00) ;
- $F9A7 SUB $6E       ;
- $F9A9 ADD A,A       ;
- $F9AA LD E,A        ;
- $F9AB LD D,$00      ;
- $F9AD LD HL,$F9B2   ;
- $F9B0 ADD HL,DE     ;
- $F9B1 RET           ;
+; HL On exit, points to data containing a change in x and y co-ordinates
+c$F9A4 LD A,(IY+$00) ; Get the current sprite.
+ $F9A7 SUB $6E       ; Subtract #N$6E to get an offset between 0 and 8.
+ $F9A9 ADD A,A       ; Double this to get a word offset.
+ $F9AA LD E,A        ; { Put this in #REGde.
+ $F9AB LD D,$00      ; }
+ $F9AD LD HL,$F9B2   ; { Add the base address of the direction table. (#R$F9B2)
+ $F9B0 ADD HL,DE     ; and return.
+ $F9B1 RET           ; }
 
-; Asteroids : Positions of objects on screen
-b$F9B2 DEFB $00,$FE,$02,$FE,$02,$00,$02,$02
- $F9BA DEFB $00,$02,$FE,$02,$FE,$00,$FE,$FE
- $F9C2 DEFB $00,$80
+; Asteroids : Direction to move in
+;
+; Each entry contains the change in x and y co-ordinate depending on which
+; way the player is facing.
+b$F9B2 DEFB $00,$FE     ; 0
+ $F9B4 DEFB $02,$FE     ; 1
+ $F9B6 DEFB $02,$00     ; 2
+ $F9B8 DEFB $02,$02     ; 3
+ $F9BA DEFB $00,$02     ; 4
+ $F9BC DEFB $FE,$02     ; 5
+ $F9BE DEFB $FE,$00     ; 6
+ $F9C0 DEFB $FE,$FE     ; 7
+
+; Asteroids : Current pointer to data for "hit lightning" sound
+;
+; Used by the routine at #R$F9C4.
+g$F9C2 DEFBW $8000      ; 
 
 ; Asteroids : Generate a "hit lightning" sound
 ;
 ; Used by the routine at #R$F9F5.
-c$F9C4 PUSH AF       ;
+;
+; .
+;
+; The routine takes random bytes from #N$8000 - #N$9BFF and uses
+; them as pairs of lengths to keep the speaker on or off,
+; effectively determine the frequency and wave type.
+c$F9C4 PUSH AF       ; { Store #REGaf, #REGbc and #REGhl.
  $F9C5 PUSH BC       ;
- $F9C6 PUSH HL       ;
- $F9C7 LD HL,($F9C2) ;
- $F9CA LD B,$19      ;
-*$F9CC PUSH BC       ;
- $F9CD LD B,(HL)     ;
- $F9CE INC HL        ;
- $F9CF LD A,$10      ;
- $F9D1 OUT ($FE),A   ;
- $F9D3 PUSH BC       ;
-*$F9D4 DJNZ $F9D4    ;
- $F9D6 POP BC        ;
- $F9D7 LD B,(HL)     ;
- $F9D8 INC HL        ;
- $F9D9 LD A,$00      ;
- $F9DB OUT ($FE),A   ;
-*$F9DD DJNZ $F9DD    ;
- $F9DF POP BC        ;
- $F9E0 DJNZ $F9CC    ;
- $F9E2 LD A,H        ;
+ $F9C6 PUSH HL       ; }
+ $F9C7 LD HL,($F9C2) ; Get the current pointer to sound data.
+ $F9CA LD B,$19      ; Loop #N$19 times.
+*$F9CC PUSH BC       ; Remember the count in #REGbc.
+ $F9CD LD B,(HL)     ; Get the current frequency.
+ $F9CE INC HL        ; Move to the next position in the buffer.
+ $F9CF LD A,$10      ; { Turn the speaker on.
+ $F9D1 OUT ($FE),A   ; }
+ $F9D3 PUSH BC       ; Remember the frequency count.
+*$F9D4 DJNZ $F9D4    ; Loop to keep the speaker on for this time.
+ $F9D6 POP BC        ; Restore the count.
+ $F9D7 LD B,(HL)     ; Get the next frequency count.
+ $F9D8 INC HL        ; Move to the next place in the buffer.
+ $F9D9 LD A,$00      ; { Turn the speaker off.
+ $F9DB OUT ($FE),A   ; }
+*$F9DD DJNZ $F9DD    ; Loop to keep the speaker off for this time.
+ $F9DF POP BC        ; Restore the count in #REGbc.
+ $F9E0 DJNZ $F9CC    ; Loop while there is more to do.
+ $F9E2 LD A,H        ; { If #REGhl reaches #N$9c, set it back to #N$80.
  $F9E3 CP $9C        ;
  $F9E5 JR NZ,$F9E9   ;
  $F9E7 LD H,$80      ;
-*$F9E9 LD ($F9C2),HL ;
- $F9EC POP HL        ;
+*$F9E9 LD ($F9C2),HL ; }
+ $F9EC POP HL        ; { Restore registers pushed earlier and return.
  $F9ED POP BC        ;
  $F9EE POP AF        ;
- $F9EF RET           ;
+ $F9EF RET           ; }
 
-; Asteroids : Movement table?
-b$F9F0 DEFB $FF,$FF,$00,$00
+; Asteroids : X co-ordinate of missile, or #N$FF in inactive.
+g$F9F0 DEFB $FF
+
+; Asteroids : Y co-ordinate of missile.
+g$F9F1 DEFB $FF
+
+; Asteroids : Change in X for the missile
+g$F9F2 DEFB $00
+
+; Asteroids : Change in Y for the missile
+g$F9F3 DEFB $00
 
 ; Number of asteroids left to hit to win the game (starts at 14)
 b$F9F4 DEFB $14
@@ -11918,118 +11989,127 @@ b$F9F4 DEFB $14
 ; Asteroids : Check for firing missile and animate accordingly
 ;
 ; Used by the routine at #R$EDF7.
-c$F9F5 LD IX,$F9F0     ;
- $F9F9 LD A,(IX+$00)   ;
- $F9FC CP $FF          ;
- $F9FE JR NZ,$FA2A     ;
- $FA00 CALL $B06D      ;
- $FA03 OR A            ;
- $FA04 RET Z           ;
- $FA05 LD A,(IY+$05)   ;
- $FA08 LD ($F9F0),A    ;
- $FA0B LD A,(IY+$0A)   ;
- $FA0E LD ($F9F1),A    ;
- $FA11 CALL $F9A4      ;
- $FA14 LD A,(HL)       ;
- $FA15 LD ($F9F2),A    ;
- $FA18 INC HL          ;
- $FA19 LD A,(HL)       ;
- $FA1A LD ($F9F3),A    ;
- $FA1D LD BC,$FF0A     ;
+c$F9F5 LD IX,$F9F0     ; Point #REGix at the missile data.
+ $F9F9 LD A,(IX+$00)   ; { Is a missile firing?
+ $F9FC CP $FF          ; }
+ $F9FE JR NZ,$FA2A     ; Jump forward if it is.
+ $FA00 CALL $B06D      ; { Was 'fire' pressed?
+ $FA03 OR A            ; }
+ $FA04 RET Z           ; Return if it wasn't.
+; 'Fire' was pressed.
+ $FA05 LD A,(IY+$05)   ; Get the x co-ordinate.
+ $FA08 LD ($F9F0),A    ; Set this as the x co-ordinate of the missile.
+ $FA0B LD A,(IY+$0A)   ; Get the y co-ordinate.
+ $FA0E LD ($F9F1),A    ; Set this as the y co-ordinate of the missile.
+ $FA11 CALL $F9A4      ; Get the change values for the current direction.
+ $FA14 LD A,(HL)       ; Get the change in x.
+ $FA15 LD ($F9F2),A    ; Set this for the missile.
+ $FA18 INC HL          ; Move to the next position in the table.
+ $FA19 LD A,(HL)       ; Get the change in y.
+ $FA1A LD ($F9F3),A    ; Set this for the missile.
+ $FA1D LD BC,$FF0A     ; { Play a "fire a missile" round.
  $FA20 LD DE,$0114     ;
  $FA23 LD HL,$1401     ;
- $FA26 CALL $E3D3      ;
- $FA29 RET             ;
-*$FA2A LD BC,$F8B5     ;
- $FA2D CALL $EF35      ;
- $FA30 LD A,$6D        ;
- $FA32 CALL $A83D      ;
- $FA35 LD A,($F672)    ;
+ $FA26 CALL $E3D3      ; }
+ $FA29 RET             ; Return.
+; A missile is in mid-fire, work out what to do with it.
+*$FA2A LD BC,$F8B5     ; Point #REGbc at the bounds table. (#R$F8B5)
+ $FA2D CALL $EF35      ; Update the missile's position.
+ $FA30 LD A,$6D        ; Use the ID of the missle. (#R$9118)
+ $FA32 CALL $A83D      ; Draw it.
+ $FA35 LD A,($F672)    ; { Is the change in X and Y both 0?
  $FA38 LD B,A          ;
  $FA39 LD A,($F673)    ;
- $FA3C OR B            ;
- $FA3D JR Z,$FA44      ;
- $FA3F LD (IX-$04),$FF ;
+ $FA3C OR B            ; }
+ $FA3D JR Z,$FA44      ; Jump forward if it is.
+ $FA3F LD (IX-$04),$FF ; Signal that the missile is firing and return.
  $FA43 RET             ;
+; The missile is moving.
 *$FA44 LD B,$0C        ;
- $FA46 LD HL,$80A9     ;
-*$FA49 LD A,(HL)       ;
- $FA4A CP $FF          ;
- $FA4C JR NZ,$FA56     ;
-*$FA4E INC HL          ;
+ $FA46 LD HL,$80A9     ; Point #REGhl at the lightning bolt position table. (#R$80A9)
+*$FA49 LD A,(HL)       ; { Is the next lighting bolt inactive?
+ $FA4A CP $FF          ; }
+ $FA4C JR NZ,$FA56     ; Jump forward if it isn't.
+*$FA4E INC HL          ; { Otherwise move to the next entry.
  $FA4F INC HL          ;
  $FA50 INC HL          ;
  $FA51 INC HL          ;
- $FA52 INC HL          ;
- $FA53 DJNZ $FA49      ;
- $FA55 RET             ;
-*$FA56 LD E,A          ;
- $FA57 SUB (IX-$04)    ;
+ $FA52 INC HL          ; }
+ $FA53 DJNZ $FA49      ; Loop while there are still more lightning bolts to look at.
+ $FA55 RET             ; Otherwise return.
+; There is active lightning, did the missile hit it?
+*$FA56 LD E,A          ; Put the lightning's x co-ordinate in #REGe.
+ $FA57 SUB (IX-$04)    ; { Is it close enough to the missile?
  $FA5A SUB $08         ;
- $FA5C CP $F0          ;
- $FA5E JR C,$FA4E      ;
- $FA60 INC HL          ;
- $FA61 LD A,(HL)       ;
- $FA62 LD D,A          ;
- $FA63 DEC HL          ;
- $FA64 SUB (IX-$03)    ;
+ $FA5C CP $F0          ; }
+ $FA5E JR C,$FA4E      ; If not, jump back to check the next lightning.
+ $FA60 INC HL          ; Move to the next position in the buffer.
+ $FA61 LD A,(HL)       ; { Put the lightning's y co-ordinate  in #REGd.
+ $FA62 LD D,A          ; } 
+ $FA63 DEC HL          ; Move back to the previous position in the buffer.
+ $FA64 SUB (IX-$03)    ; { Is the y co-ordinate close enough to the missile?
  $FA67 SUB $08         ;
- $FA69 CP $F0          ;
- $FA6B JR C,$FA4E      ;
- $FA6D LD A,$FF        ;
- $FA6F LD (HL),A       ;
- $FA70 LD ($F9F0),A    ;
- $FA73 INC HL          ;
+ $FA69 CP $F0          ; }
+ $FA6B JR C,$FA4E      ; Jump back if it isn't.
+; The missile has hit some lightning.
+ $FA6D LD A,$FF        ; { Signal there is no lightning here.
+ $FA6F LD (HL),A       ; }
+ $FA70 LD ($F9F0),A    ; Signal that the missile is no longer active.
+ $FA73 INC HL          ; { Move to the next place in the buffer.
  $FA74 INC HL          ;
  $FA75 INC HL          ;
- $FA76 INC HL          ;
- $FA77 LD A,(HL)       ;
- $FA78 CP $6B          ;
- $FA7A JR Z,$FA86      ;
- $FA7C LD A,$6B        ;
- $FA7E CALL $FAF0      ;
- $FA81 CALL $FAF0      ;
- $FA84 JR $FAE3        ;
-*$FA86 LD A,($FAEF)    ;
+ $FA76 INC HL          ; }
+ $FA77 LD A,(HL)       ; Get the object ID for the lightning.
+ $FA78 CP $6B          ; Is it #N$6B? (small lightning)
+ $FA7A JR Z,$FA86      ; Jump forward if it is.
+ $FA7C LD A,$6B        ; Set the UDG to a small lightning bolt. (#R$90D8)
+ $FA7E CALL $FAF0      ; { Move the lightning bolts around.
+ $FA81 CALL $FAF0      ; }
+ $FA84 JR $FAE3        ; Jump forward to play the sound effect and return.
+; The missile hit some small lightning.
+*$FA86 LD A,($FAEF)    ; { Flip the "regenerate lightning" bit.
  $FA89 XOR $01         ;
- $FA8B LD ($FAEF),A    ;
- $FA8E JR NZ,$FAE3     ;
- $FA90 LD DE,$42EE     ;
- $FA93 LD A,R          ;
- $FA95 AND $01         ;
+ $FA8B LD ($FAEF),A    ; }
+ $FA8E JR NZ,$FAE3     ; Skip the next bit of code if the bit is set.
+ $FA90 LD DE,$42EE     ; { Get bit 1 of #REGr, to generate a random flag,
+ $FA93 LD A,R          ; that determines the lightning comes in at the top
+ $FA95 AND $01         ; right or the bottom left.
  $FA97 JR NZ,$FA9C     ;
- $FA99 LD DE,$AE02     ;
-*$FA9C LD A,$38        ;
- $FA9E CALL $FAF0      ;
- $FAA1 LD HL,$F9F4     ;
- $FAA4 LD A,(HL)       ;
- $FAA5 OR A            ;
- $FAA6 JR Z,$FAE3      ;
- $FAA8 DEC (HL)        ;
- $FAA9 JR NZ,$FAE3     ;
+ $FA99 LD DE,$AE02     ; }
+*$FA9C LD A,$38        ; Set the UDG to a big lightning bolt. (#R$8A78)
+ $FA9E CALL $FAF0      ; Move the lightning bolts around.
+ $FAA1 LD HL,$F9F4     ; Point #REGhl at the number of asteroids left to hit. (#R$F9F4)
+ $FAA4 LD A,(HL)       ; { Have we destroyed all of them already?
+ $FAA5 OR A            ; }
+ $FAA6 JR Z,$FAE3      ; Jump forward if we have.
+ $FAA8 DEC (HL)        ; Otherwise decrement the count of asteroids left to hit.
+ $FAA9 JR NZ,$FAE3     ; Jump forward if the count is not zero.
+; The player has destroyed enough asteroids to win the sub-game.
  $FAAB LD A,$01        ; { Set the asteroids game as completed.
  $FAAD LD ($EC1C),A    ; }
- $FAB0 LD ($ECB3),A    ;
- $FAB3 LD A,(IY-$1E)   ;
+ $FAB0 LD ($ECB3),A    ; Set the task completed. (#R$EC5C)
+ $FAB3 LD A,(IY-$1E)   ; { Earn the player £100.
  $FAB6 ADD A,$01       ;
  $FAB8 DAA             ;
- $FAB9 LD (IY-$1E),A   ;
- $FABC LD A,($ECFE)    ;
+ $FAB9 LD (IY-$1E),A   ; }
+ $FABC LD A,($ECFE)    ; { Add £100 to the grand total.
  $FABF ADD A,$01       ;
  $FAC1 DAA             ;
- $FAC2 LD ($ECFE),A    ;
- $FAC5 LD BC,$BE32     ;
+ $FAC2 LD ($ECFE),A    ; }
+; Play the "completed" sound effect.
+ $FAC5 LD BC,$BE32     ; { Set the parameters for the first sound.
  $FAC8 LD HL,$0000     ;
- $FACB LD DE,$0A0A     ;
- $FACE CALL $FAE7      ;
- $FAD1 LD BC,$9664     ;
- $FAD4 CALL $FAE7      ;
- $FAD7 LD BC,$A532     ;
- $FADA CALL $FAE7      ;
- $FADD LD BC,$7D78     ;
- $FAE0 CALL $FAE7      ;
-*$FAE3 CALL $F9C4      ;
- $FAE6 RET             ;
+ $FACB LD DE,$0A0A     ; }
+ $FACE CALL $FAE7      ; Play it.
+ $FAD1 LD BC,$9664     ; Set the parameters for the second sound.
+ $FAD4 CALL $FAE7      ; Play it.
+ $FAD7 LD BC,$A532     ; Set the parameters for the third sound.
+ $FADA CALL $FAE7      ; Play it.
+ $FADD LD BC,$7D78     ; Set the parameter for the fourth sound.
+ $FAE0 CALL $FAE7      ; Play it.
+; This code is a common entry point if lightining was hit.
+*$FAE3 CALL $F9C4      ; { Play the "hit lighting" sound effect and return.
+ $FAE6 RET             ; }
 
 ; Asteroids : Play a note of the "won" sound effect
 ;
@@ -12041,43 +12121,47 @@ c$FAE7 PUSH HL       ; { Store #REGhl and #REGde.
  $FAED POP HL        ; 
  $FAEE RET           ; }
 
-; Asteroids : flag
+; Asteroids : Flag to indicate new lightning bolts should be created
 ;
-; Alternates between 0 and 1.
+; Alternates between 0 and 1. If reset, a new lightning bolt can be created
+; if a small bolt is destroyed.
 g$FAEF DEFB $00
 
 ; Asteroids : Move the lightning bolts around
 ;
 ; Used by the routine at #R$F9F5.
-c$FAF0 PUSH IX       ;
- $FAF2 LD IX,$80A9   ;
- $FAF6 PUSH AF       ;
-*$FAF7 LD A,(IX+$00) ;
- $FAFA CP $FF        ;
- $FAFC JR Z,$FB05    ;
- $FAFE CALL $EF88    ;
- $FB01 INC IX        ;
- $FB03 JR $FAF7      ;
-*$FB05 LD (IX+$00),E ;
- $FB08 LD (IX+$01),D ;
- $FB0B LD A,R        ;
- $FB0D AND $02       ;
- $FB0F DEC A         ;
- $FB10 ADD A,A       ;
- $FB11 LD (IX+$02),A ;
- $FB14 LD A,R        ;
- $FB16 AND $02       ;
- $FB18 RRA           ;
- $FB19 LD C,A        ;
- $FB1A LD A,R        ;
- $FB1C AND $01       ;
- $FB1E SUB C         ;
- $FB1F ADD A,A       ;
- $FB20 LD (IX+$03),A ;
- $FB23 POP AF        ;
- $FB24 LD (IX+$04),A ;
- $FB27 POP IX        ;
- $FB29 RET           ;
+;
+; A Object ID to use
+c$FAF0 PUSH IX       ; Store #REGix.
+ $FAF2 LD IX,$80A9   ; Point #REGix at the lightning bolts table. (#R$80A9)
+ $FAF6 PUSH AF       ; Store #REGaf.
+*$FAF7 LD A,(IX+$00) ; { Is the lightning bolt here active?
+ $FAFA CP $FF        ; }
+ $FAFC JR Z,$FB05    ; Jump forward if it isn't.
+ $FAFE CALL $EF88    ; { Otherwise move to the next entry.
+ $FB01 INC IX        ; 
+ $FB03 JR $FAF7      ; }
+; Create a lightning bolt here and set it moving in a random direction.
+*$FB05 LD (IX+$00),E ; Put the x co-ordinate in #REGe.
+ $FB08 LD (IX+$01),D ; Put the y co-ordinate in #REGd.
+ $FB0B LD A,R        ; Copy #REGr to #REGa to get a pseudo-random number.
+ $FB0D AND $02       ; { Select bit 2 and subtract that value, giving a random number
+ $FB0F DEC A         ; that's 0 or #N$FE. }
+ $FB10 ADD A,A       ; Double the value.
+ $FB11 LD (IX+$02),A ; Set that as the next change in direction.
+ $FB14 LD A,R        ; Copy #REGr to #REGa to get a pseudo-random number.
+ $FB16 AND $02       ; { Select bit 2 and shift right, giving a random number
+ $FB18 RRA           ; that's 0 or 1. }
+ $FB19 LD C,A        ; Store this value in #REGc.
+ $FB1A LD A,R        ; Copy #REGr to #REGa to get a pseudo-random number.
+ $FB1C AND $01       ; Select bit 1.
+ $FB1E SUB C         ; Subtract #REGc, giving a random number that's 1, 0 or #N$FF.
+ $FB1F ADD A,A       ; Double this (giving 2, 0 or #N$FE).
+ $FB20 LD (IX+$03),A ; Set this as the Y offset
+ $FB23 POP AF        ; Restore #REGaf.
+ $FB24 LD (IX+$04),A ; Set the object ID.
+ $FB27 POP IX        ; { Restore #REGix and return.
+ $FB29 RET           ; }
 
 ; Spare space for the stack
 s$FB2A DEFS $D6

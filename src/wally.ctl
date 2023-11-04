@@ -16,6 +16,7 @@ t $7ECC Afternoon tea break
 b $7F02 Room data : Asteroids
 t $7F1F Location text
 b $80A9 Positions of the lightning bolts in the "asteroids" game
+B $80A9,$3C,5
 c $80E5 Show title screen
 z $813A
 c $813B Set up initial game data
@@ -970,6 +971,7 @@ b $F7FE The food table (current room). Format is room, x co-ord, y co-ord, objec
 w $F812 Pointer to the next food table entry
 c $F814 See if any food is in the current room, and display it if so
 b $F879 Initial states of lightning bolts in the "asteroids" game
+B $F879,$3C,5
 b $F8B5 Bounds table : The School
 c $F8B9 Asteroids : Check for collision with lightning.
 c $F93A Asteroids : Check for player's movement

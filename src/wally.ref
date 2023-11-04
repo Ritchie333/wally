@@ -244,7 +244,7 @@ The money earned by various tasks is defined in a table at #$REC5C.
 Each entry in the table contains three bytes:
 #TABLE( default, center )
 { =h Byte | =h Character }
-{ 0 | ID of the money value }
+{ 0 | Set to 1 if the task earning the money is completed, or 0 if not }
 { 1 | Money low byte }
 { 2 | Money high byte }
 TABLE#
