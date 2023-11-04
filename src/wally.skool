@@ -9386,25 +9386,25 @@ w$E728 DEFW $E484
 ; Clear the inventory display, so new text can go on
 ;
 ; Used by the routine at #R$E41D.
-c$E77A PUSH HL       ;
+c$E77A PUSH HL       ; { Store main registers.
  $E77B PUSH BC       ;
- $E77C PUSH DE       ;
- $E77D LD IX,$81F8   ;
- $E781 LD C,$20      ;
-*$E783 LD L,(IX+$00) ;
- $E786 LD H,(IX+$01) ;
- $E789 LD B,$0F      ;
-*$E78B LD (HL),$00   ;
- $E78D INC HL        ;
- $E78E DJNZ $E78B    ;
- $E790 INC IX        ;
- $E792 INC IX        ;
- $E794 DEC C         ;
- $E795 JR NZ,$E783   ;
- $E797 POP DE        ;
+ $E77C PUSH DE       ; }
+ $E77D LD IX,$81F8   ; Point #REGix at the screen offset table.
+ $E781 LD C,$20      ; #N$20 rows to update.
+*$E783 LD L,(IX+$00) ; { Get the next screen address in #REGhl.
+ $E786 LD H,(IX+$01) ; }
+ $E789 LD B,$0F      ; #N$0F columns per row to update.
+*$E78B LD (HL),$00   ; Clear all bits.
+ $E78D INC HL        ; Move to the next column.
+ $E78E DJNZ $E78B    ; Loop until all columns are done.
+ $E790 INC IX        ; { Move to the next position in the offset table.
+ $E792 INC IX        ; }
+ $E794 DEC C         ; { Loop until all rows are updated.
+ $E795 JR NZ,$E783   ; }
+ $E797 POP DE        ; { Restore main registers and return.
  $E798 POP BC        ;
  $E799 POP HL        ;
- $E79A RET           ;
+ $E79A RET           ; }
 
 ; See if a player wants to swap character, and do so if they can
 ;
@@ -9989,7 +9989,7 @@ g$EC1B DEFB $0C
 g$EC1C DEFB $0D
 
 ; Get a game status flag and return it in A, setting the zero flag
-; appropriately.
+; appropriately
 ;
 ; Used by the routines at #R$B952, #R$E468, #R$EDB3, #R$F43C, #R$F4D3, #R$F503,
 ; #R$F54F, #R$F572 and #R$F5F1.
@@ -10246,26 +10246,26 @@ c$ED8A LD IX,$ED06   ; Point #REGix at the movement table. (#R$ED06)
  $EDA2 RET           ; Return.
 
 ; Action 2 SET(x) : Set flag xx
-c$EDA3 LD A,$01      ;
- $EDA5 JP $EC4A      ;
+c$EDA3 LD A,$01      ; { Set the value as 1.
+ $EDA5 JP $EC4A      ; }
 
 ; Action 3 RESET(x) : Reset flag xx
-c$EDA8 XOR A         ;
- $EDA9 JP $EC4A      ;
+c$EDA8 XOR A         ; { Set the value as 0.
+ $EDA9 JP $EC4A      ; }
 
 ; Action 4 SET(x,y) : Set flag xx to yy
-c$EDAC LD E,(HL)     ;
- $EDAD INC HL        ;
- $EDAE LD A,(HL)     ;
- $EDAF INC HL        ;
- $EDB0 JP $EC4C      ;
+c$EDAC LD E,(HL)     ; { Put the flag ID in #REGe.
+ $EDAD INC HL        ; }
+ $EDAE LD A,(HL)     ; { Put the value in #REGa.
+ $EDAF INC HL        ; }
+ $EDB0 JP $EC4C      ; Set it.
 
 ; Pattern 2 SET(x) : Match if flag x set
-c$EDB3 LD A,(HL)     ;
- $EDB4 INC HL        ;
- $EDB5 CALL $EC1D    ;
- $EDB8 JP Z,$EAE3    ;
- $EDBB JP $EACB      ;
+c$EDB3 LD A,(HL)     ; { Get the flag ID in #REGa.
+ $EDB4 INC HL        ; }
+ $EDB5 CALL $EC1D    ; Get the flag's value.
+ $EDB8 JP Z,$EAE3    ; Mark the pattern as failed if it's 0.
+ $EDBB JP $EACB      ; Otherwise process other actions.
 
 ; Unused
 u$EDBE DEFB $FF
@@ -10790,7 +10790,13 @@ c$F0C0 LD A,(IY+$0A)   ; Get the Y co-ordinate.
  $F102 JR $F0F0        ; }
 
 ; Movement table : Jumping jack
-g$F104 DEFB $00,$A8,$02,$FE,$05,$02
+g$F104 DEFB $00,$A8,$02,$FE
+
+; Next room for the jumping jack to appear in.
+g$F108 DEFB $05
+
+; Tick counter until the jumping jack updates
+g$F109 DEFB $02
 
 ; Bounds table : Jumping jack
 b$F10A DEFB $00,$F0,$A0,$A8
@@ -10803,26 +10809,29 @@ c$F10E LD A,$04        ; { Touching the jumping jack drops endurance by 4.
  $F113 LD IX,$F104     ; Point #REGix at the movement table.
  $F117 LD BC,$F10A     ; Point #REGbc at the bounds.
  $F11A CALL $EF35      ; Update the object positions.
- $F11D LD A,(IX-$04)   ;
- $F120 OR A            ;
- $F121 JR NZ,$F13F     ;
- $F123 DEC (IX+$01)    ;
- $F126 JR NZ,$F13F     ;
- $F128 LD (IX+$01),$02 ;
- $F12C LD (IX-$04),$00 ;
- $F130 LD (IX-$03),$A8 ;
- $F134 LD (IX-$01),$FE ;
- $F138 CALL $AF01      ;
- $F13B LD (IX+$00),A   ;
- $F13E RET             ;
-*$F13F LD A,(IX+$00)   ;
- $F142 CP (IY+$0F)     ;
- $F145 RET NZ          ;
- $F146 LD A,(IX-$03)   ;
- $F149 CP $A8          ;
- $F14B LD A,$48        ; { Set #REGa to the first jumping jack graphic
- $F14D JR NZ,$F151     ; }
- $F14F LD A,$4A        ; Set #REGa to the second jumping jack graphic
+ $F11D LD A,(IX-$04)   ; Get the x co-ordinate.
+ $F120 OR A            ; Is it zero?
+ $F121 JR NZ,$F13F     ; Jump forward if it isn't.
+ $F123 DEC (IX+$01)    ; Decrement the tick counter.
+ $F126 JR NZ,$F13F     ; Jump forward if it's not zero.
+; The tick counter has reached 0, need to update.
+ $F128 LD (IX+$01),$02 ; Set the tick counter back to 2.
+ $F12C LD (IX-$04),$00 ; Set the x co-ordinate to 0.
+ $F130 LD (IX-$03),$A8 ; Set the y co-ordinate to #N$A8.
+ $F134 LD (IX-$01),$FE ; Set the direction to -2. (ie: 2 updwards)
+ $F138 CALL $AF01      ; { Set the next room for the jumping jack to appear in.
+ $F13B LD (IX+$00),A   ; and return.
+ $F13E RET             ; }
+; Now draw the jumping jack if it's visible.
+*$F13F LD A,(IX+$00)   ; Get the jumping jack's current room.
+ $F142 CP (IY+$0F)     ; Is it the same room the player is in?
+ $F145 RET NZ          ; Return if not.
+; The jumping jack is in the same room as the player, so draw it.
+ $F146 LD A,(IX-$03)   ; Get the Y co-ordinate.
+ $F149 CP $A8          ; { If it's #N$A8, 
+ $F14B LD A,$48        ; set #REGa to the first jumping jack graphic. (#R$8C78)
+ $F14D JR NZ,$F151     ; Otherwise, set #REGa to the second jumping jack graphic
+ $F14F LD A,$4A        ; }
 *$F151 CALL $A8A0      ; Put the object in the sprite buffer.
  $F154 CALL $E329      ; Check for collision detection.
  $F157 RET             ; Return.
@@ -10979,7 +10988,16 @@ g$F26E DEFB $00
 b$F26F DEFB $43
 
 ; Movement table : Herbert
-g$F270 DEFB $5A,$A8,$01,$00,$00,$03,$40
+g$F270 DEFB $5A,$A8,$01,$00
+
+; Current room Herbert is in
+g$F274 DEFB $00
+
+; Current tick count until Herbert moves
+g$F275 DEFB $03
+
+; Current object ID for Herbert. (#N$40 - #N$46)
+g$F275 DEFB $40
 
 ; Move Herbert
 ;
@@ -10988,58 +11006,60 @@ c$F277 LD A,$02      ; { Touching Herbert reduces endurance by 2.
  $F279 LD ($F26E),A  ; }
  $F27C LD IX,$F270   ; Point #REGix at the movement table.
  $F280 LD BC,$F2F7   ; Point #REGbc at the bounds.
- $F283 CALL $EF35    ; Update object position.
- $F286 LD A,(IX+$00) ;
+ $F283 CALL $EF35    ; Update object positions.
+ $F286 LD A,(IX+$00) ; Get Herbert's current room.
  $F289 CALL $AC69    ; Get the "next rooms" table for this room.
- $F28C INC HL        ;
- $F28D LD A,(HL)     ;
- $F28E CALL $AC5F    ;
- $F291 LD A,(HL)     ;
- $F292 CP (IX-$04)   ;
- $F295 JR NZ,$F2C3   ;
- $F297 DEC (IX+$01)  ;
- $F29A JR NZ,$F2C3   ;
- $F29C LD A,R        ;
+ $F28C INC HL        ; Move to the second byte in the table.
+ $F28D LD A,(HL)     ; Get the target co-ordinate.
+ $F28E CALL $AC5F    ; Get the address of the co-ordinate table.
+ $F291 LD A,(HL)     ; Get the target co-ordinate.
+ $F292 CP (IX-$04)   ; Is it Herbert's current x co-ordinate?
+ $F295 JR NZ,$F2C3   ; Jump forward if it isn't.
+ $F297 DEC (IX+$01)  ; Decerement Herbert's tick count.
+ $F29A JR NZ,$F2C3   ; Jump forward while it is 0.
+ $F29C LD A,R        ; { Get a random number between 3 and 6.
  $F29E AND $03       ;
- $F2A0 ADD A,$03     ;
- $F2A2 LD (IX+$01),A ;
-*$F2A5 CALL $AF01    ;
- $F2A8 CP $1F        ;
- $F2AA JR Z,$F2A5    ;
- $F2AC LD (IX+$00),A ;
+ $F2A0 ADD A,$03     ; }
+ $F2A2 LD (IX+$01),A ; Set this as the new tick count.
+*$F2A5 CALL $AF01    ; Set the next room for Herbert to appear in.
+ $F2A8 CP $1F        ; { If this is the Sewer, jump back and choose again.
+ $F2AA JR Z,$F2A5    ; }
+ $F2AC LD (IX+$00),A ; Set the new room.
  $F2AF CALL $AC69    ; Get the "next rooms" table for this room.
- $F2B2 INC HL        ;
- $F2B3 LD A,(HL)     ;
- $F2B4 CALL $AC5F    ;
- $F2B7 LD A,(HL)     ;
- $F2B8 ADD A,$02     ;
- $F2BA CP $EE        ;
+ $F2B2 INC HL        ; Move to the second byte in the buffer.
+ $F2B3 LD A,(HL)     ; Get the target co-ordinate.
+ $F2B4 CALL $AC5F    ; Get the address of the co-ordinate table.
+ $F2B7 LD A,(HL)     ; Get the x co-ordinate.
+ $F2B8 ADD A,$02     ; Add 2 to it.
+ $F2BA CP $EE        ; { Set a ceiling of #N$EE.
  $F2BC JR C,$F2C0    ;
- $F2BE LD A,$EE      ;
-*$F2C0 LD (IX-$04),A ;
-*$F2C3 LD A,(IX+$00) ;
- $F2C6 CP (IY+$0F)   ;
- $F2C9 RET NZ        ;
- $F2CA LD A,(IX-$02) ;
- $F2CD LD BC,$4440   ;
- $F2D0 CP $01        ;
- $F2D2 JR Z,$F2D7    ;
- $F2D4 LD BC,$4844   ;
-*$F2D7 LD A,(IX+$02) ;
- $F2DA ADD A,$02     ;
- $F2DC CP B          ;
- $F2DD JR C,$F2E2    ;
-*$F2DF LD A,C        ;
+ $F2BE LD A,$EE      ; }
+*$F2C0 LD (IX-$04),A ; Set the new x co-ordinate.
+; Draw Herbert if he's visible.
+*$F2C3 LD A,(IX+$00) ; Get Herbert's current room.
+ $F2C6 CP (IY+$0F)   ; Is this the room the player is in?
+ $F2C9 RET NZ        ; Return if not.
+; Herbert is in the same room as the player, so draw him.
+ $F2CA LD A,(IX-$02) ; Get the x direction difference.
+ $F2CD LD BC,$4440   ; { Set Herbert to use object IDs #N$40 - #N$42 if he's moving right,
+ $F2D0 CP $01        ; or #N$44 - #N$46 if he is moving left.
+ $F2D2 JR Z,$F2D7    ; 
+ $F2D4 LD BC,$4844   ; }
+*$F2D7 LD A,(IX+$02) ; Get Herbert's current object ID.
+ $F2DA ADD A,$02     ; { Ensure the object ID cycles between the two set values.
+ $F2DC CP B          ; 
+ $F2DD JR C,$F2E2    ; 
+*$F2DF LD A,C        ; 
  $F2E0 JR $F2E5      ;
-*$F2E2 CP C          ;
- $F2E3 JR C,$F2DF    ;
-*$F2E5 LD (IX+$02),A ;
- $F2E8 CALL $A8A0    ;
+*$F2E2 CP C          ; 
+ $F2E3 JR C,$F2DF    ; }
+*$F2E5 LD (IX+$02),A ; Set the new object ID for Herbert.
+ $F2E8 CALL $A8A0    ; Draw Herbert.
  $F2EB LD A,$46      ; { Set bright yellow on black.
  $F2ED LD ($F26F),A  ; }
- $F2F0 CALL $EF91    ;
- $F2F3 CALL $E329    ;
- $F2F6 RET           ;
+ $F2F0 CALL $EF91    ; Set the attributes for the fountain in the Town Square.
+ $F2F3 CALL $E329    ; Check for collision detection.
+ $F2F6 RET           ; Return.
 
 ; Bounds table : Full left / right on screen
 b$F2F7 DEFB $00,$F0,$40,$A8
