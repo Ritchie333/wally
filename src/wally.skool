@@ -2045,7 +2045,7 @@ b$8A78 DEFB $FE,$03,$00,$00,$FE,$03,$00,$F8
  $8AE8 DEFB $FC,$0F,$01,$40,$FC,$1F,$01,$80
  $8AF0 DEFB $FC,$3F,$01,$00,$FC,$7F,$00,$00
 
-; Object 3C - 3E - Bat
+; Object 3C - 3E - Bird
 ;
 ; #OBJECTGFXM(#PC)(object3c)
 b$8AF8 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
@@ -11497,13 +11497,25 @@ c$F5F1 LD HL,$5DE7   ; Point #REGhl to the screen buffer. (#R$5B00)
  $F64A RET           ; Return.
 
 ; Table of direction to switch to in The Park
-b$F64B DEFB $01,$01,$FF,$01,$FF,$FF,$01,$FF
+b$F64B DEFB $01,$01 ; Right and down
+ $F64D DEFB $FF,$01 ; Left and down
+ $F64F DEFB $FF,$FF ; Left and up
+ $F651 DEFB $01,$FF ; Right and up
 
 ; Movement table : The Park
-g$F653 DEFB $28,$46,$01,$01,$05,$04,$C8,$78
- $F65B DEFB $FF,$01,$23,$02,$26,$64,$01,$FF
- $F663 DEFB $26,$00,$C8,$78,$FF,$01,$23,$02
- $F66B DEFB $26,$64,$01,$FF,$26,$00,$3C
+g$F653 DEFB $28,$46,$01,$01
+ $F657 DEFB $05,$04,$C8,$78
+ $F65B DEFB $FF,$01,$23,$02
+ $F69F DEFB $26,$64,$01,$FF
+ $F663 DEFB $26,$00,$C8,$78
+ $F668 DEFB $FF,$01,$23,$02
+ $F66B DEFB $26,$64,$01,$FF
+ $F66F DEFB $26,$00
+ 
+; Next ID to use for moving objects in the park
+;
+; Alternates between #N$3C and #N$3E (#R$8AF8).
+g$F671 DEFB $3C
  
 ; Set to 1 if a moving object hits its boundary in X and needs to move in the other direction.
 ;
@@ -11518,47 +11530,49 @@ g$F673 DEFB $00
 ; Room logic : The Park
 c$F674 LD A,$04      ; { Moving objects decrease endurance by 4.
  $F676 LD ($F26E),A  ; }
- $F679 LD B,$05      ;
+ $F679 LD B,$05      ; 5 objects to update.
  $F67B LD IX,$F653   ; Point #REGix at the movement table.
-*$F67F PUSH BC       ;
+*$F67F PUSH BC       ; Store the count in #REGbc.
  $F680 LD BC,$F5CA   ; Point #REGbc at the bounds table.
  $F683 CALL $EF35    ; Update moving objects.
- $F686 DEC (IX+$00)  ;
- $F689 JR NZ,$F6BB   ;
- $F68B LD A,($F673)  ;
+ $F686 DEC (IX+$00)  ; Decrement the X position.
+ $F689 JR NZ,$F6BB   ; Jump forward if it's not zero.
+ $F68B LD A,($F673)  ; { Has a bird hit a boundary in X or Y?
  $F68E LD B,A        ;
  $F68F LD A,($F672)  ;
- $F692 OR B          ;
- $F693 JR NZ,$F6BB   ;
- $F695 LD A,R        ;
+ $F692 OR B          ; }
+ $F693 JR NZ,$F6BB   ; Jump forward if they haven't.
+; A bird has hit the edge of the screen, move them off in some random direction.
+ $F695 LD A,R        ; { Get a random number between #N$14 and #N$53.
  $F697 AND $3F       ;
- $F699 ADD A,$14     ;
- $F69B LD (IX+$00),A ;
- $F69E LD A,(IX+$01) ;
- $F6A1 ADD A,$02     ;
+ $F699 ADD A,$14     ; }
+ $F69B LD (IX+$00),A ; Set this as the new x co-ordinate.
+ $F69E LD A,(IX+$01) ; { Cycle the y co-ordinate between 0 and 6 in multiples of 2,
+ $F6A1 ADD A,$02     ; to give an offset into the table at #R$F653.
  $F6A3 CP $08        ;
  $F6A5 JR NZ,$F6A8   ;
- $F6A7 XOR A         ;
-*$F6A8 LD (IX+$01),A ;
- $F6AB LD E,A        ;
- $F6AC LD D,$00      ;
- $F6AE LD HL,$F64B   ;
- $F6B1 ADD HL,DE     ;
- $F6B2 LD A,(HL)     ;
+ $F6A7 XOR A         ; }
+*$F6A8 LD (IX+$01),A ; Set the new y co-ordinate.
+ $F6AB LD E,A        ; { Put the y co-ordinate in #REGde.
+ $F6AC LD D,$00      ; } 
+ $F6AE LD HL,$F64B   ; { Add the base address of the direction table. (#R$F64B)
+ $F6B1 ADD HL,DE     ; }
+ $F6B2 LD A,(HL)     ; { Set the new x and y direction changes based on the data found.
  $F6B3 LD (IX-$02),A ;
  $F6B6 INC HL        ;
  $F6B7 LD A,(HL)     ;
- $F6B8 LD (IX-$01),A ;
-*$F6BB LD A,($F671)  ;
- $F6BE XOR $02       ;
- $F6C0 LD ($F671),A  ;
- $F6C3 CALL $A8A0    ;
- $F6C6 CALL $E329    ;
+ $F6B8 LD (IX-$01),A ; }
+; Now draw the bird.
+*$F6BB LD A,($F671)  ; Get the object ID to use.
+ $F6BE XOR $02       ; { Alternate between #N$3C and #N$3E (#R$8AF8).
+ $F6C0 LD ($F671),A  ; for the next iteration. }
+ $F6C3 CALL $A8A0    ; Draw the object.
+ $F6C6 CALL $E329    ; Check for collision detection
  $F6C9 INC IX        ;
  $F6CB INC IX        ;
- $F6CD POP BC        ;
- $F6CE DJNZ $F67F    ;
- $F6D0 RET           ;
+ $F6CD POP BC        ; Restore the count in #REGbc.
+ $F6CE DJNZ $F67F    ; Loop while there are more objects to draw.
+ $F6D0 RET           ; Otherwise return.
 
 ; Table containing x position and item number to print for bank letters
 ;
@@ -11651,60 +11665,99 @@ c$F773 LD A,$02        ; { Moving objects decrease endurance by 2.
  $F77B CP $98          ; Is the player on the floor?
  $F77D JR NZ,$F78D     ; Jump forward if they're not.
 ; The player is on the floor.
- $F77F LD A,(IY+$05)   ;
- $F782 CP $28          ;
- $F784 JR C,$F78D      ;
- $F786 CP $E6          ;
- $F788 JR NC,$F78D     ;
- $F78A CALL $E33F      ; Decrease endurance.
-; Work out what to do next.
-*$F78D LD B,$05        ;
- $F78F LD A,($F7DE)    ;
- $F792 INC A           ;
- $F793 CP $5B          ;
- $F795 JR NZ,$F799     ;
- $F797 LD A,$57        ;
-*$F799 LD ($F7DE),A    ;
- $F79C LD HL,$F7DF     ;
- $F79F LD D,$98        ;
-*$F7A1 LD E,(HL)       ;
- $F7A2 LD ($A838),DE   ;
- $F7A6 INC HL          ;
- $F7A7 DEC (HL)        ;
- $F7A8 JR NZ,$F7AC     ;
- $F7AA LD (HL),$28     ;
-*$F7AC LD A,(HL)       ;
- $F7AD INC HL          ;
- $F7AE CP $09          ;
- $F7B0 JR NC,$F7D6     ;
- $F7B2 LD A,(IY+$0A)   ;
- $F7B5 CP $80          ;
- $F7B7 JR NZ,$F7D1     ;
- $F7B9 LD A,($A838)    ;
- $F7BC SUB (IY+$05)    ;
+ $F77F LD A,(IY+$05)   ; Get the X co-ordinate.
+ $F782 CP $28          ; Is it greater than #N$28?
+ $F784 JR C,$F78D      ; Jump forward if so.
+ $F786 CP $E6          ; Is it less than #N$E6?
+ $F788 JR NC,$F78D     ; Jump forward if not.
+ $F78A CALL $E33F      ; Otherwise, the player is standing on the spikes,
+                       ; so decrease endurance.
+; Now draw the desks.
+*$F78D LD B,$05        ; 5 objects to draw.
+ $F78F LD A,($F7DE)    ; Get the next frame ID of the desk.
+ $F792 INC A           ; Increment it.
+ $F793 CP $5B          ; { If it goes higher than #N$5A,
+ $F795 JR NZ,$F799     ; set it back to #N$57.
+ $F797 LD A,$57        ; }
+*$F799 LD ($F7DE),A    ; Store the next frame ID.
+ $F79C LD HL,$F7DF     ; Point #REGhl at the next x co-ordinate to use.
+ $F79F LD D,$98        ; Y co-ordinate is always #N$98.
+*$F7A1 LD E,(HL)       ; Get the X co-ordinate.
+ $F7A2 LD ($A838),DE   ; Set the position to draw. (#R$A838)
+ $F7A6 INC HL          ; Move to the next position in the buffer.
+ $F7A7 DEC (HL)        ; Decrement the tick counter.
+ $F7A8 JR NZ,$F7AC     ; Jump forward if it's not zero.
+; The tick counter has run to 0, does a desk need to be flipped?
+ $F7AA LD (HL),$28     ; Set the tick count back to #N$28.
+*$F7AC LD A,(HL)       ; Put the tick count in #REGa.
+ $F7AD INC HL          ; Move to the next position in the buffer.
+ $F7AE CP $09          ; Is the counter less than 9?
+ $F7B0 JR NC,$F7D6     ; Jump forward if not.
+; The desk needs flipping, check if dislodges the player.
+ $F7B2 LD A,(IY+$0A)   ; Get the player's y co-ordinate.
+ $F7B5 CP $80          ; Is it #N$80? (ie: on a desk)
+ $F7B7 JR NZ,$F7D1     ; Jump foward if it isn't.
+ $F7B9 LD A,($A838)    ; { Is the player's x co-ordinate
+ $F7BC SUB (IY+$05)    ; near this one?
  $F7BF SUB $10         ;
- $F7C1 CP $E0          ;
- $F7C3 JR C,$F7D1      ;
- $F7C5 LD A,(IY+$0A)   ;
+ $F7C1 CP $E0          ; }
+ $F7C3 JR C,$F7D1      ; Jump if not.
+; The desk opened while the player was on it. Dislodge them.
+ $F7C5 LD A,(IY+$0A)   ; { Add 4 to the player's y co-ordinate.
  $F7C8 ADD A,$04       ;
- $F7CA LD (IY+$0A),A   ;
+ $F7CA LD (IY+$0A),A   ; }
  $F7CD LD (IY+$37),$01 ; Set the character in mid-air.
-*$F7D1 LD A,($F7DE)    ;
- $F7D4 JR $F7D8        ;
-*$F7D6 LD A,$57        ;
-*$F7D8 CALL $A83D      ;
- $F7DB DJNZ $F7A1      ;
- $F7DD RET             ;
+*$F7D1 LD A,($F7DE)    ; Get the object ID to draw.
+ $F7D4 JR $F7D8        ; Jump forward to draw it.
+*$F7D6 LD A,$57        ; Set the object ID as #N$57 - closed desk. (#R$8E58)
+*$F7D8 CALL $A83D      ; Draw the object
+ $F7DB DJNZ $F7A1      ; Loop while there are more objects to draw.
+ $F7DD RET             ; Otherwise return.
 
-; Location of moving desk in the school (57-5B)
+; Frame ID of the next moving desk in the school (#N$57 - #N$5A)
+;
+; Used by the routine in #R$F773.
 g$F7DE DEFB $5A
 
-; Time until the moving school desk switches
+; X co-ordinate to draw the first school desk
+;
+; Used by the routine in #R$F773.
 g$F7DF DEFB $38
 
-; Data block at F7E0
-b$F7E0 DEFB $29,$60,$21,$88,$19,$B0,$11,$D8
- $F7E8 DEFB $09
+; Time until the first school desk flips
+b$F7E0 DEFB $29
+
+; X co-ordinate to draw the second school desk
+;
+; Used by the routine in #R$F773.
+g$F7E1 DEFB $60
+
+; Time until the second school desk flips
+b$F7E2 DEFB $21
+
+; X co-ordinate to draw the third school desk
+;
+; Used by the routine in #R$F773.
+g$F7E3 DEFB $88
+
+; Time until the third school desk flips
+b$F7E4 DEFB $19
+
+; X co-ordinate to draw the fourth school desk
+;
+; Used by the routine in #R$F773.
+g$F7E5 DEFB $B0
+
+; Time until the fourth school desk flips
+b$F7E6 DEFB $11
+
+; X co-ordinate to draw the fifth school desk
+;
+; Used by the routine in #R$F773.
+g$F7E7 DEFB $D8
+
+; Time until the fifth school desk flips
+b$F7E8 DEFB $09
 
 ; The food table.
 ;
