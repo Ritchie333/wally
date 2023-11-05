@@ -1,0 +1,29 @@
+[Page:Sounds]
+SectionPrefix=Audio
+
+[Audio:themetune:Theme tune]
+This tune is played by the routine at #R$B494 using the music data at #R$B560
+and is played before a new game or the demo mode starts.
+
+#AUDIO(tune.wav)(#INCLUDE(ThemeTune))
+
+[Audio:pickup:Pick Up Item]
+The sound made when an item is picked up. See the routine at #R$AA7F.
+
+#AUDIO(pickup.wav)(#INCLUDE(PickUp))
+
+[Audio:endurance:Endurance Depletion]
+This horrible sound plays while the players endurance level is being depleted.
+See the routine at #R$E329.
+
+#AUDIO(endurance.wav)(#INCLUDE(Endurance))
+
+[Audio:walking:Walking]
+Subtle sound made while the characters are walking. See the routine at #R$E2FC.
+
+#AUDIO(walking.wav)(#INCLUDE(Walking))
+
+[Audio:pickedupfood:Picked Up Food]
+This sound effect plays when food is picked up. See the routine at #R$F814.
+
+#AUDIO(pickedupfood.wav)(#INCLUDE(PickedUpFood))
