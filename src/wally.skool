@@ -5024,7 +5024,11 @@ c$B2F1 CALL $B8ED      ; Clear the screen.
  $B345 CALL $B34C      ; Print the money.
  $B348 JP $B3AB        ; Wait for a keypress and return.
 
-; Game status buffer entry at B34B
+; The current money digit being drawn.
+;
+; Used by the routine in #R$B34C
+;
+; 0 - hundreds, 1 - tens
 g$B34B DEFB $00
 
 ; Print a monetary value on screen
@@ -5036,51 +5040,51 @@ g$B34B DEFB $00
 c$B34C PUSH HL       ; { Store main registers.
  $B34D PUSH BC       ;
  $B34E PUSH DE       ; }
- $B34F LD A,$3D      ;
- $B351 CALL $B715    ;
- $B354 INC E         ;
- $B355 LD C,$42      ;
- $B357 LD A,$26      ;
- $B359 CALL $B715    ;
- $B35C INC E         ;
- $B35D XOR A         ;
- $B35E LD ($B34B),A  ;
- $B361 LD C,$45      ;
- $B363 LD B,$02      ;
-*$B365 LD A,(HL)     ;
- $B366 SRL A         ;
+ $B34F LD A,$3D      ; { Print an equals sign.
+ $B351 CALL $B715    ; }
+ $B354 INC E         ; Move to the next column.
+ $B355 LD C,$42      ; Set bright red on black.
+ $B357 LD A,$26      ; { Print a pound symbol.
+ $B359 CALL $B715    ; }
+ $B35C INC E         ; Move to the next column.
+ $B35D XOR A         ; { Set to drawing the hundreds.
+ $B35E LD ($B34B),A  ; }
+ $B361 LD C,$45      ; Get bright cyan on black.
+ $B363 LD B,$02      ; 2 digits to draw.
+*$B365 LD A,(HL)     ; Get the value.
+ $B366 SRL A         ; { Use the top four bits only.
  $B368 SRL A         ;
  $B36A SRL A         ;
- $B36C SRL A         ;
- $B36E ADD A,$30     ;
- $B370 CP $30        ;
- $B372 JR NZ,$B37C   ;
- $B374 LD A,($B34B)  ;
- $B377 OR A          ;
- $B378 JR Z,$B384    ;
- $B37A LD A,$30      ;
-*$B37C CALL $B715    ;
- $B37F LD A,$01      ;
- $B381 LD ($B34B),A  ;
-*$B384 INC E         ;
- $B385 LD A,(HL)     ;
- $B386 AND $0F       ;
- $B388 ADD A,$30     ;
- $B38A CP $30        ;
- $B38C JR NZ,$B39B   ;
- $B38E LD A,B        ;
- $B38F CP $01        ;
- $B391 JR Z,$B399    ;
- $B393 LD A,($B34B)  ;
- $B396 OR A          ;
- $B397 JR Z,$B3A3    ;
-*$B399 LD A,$30      ;
-*$B39B CALL $B715    ;
- $B39E LD A,$01      ;
- $B3A0 LD ($B34B),A  ;
-*$B3A3 INC E         ;
- $B3A4 INC HL        ;
- $B3A5 DJNZ $B365    ;
+ $B36C SRL A         ; }
+ $B36E ADD A,$30     ; Add to ASCII '0' to get the appropriate number graphic.
+ $B370 CP $30        ; Is it zero?
+ $B372 JR NZ,$B37C   ; Jump forward if it isn't.
+ $B374 LD A,($B34B)  ; { Are the hundreds being drawn?
+ $B377 OR A          ; }
+ $B378 JR Z,$B384    ; Jump forward if so.
+ $B37A LD A,$30      ; { Print '0'.
+*$B37C CALL $B715    ; }
+ $B37F LD A,$01      ; { Signal that the tens should be drawn next.
+ $B381 LD ($B34B),A  ; }
+*$B384 INC E         ; Move to the next character.
+ $B385 LD A,(HL)     ; Get the value.
+ $B386 AND $0F       ; Get the bottom four bits only.
+ $B388 ADD A,$30     ; Add to ASCII '0' to get the appropriate number graphic.
+ $B38A CP $30        ; Is it zero?
+ $B38C JR NZ,$B39B   ; Jump forward if it isn't.
+ $B38E LD A,B        ; { Is this the "tens" digit?
+ $B38F CP $01        ; }
+ $B391 JR Z,$B399    ; Jump forward if it is.
+ $B393 LD A,($B34B)  ; { Are the hunderds being drawn?
+ $B396 OR A          ; }
+ $B397 JR Z,$B3A3    ; Jump forward if not.
+*$B399 LD A,$30      ; Add to ASCII '0' to get the appropriate number graphic.
+*$B39B CALL $B715    ; Print the digit.
+ $B39E LD A,$01      ; { Move from tens to hundreds.
+ $B3A0 LD ($B34B),A  ; }
+*$B3A3 INC E         ; Move to the next character.
+ $B3A4 INC HL        ; Move to the next position in the buffer.
+ $B3A5 DJNZ $B365    ; Loop until all digits are accounted for.
  $B3A7 POP DE        ; { Restore main registers and return.
  $B3A8 POP BC        ;
  $B3A9 POP HL        ;
