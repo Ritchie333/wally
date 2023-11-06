@@ -5028,6 +5028,8 @@ c$B2F1 CALL $B8ED      ; Clear the screen.
 ;
 ; Used by the routine in #R$B34C
 ;
+; .
+;
 ; 0 - hundreds, 1 - tens
 g$B34B DEFB $00
 
