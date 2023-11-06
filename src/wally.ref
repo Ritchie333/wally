@@ -2,6 +2,7 @@
 Game=Everyone's A Wally
 TitleSuffix=Everyone's A Wally RAM disassembly
 Copyright=(c) 1985 Mikro-Gen (code and graphics), 2013-2023 Ritchie Swann / Paul Maddern (this disassembly)
+Logo=#SCR2,1,0,30,3,$50C0,$5AC0(/images/loading)
 
 [Config]
 HtmlWriterClass=wally.WallyHtmlWriter
@@ -16,6 +17,9 @@ SectionPrefix=Logic
 [Page:Rooms]
 SectionPrefix=Rooms
 
+[Page:Screens]
+SectionPrefix=Screens
+
 [Page:Characters]
 SectionPrefix=Characters
 
@@ -27,6 +31,7 @@ Logic
 [Index:Graphics:Graphics and Sounds]
 Characters
 Rooms
+Screens
 Sounds
 
 [Links]

@@ -111,3 +111,9 @@
 
 [Rooms:Room 20 - The Cave]
 #HTML( #R$D191<br><img src="images/room_20.png"/>)
+
+[Rooms:Chase sequence]
+#HTML( #R$F0B7<br><img src="images/chase.png"/>)
+
+[Screens:Loading screen]
+#HTML( #R$F0B7<br><img src="images/scr/loading.png"/>)
