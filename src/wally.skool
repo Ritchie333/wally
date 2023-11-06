@@ -2503,7 +2503,7 @@ b$93F8 DEFB $FF,$FF,$00,$00,$FF,$FF,$00,$00
 
 ; Wally
 ;
-; #CALL:print_mask(#PC,$wallyM)
+; #CALL:print_mask(#PC,wallyM)
 ; #CALL:print_player(#PC,wally)
 b$9438 DEFB $F0,$00,$00,$00,$E0,$00,$07,$3E
  $9440 DEFB $E0,$00,$0F,$FF,$80,$00,$07,$FE
