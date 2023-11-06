@@ -10164,22 +10164,26 @@ w$ED00 DEFW $7E71
  $ED04 DEFW $7ECC
 
 ; Movement table : Laboratory / Reward screens / Cave
-g$ED06 DEFB $30,$78,$02,$02,$78,$44,$FE,$02
- $ED0E DEFB $C0,$8C,$02,$FE,$7C
+g$ED06 DEFB $30,$78,$02,$02
+ $ED0A DEFB $78,$44,$FE,$02
+ $ED0E DEFB $C0,$8C,$02,$FE
+ 
+; Current object ID to use when drawing gas
+g$ED12 DEFB $7C
 
 ; Room logic : The Laboratory
 ;
 ; Used by the routine at #R$F54F.
 c$ED13 LD A,$02      ; { Moving objects decrease endurance by 2 here.
  $ED15 LD ($F26E),A  ; }
- $ED18 LD A,($ED12)  ;
+ $ED18 LD A,($ED12)  ; Get the object ID to use for the gas. (#R$ED12)
  $ED1B CALL $ED8A    ; Set up moving objects.
- $ED1E ADD A,$02     ;
- $ED20 CP $82        ;
+ $ED1E ADD A,$02     ; Move to the next object ID (a masked object is double size).
+ $ED20 CP $82        ; { If the ID is greater than #N$80, set it back to #N$7C.
  $ED22 JR NZ,$ED26   ;
- $ED24 LD A,$7C      ;
-*$ED26 LD ($ED12),A  ;
- $ED29 RET           ;
+ $ED24 LD A,$7C      ; }
+*$ED26 LD ($ED12),A  ; { Store the new object ID and return.
+ $ED29 RET           ; }
 
 ; See if we've reached a break, and display a message if so
 ;
@@ -10976,17 +10980,17 @@ b$F247 DEFB $98,$A0,$FC,$02
 ; Room logic : The Post Office.
 c$F24B LD A,$04      ; { Touching a stamp drops the endurance by 4.
  $F24D LD ($F26E),A  ; }
- $F250 LD IX,$F243   ;
- $F254 LD BC,$F2F7   ;
- $F257 CALL $EF35    ;
- $F25A LD A,$7A      ;
- $F25C CALL $A8A0    ;
- $F25F CALL $E329    ;
- $F262 LD A,$7A      ;
- $F264 CALL $EF35    ;
- $F267 CALL $A8A0    ;
- $F26A CALL $E329    ;
- $F26D RET           ;
+ $F250 LD IX,$F243   ; Point #REGix at the movement table.
+ $F254 LD BC,$F2F7   ; Point #REGbc at the stamp table.
+ $F257 CALL $EF35    ; Update moving objects.
+ $F25A LD A,$7A      ; Select the ID for the stamp. (#R$92B8)
+ $F25C CALL $A8A0    ; Draw it.
+ $F25F CALL $E329    ; Check for collision detection.
+ $F262 LD A,$7A      ; Select the ID for the stamp.
+ $F264 CALL $EF35    ; Update moving objects.
+ $F267 CALL $A8A0    ; Draw the stamp.
+ $F26A CALL $E329    ; Check for collision detection.
+ $F26D RET           ; Return.
 
 ; The amount to decrease endurance by in a collision
 g$F26E DEFB $00
@@ -11614,8 +11618,10 @@ b$F6D1 DEFB $40,$13 ; B
 b$F6DB DEFB $00
 
 ; Movement table : The Bank
-g$F6DC DEFB $40,$64,$02,$04,$B4,$98,$02,$FC
- $F6E4 DEFB $20,$44,$02,$04,$C8,$78,$02,$FC
+g$F6DC DEFB $40,$64,$02,$04
+ $F6E0 DEFB $B4,$98,$02,$FC
+ $F6E4 DEFB $20,$44,$02,$04
+ $F6E8 DEFB $C8,$78,$02,$FC
 
 ; Room logic : The Bank
 c$F6EC LD A,($EDC5)  ; Get the number of letters put in the safe + 1
@@ -11659,7 +11665,8 @@ c$F6EC LD A,($EDC5)  ; Get the number of letters put in the safe + 1
  $F739 RET           ; Return.
 
 ; Movement table : Wally's House
-g$F73A DEFB $34,$40,$00,$02,$74,$6C,$00,$02
+g$F73A DEFB $34,$40,$00,$02
+ $F73E DEFB $74,$6C,$00,$02
  $F742 DEFB $B4,$A0,$00,$02
 
 ; Room logic : Wally's House
@@ -11790,7 +11797,16 @@ b$F7E8 DEFB $09
 ;
 ; Used by the routine in #R$F814.
 ;
-; Format is room, x co-ord, y co-ord, object number
+; .
+;
+; Format is:
+; #TABLE( center, default)
+; { =h Byte | =h Description }
+; { 0 | Room ID }
+; { 1 | x co-ordinate }
+; { 2 | y co-ordinate }
+; { 3 | Object ID }
+; TABLE#
 b$F7E9 DEFB $0E,$90,$A0,$5B
  $F7ED DEFB $0A,$08,$A8,$5C
  $F7F1 DEFB $0F,$F0,$A8,$5E
@@ -11867,6 +11883,8 @@ c$F814 LD HL,($F812) ; Point #REGhl at the next food.
  $F878 RET           ; Return.
 
 ; Initial states of lightning bolts in the "asteroids" game
+;
+; See documentation for #R$80A9.
 b$F879 DEFB $EE,$42,$FE,$02,$38
  $F87E DEFB $EE,$AE,$FE,$FE,$38
  $F883 DEFB $02,$42,$02,$02,$38
