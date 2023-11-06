@@ -256,7 +256,7 @@ Money is always given in multiples of £10.
 
 The high byte is the hundreds part of the money. The low byte is the tens part of the money.
 
-In both cases, only the top nybble is used (as a decimal digit can be represented as four bytes).
+In both cases, only the top nybble is used (as a decimal digit can be represented as four bits).
 
 Example : $00, $50, $01 = Entry 1, £150.
 
