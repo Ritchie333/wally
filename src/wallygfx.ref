@@ -116,4 +116,4 @@
 #HTML( #R$F0B7<br><img src="images/chase.png"/>)
 
 [Screens:Loading screen]
-#HTML( #R$F0B7<br><img src="images/scr/loading.png"/>)
+#HTML( #R$4000<br><img src="images/scr/loading.png"/>)
