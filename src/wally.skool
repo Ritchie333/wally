@@ -5629,7 +5629,7 @@ c$B7BA PUSH AF       ; { Push the main registers.
  $B7F7 POP AF        ; 
  $B7F8 RET           ; }
 
-; Put a room graphic in screen overlaying existing ones.
+; Put a room graphic in screen overlaying existing ones
 ;
 ; Used by the routine at #R$F233 and indrectly by the routine at #R$B82B.
 ;
@@ -11488,7 +11488,7 @@ c$F5F1 LD HL,$5DE7   ; Point #REGhl to the screen buffer. (#R$5B00)
  $F5FC ADD HL,DE     ; Move to the next row.
  $F5FD LD (HL),$FF   ; Set all pixels.
  $F5FF ADD HL,DE     ; Move to the next row.
- $F600 LD (HL),$00   ; Set all pixels.
+ $F600 LD (HL),$00   ; Reset all pixels.
  $F602 AND A         ; { Move back up to the initial row.
  $F603 SBC HL,DE     ;
  $F605 SBC HL,DE     ; }

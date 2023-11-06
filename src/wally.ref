@@ -316,6 +316,7 @@ to make graphics updating faster.
 The attributes for each playable character are stored in #R$BC85.
 
 If you fancy drawing Wally in flashing cyan on mangenta, now you can!
+(It's POKE #N$BC85 , #N$DD if you really must know...)
 
 [Fact:Miles out of town]
 The "out of town" screen at #R$F177 uses a simple 16-bit word at #R$F15B to store the number of miles walked.
