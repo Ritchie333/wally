@@ -5,7 +5,7 @@ Copyright=(c) 1985 Mikro-Gen (code and graphics), 2013-2023 Ritchie Swann (this 
 
 [Config]
 HtmlWriterClass=wally.WallyHtmlWriter
-RefFiles=wallygfx.ref
+RefFiles=wallygfx.ref;data.ref;sounds.ref
 
 [Page:DataStructures]
 SectionPrefix=DataStructures
@@ -24,9 +24,10 @@ GameStatusBuffer
 DataStructures
 Logic
 
-[Index:Graphics:Graphics]
+[Index:Graphics:Graphics and Sounds]
 Characters
 Rooms
+Sounds
 
 [Links]
 DataStructures=Data structures
