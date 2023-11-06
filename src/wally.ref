@@ -1,7 +1,7 @@
 [Game]
 Game=Everyone's A Wally
 TitleSuffix=Everyone's A Wally RAM disassembly
-Copyright=(c) 1985 Mikro-Gen (code and graphics), 2013-2023 Ritchie Swann (this disassembly)
+Copyright=(c) 1985 Mikro-Gen (code and graphics), 2013-2023 Ritchie Swann / Paul Maddern (this disassembly)
 
 [Config]
 HtmlWriterClass=wally.WallyHtmlWriter
