@@ -4308,7 +4308,7 @@ b$AECB DEFB $10,$03,$0E,$05,$1B,$06,$08,$26
  $AED3 DEFB $14,$FF
 
 ; The next room a computer character should swap
-w$AED5 DEFW $AEEA
+g$AED5 DEFW $AEEA
 
 ; Get the next room that a computer controlled character should swap items
 ;
