@@ -5585,8 +5585,8 @@ c$B7BA PUSH AF       ; { Push the main registers.
  $B7CB ADD HL,DE     ; Add the remaining portion to get an attribute address.
  $B7CC LD (HL),C     ; Set the attribute.
  $B7CD POP HL        ; Restore #REGhl.
- $B7CE LD L,H        ;
- $B7CF LD D,$00      ; Start at row 0.
+ $B7CE LD L,H        ; { Start at row 0.
+ $B7CF LD D,$00      ; }
  $B7D1 LD H,D        ; Put the current row in #REGh.
  $B7D2 PUSH DE       ; Remember #REGde.
  $B7D3 ADD HL,HL     ; { Multiply #REGhl by 16 to get a suitable offset.

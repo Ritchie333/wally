@@ -186,7 +186,7 @@ but switches to checking for actions taken if those patterns are all true with b
 A new pattern is then identified with byte #N$F6. Byte #N$FF signals the end of the logic.
 
 Each room also contains a set of custom code that can be executed on entry. These are
-stored in a table at #R$EEF3. If there is no custom action for the room, the table'S
+stored in a table at #R$EEF3. If there is no custom action for the room, the table's
 entry is #R$F2F6, which is a simple RET instruction.
 
 [Logic:Patterns]
@@ -241,7 +241,7 @@ wrong character and items. }
 TABLE#
 
 [Logic:Money]
-The money earned by various tasks is defined in a table at #$REC5C.
+The money earned by various tasks is defined in a table at #R$EC5C.
 Each entry in the table contains three bytes:
 #TABLE( default, center )
 { =h Byte | =h Character }
