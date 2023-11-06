@@ -480,3 +480,26 @@ class WallyHtmlWriter(HtmlWriter):
             addr += 1
             id = self.snapshot[ addr ]
         return self.expand( text, cwd )
+    
+    def print_food( self, cwd, addr, n ):
+
+        text = '#TABLE( default, center )'
+        text += '{{ =h Room | =h x | =h y | =h Object }}'
+        for i in range( 0, n ):
+            ptr = addr + 4 * i
+            room_id = self.snapshot[ ptr ]
+            x = self.snapshot[ ptr + 1 ]
+            y = self.snapshot[ ptr + 2 ]
+            object_id = self.snapshot[ ptr + 3 ]
+
+            text += '{{ ' + self.get_room_name( room_id ) + ' | ' \
+                + str( x ) + ' | ' \
+                + str( y ) + ' | ' \
+                + self.print_food_graphic( object_id ) + ' }}'
+        text += 'TABLE#'
+        return self.expand( text, cwd )
+    
+    def print_food_graphic( self, id ):
+        text = '#HTML(<img src=\"../images/udgs/object' + f'{id:x}' + '.png\" />)'
+        return text
+        

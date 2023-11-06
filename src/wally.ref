@@ -325,6 +325,14 @@ with the movement and bounds tables set up to be contiguous.
 
 To see the shark appear to move while sawn in half, try POKE #N$F3A9 , 3
 
+[Fact:Hidden food]
+There's five hidden definitions of food in #R$F7FE that are not used because the terminating
+symbol in the previous byte. (See #R$F7E9). They are the same as the regular definitions, but
+in a different order.
+
+To bring the extra food into play, copy everything from #R$F7FE - #N$F811 down by one address
+to #N$F7FD, then set #N$F811 to #N$FF to terminate the list.
+
 [Page:Pokes]
 SectionType=ListItems
 

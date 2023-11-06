@@ -11807,6 +11807,10 @@ b$F7E8 DEFB $09
 ; { 2 | y co-ordinate }
 ; { 3 | Object ID }
 ; TABLE#
+;
+; .
+;
+; #CALL:print_food( #PC, 5 )
 b$F7E9 DEFB $0E,$90,$A0,$5B
  $F7ED DEFB $0A,$08,$A8,$5C
  $F7F1 DEFB $0F,$F0,$A8,$5E
@@ -11815,6 +11819,8 @@ b$F7E9 DEFB $0E,$90,$A0,$5B
  $F7FD DEFB $FF
 
 ; Copy of the food table (not used)
+;
+; #CALL:print_food( #PC, 5 )
 u$F7FE DEFB $0F,$F0,$A8,$5E
  $F802 DEFB $19,$90,$A0,$5D
  $F806 DEFB $17,$20,$90,$5F
