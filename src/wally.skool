@@ -11184,7 +11184,7 @@ c$F3AB LD A,$40      ; { Touching the shark drops endurance by 64,
  $F3E7 LD A,$17      ; { Otherwise, is the player's first item the meat?
  $F3E9 CP (IY+$50)   ; }
  $F3EC RET Z         ; Return if it is.
- $F3ED CP (IY+$55)   ; therwise, is the player's second item the meat?
+ $F3ED CP (IY+$55)   ; Otherwise, is the player's second item the meat?
  $F3F0 RET Z         ; Return if it is.
 ; The player doesn't have the meat, if they touch the shark it's bad news.
  $F3F1 LD A,($A839)  ; { Move up two rows and check collision detection.
