@@ -10337,7 +10337,7 @@ c$EDF7 XOR A           ; { Reset the "create new lightning bolts" flag. (#R$FAEF
  $EE33 LD A,H          ; { Continue until we run out of screen and hit
  $EE34 CP $58          ; the attribute area.
  $EE36 JR NZ,$EE2D     ; }
- $EE38 LD HL,$7F02     ; Point #REGal at the background graphic. (#R$7F02)
+ $EE38 LD HL,$7F02     ; Point #REGhl at the background graphic. (#R$7F02)
  $EE3B LD DE,$0F04     ; Set the position.
  $EE3E CALL $B84B      ; Draw the graphic.
  $EE41 CALL $B9AC      ; Copy the screen to the graphic buffer.
@@ -10380,7 +10380,7 @@ c$EDF7 XOR A           ; { Reset the "create new lightning bolts" flag. (#R$FAEF
  $EE94 LD (IY+$46),$00 ; Set the character as not jumping.
  $EE98 LD (IY+$00),$00 ; Set the frame ID back to 0.
  $EE9C LD SP,$FC00     ; Reset the stack to its initial place.
- $EE9F JP $8194        ; Start a new game.
+ $EE9F JP $8194        ; Jump back to the main game loop.
 
 ; Initialise the sprite buffers
 ;
