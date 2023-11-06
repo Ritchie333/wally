@@ -226,7 +226,9 @@ The routines to handle each action is stored in a lookup table at #R$E7F9.
 #TABLE( default, center )
 { =h Value | =h Instruction | =h Description }
 { 0 | SWAP | Swap the least-recently picked up item for the nearest one in the room. }
-{ 1 | SWAPFOR( n ) | Swap the least-recently picked up item for the 'nth' object in the room. }
+{ 1 | SWAPFOR( n ) | Swap object with ID 'n' that the player holds for the nearest one in the room.
+Used when a combination of items held or near reacts to produce another one, such as swapping the
+sand for the cement when holding a full bucket. }
 { 2 | SET( f ) | Set flag 'f'. }
 { 3 | RESET( f ) | Reset flag 'f'. }
 { 4 | SET(f, i) | Set the value 'x' to 'i'. }
@@ -235,7 +237,7 @@ The routines to handle each action is stored in a lookup table at #R$E7F9.
 { 7 | SPACE | Enter the asteroids game. Only relevant when standing near a phone booth. }
 { 8 | SAFE | Blow the safe, get the money and complete the game! Only used in the bank. }
 { 9 | CHASE | Open up the floor and drop the player down to the "chase the shark" room. 
-Most often use when some task needs to be completed at a location, but the player has the
+Most often used when some task needs to be completed at a location, but the player has the
 wrong character and items. }
 { A | OUT | Enter the "out of town" room. }
 TABLE#
@@ -273,7 +275,7 @@ TABLE#
 The index of the next index into the buffer is stored in #R$ECF5.
 
 [Logic:Computer characters]
-The computer character run off a list defined at #R$AEEA, which contains a target room for
+The computer characters run off a list defined at #R$AEEA, which contains a target room for
 them to move to, where they will swap with the first item in the room. The list is terminated
 by #N$FF.
 
