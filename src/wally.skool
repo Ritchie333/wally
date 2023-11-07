@@ -8841,7 +8841,7 @@ c$E329 LD A,($A838)  ; Get the x co-ordinate in the scratch buffer. (#R$A838)
 ; The amount to decrease by is set in #R$F26E, set up by the various room specific routines.
 ; (Herbert is 2. The shark in the sewer is 64!)
 ;
-; This entry point is used by the routines at #R$F773 and #R$F8B9,
+; This entry point is used by the routines at #R$F54F, #R$F773 and #R$F8B9,
 ; which reduce endurance by other means.
 *$E33F LD A,($B55F)    ; { Is the current player computer controlled?
  $E342 OR A            ; }
