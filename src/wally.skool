@@ -11353,7 +11353,7 @@ c$F057 LD A,($F046)  ; Get the shark's direction.
 b$F0B7 DEFB $80,$07,$75,$03,$7F,$00
 
 ; Chase : Current x co-ordinate of the shark
-@label=@Chase_Shark_X
+@label=Chase_Shark_X
 g$F0BD DEFB $F0
 
 ; Chase : The amount of ticks left to move the player on this control action
@@ -12157,11 +12157,7 @@ c$F572 LD A,$08      ; { Is flag 08 (fountain repaired) set?
 ; Movement table : School Lane
 @label=SchoolLane_Movement
 g$F5BE DEFB $28,$46,$02,$02
-
-@label=SchoolLane_Movement_2
  $F5C2 DEFB $3C,$78,$FE,$02
- 
-@label=SchoolLane_Movement_3
  $F5C6 DEFB $20,$64,$02,$FE
 
 ; Bounds table : Multiple purpose
