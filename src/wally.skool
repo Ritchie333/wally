@@ -9858,7 +9858,7 @@ c$E77A PUSH HL       ; { Store main registers.
 ; See if a player wants to swap character, and do so if they can
 ;
 ; Used by the routine at #R$8184.
-@label=Change Character
+@label=Change_Character
 c$E79B LD A,$F7        ; { Get keyboard input from 1 - 5.
  $E79D IN A,($FE)      ; }
  $E79F OR $E0          ; Set the top three bits, to ensure
@@ -9869,22 +9869,22 @@ c$E79B LD A,$F7        ; { Get keyboard input from 1 - 5.
  $E7A4 LD B,(IY+$0F)   ; Put the current character's room (#R$BC76) in #REGb.
  $E7A7 PUSH IY         ; Remember the original pointer in #REGiy.
  $E7A9 LD IY,$BC67     ; Point #REGiy at the first character buffer (Wally). (#R$BC67)
-@label=Change Character_1
+@label=Change_Character_1
 *$E7AD RRCA            ; Was this key pressed? (Loops from 1 - 5.)
  $E7AE JR C,$E7B4      ; Jump if so.
  $E7B0 INC IY          ; { Otherwise move to the next entry and loop back.
  $E7B2 JR $E7AD        ; }
 ; Found the character to switch to, can it be done?
-@label=Change Character_2
+@label=Change_Character_2
 *$E7B4 LD A,(IY+$0F)   ; Get the character's room.
  $E7B7 CP B            ; Is it this one?
  $E7B8 JR Z,$E7C0      ; Yes, so we can switch.
  $E7BA CALL $BA6E      ; Otherwise, print "{character} is in {room}"
- @label=Change Character_3
+ @label=Change_Character_3
 *$E7BD POP IY          ; { Clear up the stack and return.
  $E7BF RET             ; }
 ; The character is in the same room, so the switch can be made.
-@label=Change Character_4
+@label=Change_Character_4
 *$E7C0 CALL $A921      ; Is this character the current one.
  $E7C3 JR Z,$E7BD      ; If so, clear up the stack and return - there's nothing to do.
 ; The character is in the room and it's not the current one, so switch.
