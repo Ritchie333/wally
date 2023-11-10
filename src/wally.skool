@@ -5495,7 +5495,7 @@ c$B482 LD HL,($B4E7) ; Point #REGhl towards the next note in the tune.
 
 ; The address of the next note in the theme tune to play
 @label=Theme_Tune_Note_Ptr
-g$B4E7 DEFW $B571
+g$B4E7 DEFW $0000
 
 ; The last key (0 - 4) pressed
 ;
@@ -10855,7 +10855,7 @@ c$EDB3 LD A,(HL)     ; { Get the flag ID in #REGa.
 
 ; List of characters that should bring each letter
 @label=Safe_Characters
-b$EDBE DEFB $FF,$FF,$02,$04,$08,$10,$01,$FF
+b$EDBE DEFB $FF,$02,$04,$08,$10,$01,$FF
 
 ; Number of combination letters completed + 1
 @label=Safe_nLetters
