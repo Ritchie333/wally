@@ -7,6 +7,7 @@ import html
 import skoolkit.graphics
 from skoolkit.graphics import Frame, Udg
 from skoolkit.skoolhtml import HtmlWriter
+from skoolkit.skoolasm import AsmWriter
 
 class WallyHtmlWriter(HtmlWriter):
 
@@ -481,6 +482,34 @@ class WallyHtmlWriter(HtmlWriter):
             id = self.snapshot[ addr ]
         return self.expand( text, cwd )
     
+    def print_object_udg( self, cwd, addr, fName ):
+        udgs = []
+        for y in range( 0, 2 ):
+            udgline = []
+            for x in range( 0, 2 ):
+                data = []
+                ptr = addr + ( y * 16 ) + x
+                for i in range( 0, 8 ):
+                    data.append( self.snapshot[ ptr + i * 2] )
+                udgline.append( Udg( 0x46, data ) )
+            udgs.append( udgline )
+        frame = Frame( udgs, 2 )
+        return self.handle_image( frame, fName, cwd )
+    
+    def print_object_udg_and_mask( self, cwd, addr, fName ):
+        udgs = []
+        for y in range( 0, 2 ):
+            udgline = []
+            for x in range( 0, 4 ):
+                data = []
+                ptr = addr + ( y * 32 ) + x
+                for i in range( 0, 8 ):
+                    data.append( self.snapshot[ ptr + i * 4] )
+                udgline.append( Udg( 0x46, data ) )
+            udgs.append( udgline )
+        frame = Frame( udgs, 2 )
+        return self.handle_image( frame, fName, cwd )
+
     def print_food( self, cwd, addr, n ):
 
         text = '#TABLE( default, center )'
@@ -502,4 +531,40 @@ class WallyHtmlWriter(HtmlWriter):
     def print_food_graphic( self, id ):
         text = '#HTML(<img src=\"../images/udgs/object' + f'{id:x}' + '.png\" />)'
         return text
-        
+    
+class WallyAsmWriter(AsmWriter):
+    def print_room_data( self, addr, fName ):
+        pass
+
+    def print_block_data( self, addr, fName ):
+        pass
+
+    def print_object_udg( self, addr, fName ):
+        pass
+
+    def print_object_udg_and_mask( self, addr, fName ):
+        pass
+
+    def print_food( self, addr, fName ):
+        pass
+
+    def print_room_stats( self, fName ):
+        pass
+
+    def print_next_rooms( self, addr ):
+        pass
+
+    def print_next_room_table( self, addr ):
+        pass
+
+    def print_platforms( self, addr, rAddr, fName ):
+        pass
+
+    def print_mask( self, addr, fName ):
+        pass
+
+    def print_player( self, addr, fName ):
+        pass
+
+    def print_logic( self, addr ):
+        pass
