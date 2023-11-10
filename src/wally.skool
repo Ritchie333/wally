@@ -3566,14 +3566,14 @@ c$A92C PUSH IY         ; Store #REGiy
  $AA14 LD A,B          ; { Is the object index 0?
  $AA15 OR A            ; }
  $AA16 JR NZ,$AA24     ; If so, jump forward.
- @label=Update_Characters_16
+@label=Update_Characters_16
 *$AA18 CALL $AED7      ; Return the next room that the character should swap in.
  $AA1B LD C,$00        ;
  $AA1D LD D,A          ; Put this in #REGd.
  $AA1E LD A,D          ; { Is the next room the current one?
  $AA1F CP (IY+$0F)     ; }
  $AA22 JR Z,$AA18      ; Jump back until it isn't.
- @label=Update_Characters_17
+@label=Update_Characters_17
 *$AA24 LD (IY+$5A),D   ; Set the next target room. (#R$BCC1)
  $AA27 LD (IY-$0F),C   ; Set the room object index. (0?)
  $AA2A CALL $ADBA      ; Update the character.
@@ -9880,7 +9880,7 @@ c$E79B LD A,$F7        ; { Get keyboard input from 1 - 5.
  $E7B7 CP B            ; Is it this one?
  $E7B8 JR Z,$E7C0      ; Yes, so we can switch.
  $E7BA CALL $BA6E      ; Otherwise, print "{character} is in {room}"
- @label=Change_Character_3
+@label=Change_Character_3
 *$E7BD POP IY          ; { Clear up the stack and return.
  $E7BF RET             ; }
 ; The character is in the same room, so the switch can be made.
@@ -10965,7 +10965,7 @@ c$EDF7 XOR A           ; { Reset the "create new lightning bolts" flag. (#R$FAEF
  $EE7B LD (IY+$05),$04 ; and the room as 01 (Stamp Street),
  $EE7F LD (IY+$0F),$13 ; otherwise, set the x co-ordinate as #N$04 
  $EE83 JR $EE8D        ; and the room as #N$13 (Reference Road).
- @label=Space_Game_4
+@label=Space_Game_4
 *$EE85 LD (IY+$05),$DC ;
  $EE89 LD (IY+$0F),$01 ; }
 ; This entry point is used by the routines at #R$EFC7 and #R$F177.
