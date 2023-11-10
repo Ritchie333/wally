@@ -12117,6 +12117,7 @@ c$F572 LD A,$08      ; { Is flag 08 (fountain repaired) set?
 *$F578 LD A,$45      ; { Set bright cyan on black.
  $F57A LD ($F26F),A  ; }
 ; Draw bottom right.
+@ignoreua
  $F57D LD HL,$9878   ; { Set the position.
  $F580 LD ($A838),HL ; }
  $F583 LD A,($F571)  ; Get the next object ID of the water.
