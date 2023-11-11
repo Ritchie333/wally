@@ -4521,6 +4521,7 @@ b$AF10 DEFB $00,$98     ; 0 : Far left of a room.
  $AF20 DEFB $00,$98     ; 8
 
 ; Platform table 0 (most rooms)
+@label=Platforms_0
 b$AF22 DEFB $FF
 
 ; Platform table 1 (The Sewer)
