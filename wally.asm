@@ -11073,14 +11073,6 @@ Food:
   DEFB $17,$20,$90,$5F
   DEFB $FF
 
-; Copy of the food table (not used)
-Food_Spare:
-  DEFB $0F,$F0,$A8,$5E
-  DEFB $19,$90,$A0,$5D
-  DEFB $17,$20,$90,$5F
-  DEFB $0E,$90,$A0,$5B
-  DEFB $0A,$08,$A8,$5C
-
 ; Pointer to the next food table entry
 Next_Food:
   DEFW Food
