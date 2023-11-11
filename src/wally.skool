@@ -11502,7 +11502,7 @@ c$F177 LD A,(IY+$05)   ; Put the X co-ordinate in #REGa.
  $F17D CP $80          ; Is the character position greater than 80?
  $F17F LD A,$FE        ; Set starting position as the far right.
  $F181 JR C,$F188      ; If not, the character's moved left to here, so jump forward.
-@ignoreua
+@keep
  $F183 LD HL,$EA06     ; Set the extremities in #REGhl.
  $F186 LD A,$02        ; Set position at the far left.
 *$F188 LD ($F158),HL   ; Store the extremeties.
@@ -12010,7 +12010,7 @@ c$F4D3 LD A,($BD7D)  ; { Is the pipe in the cave?
  $F4DF RET NZ        ; Return if it is.
 ; The pipe is either leaking or not in the cave, so the
 ; gas leak means there's a fire here that needs drawing.
-@ignoreua
+@keep
 *$F4E0 LD HL,$A880   ; { Set the location of the flame.
  $F4E3 LD ($A838),HL ; }
  $F4E6 LD A,$04      ; { Touching the flame (if it's there)
@@ -12066,6 +12066,7 @@ c$F503 LD A,$FF      ; { Turn off the second platform, active when the trolley
  $F542 RET           ; Return.
 ; The trolley's not oiled, so just draw it.
 @label=Logic_Supermarket_1
+@keep
 *$F543 LD HL,$A8F0   ; { Set the position.
  $F546 LD ($A838),HL ; }
  $F549 LD A,$36      ; Set the ID to the trolley graphic.
@@ -12117,20 +12118,20 @@ c$F572 LD A,$08      ; { Is flag 08 (fountain repaired) set?
 *$F578 LD A,$45      ; { Set bright cyan on black.
  $F57A LD ($F26F),A  ; }
 ; Draw bottom right.
-@ignoreua
+@keep
  $F57D LD HL,$9878   ; { Set the position.
  $F580 LD ($A838),HL ; }
  $F583 LD A,($F571)  ; Get the next object ID of the water.
  $F586 CALL $A83D    ; Draw it.
  $F589 CALL $EF91    ; Set the attributes.
 ; Draw top right.
-@ignoreua
+@keep
  $F58C LD HL,$8868   ; { Set the position.
  $F58F LD ($A838),HL ; }
  $F592 CALL $A83D    ; Draw the water.
  $F595 CALL $EF91    ; Set the attributes.
 ; Draw bottom left.
-@ignoreua
+@keep
  $F598 LD HL,$9818   ; { Set the position.
  $F59B LD ($A838),HL ; }
  $F59E ADD A,$03     ; Add 3 to the object ID to get the water
@@ -12138,7 +12139,7 @@ c$F572 LD A,$08      ; { Is flag 08 (fountain repaired) set?
  $F5A0 CALL $A83D    ; Draw the water.
  $F5A3 CALL $EF91    ; Set the attributes.
 ; Draw top left.
-@ignoreua
+@keep
  $F5A6 LD HL,$8828   ; { Set the position.
  $F5A9 LD ($A838),HL ; }
  $F5AC CALL $A83D    ; Draw the water.
@@ -12157,8 +12158,10 @@ c$F572 LD A,$08      ; { Is flag 08 (fountain repaired) set?
 ; Movement table : School Lane
 @label=SchoolLane_Movement
 g$F5BE DEFB $28,$46,$02,$02
- $F5C2 DEFB $3C,$78,$FE,$02
- $F5C6 DEFB $20,$64,$02,$FE
+@label=SchoolLane_Movement_2
+*$F5C2 DEFB $3C,$78,$FE,$02
+@label=SchoolLane_Movement_3
+*$F5C6 DEFB $20,$64,$02,$FE
 
 ; Bounds table : Multiple purpose
 @label=Generic_Bounds
@@ -12990,7 +12993,7 @@ c$F9F5 LD IX,$F9F0     ; Point #REGix at the missile data.
  $FAC1 DAA             ;
  $FAC2 LD ($ECFE),A    ; }
 ; Play the "completed" sound effect.
-@ignoreua
+@keep
  $FAC5 LD BC,$BE32     ; { Set the parameters for the first sound.
  $FAC8 LD HL,$0000     ;
  $FACB LD DE,$0A0A     ; }
